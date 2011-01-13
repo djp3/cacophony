@@ -7,6 +7,6 @@ public class Cacophony {
 		System.out.println("	Don J. Patterson");
 		System.out.println("	Raphael Chang Lee");
 		System.out.println("	Aaron Pecson" );
-	
+		System.out.println("	Vatsal Shah" );	
 	}
 }
