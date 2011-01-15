@@ -1,9 +1,69 @@
 \section{Introduction and Related Work}
 
+Cacophony delivers data from occasionally observable sensors.  Where sensors is
+interpretted broadly to include any source of information of context
+information.
+
+Cacoph
+
+If you consider sensors as delivering samples of the real world over time and
+then send those samples through a network, the samples can be conceptualized as
+a flow.to 
+
+
 The idea of using data flows as perspective from which to manage contextual data
 is heavily influenced by work in streaming databases and introduced to the
 UbiComp community through the liquid system developed by Heer
-et.al.~\cite{HeerNBH03}. Describe liquid.
+et.al.~\cite{HeerNBH03}.  Liquid was a broad conceptual approach to context
+aware data delivery that was inspired by work in streaming databases.  The
+primary goal of liquid was to create links between nodes which incrementally
+gathered, processed and delivered information to interested parties.
+
+Cacophony is similar in that it also provides an architecture for connecting
+computation nodes that deliver data from a source through a series of
+transformations and aggregations to a sink node.
+
+The main architectural difference between liquid and Cacophony is that liquid
+made the assumption that the underlying data was continuously available.
+Cacophony in contrast assumes that the underlying data is hidden and only
+occassionally is an observation made that provides information about the hidden
+variable of interest.  Cacophony assumes that the observations are noisy and not
+always available.
+
+Liquid also focussed on data discovery and alerting mechanisms.  Both of these
+aspects of data aggregation are important, but are secondary to Cacophony's goal
+of revealing hidden, occasionaly observable data.  Data discovery and alerting
+mechanisms are both services that can be built on top of Cacophony and are not
+central to it's focus on aggregation and statistical interpretation. 
+
+Liquid and cacophony both take the perspective that context information is
+maintained in a distributed fashion across multiple physical and organizational
+boundaries.
+
+Liquid makes some claims about it's ability to reroute queries in order to
+follow mobile entities.  Cacophony does not attempt to reroute its data flows
+beyond the mechanisms supported by the underlying networking protocols.  Once a
+source of data is provided to Cacophony, Cacophony assumes that the data is
+available at that location for all time.
+
+In contrast, cacophony does provide robust mechanisms for rapid duplication of
+streams.  
+
+Another way of looking at cacophony is not as a competitor to liquid, but as a
+wrapper for liquid. 
+
+If liquid performs distributed "queries", Cacophony performs distributed
+statistically learning of context.  Liquid's primary focus is data discovery,
+cacophony is about robust prediction of context.
+
+Cacophony is not really an architecture for "streaming data" as much as
+"streaming computation" which is presenting interpretations of instantaneous
+data.
+
+liquid encodes the idea of entities.  Cacophony supports entity prediction, but
+doesn not expect a particular semantic on the underlying data.
+
+
 
 Is there prior work before liquid?
 
