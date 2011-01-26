@@ -1,24 +1,56 @@
 \section{Introduction and Related Work}
 
 Cacophony is a system that provides computational assistance with 
-obtaining data from sources or sensors that are on the network, but not always
-available or up to date.  It is particularly designed to address contextual data
-sources and in particular supports sources of data that are human authored.
-
-\donNote{I need to introduce enough of Cacophony to compare it to liquid, but I
-also want a scenario quickly and want people to get their head around it
-quickly}
-
-
-
-
-
+obtaining data from sources or sensors that are on the internet, but not always
+available or up to date.  While it is designed to address contextual data
+sources, including sources of data that are human authored, it can be applied
+more generally.
 
 \subsection{Scenario}
+
+Consider a community relief worker who is organizing a sandbagging team in
+response to a recent storm.  He lives in a river valley which is prone to
+flooding and which contains a series of water level indicators which reports the
+river's water level every four hours through Twitter~\cite{Starbird2010,flood}.
+One particular stretch of the river threatens to cause a great deal of damage if it
+overflows its banks, but the sensor associated with that stretch of the river is not
+responding.
+
+Fortunately this Twitter feed is paired with a \Cacophony node and when the
+community relief worker queries the \Cacophony node, it responds with several
+alternative views of the data.  The first is the last known value of the sensor
+with a timestamp, the second is a predicted value for the sensor based on
+current weather and nearby flood sensors and the third is a response from
+another community relief worker that is near that stretch of the river.  From
+this rich data set, the relief worker decides that a better use of his team would be 
+to work at a different location for the day.  In the meantime he calls the local
+relief worker to fix that sensor.
+
+Later in the day, when he queries the sensor's \Cacophony node he sees that it
+has been fixed, has been reporting levels that are rising and within predicted
+ranges, but not yet threatening to flood.
+
+
+in would like to know the level of water in
+a flood zone and makes us of a water level sensor which tweets it's reading
+every four hours through Twitter.
 
 which may Where sensors is
 interpretted broadly to include any source of information of context
 information.
+
+
+
+Cacophony consists of a set of computational nodes and data sources, distributed throughout the
+internet, and connected in what is conceptually a directional graph.  Connections
+represent communications that are passed between nodes via http/REST calls. Nodes are
+aware only of themselves and the set of directly connected nodes.
+
+
+
+
+
+
 
 Cacoph
 
