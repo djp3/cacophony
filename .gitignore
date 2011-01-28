@@ -4,3 +4,5 @@
 cacophony/.settings
 cacophony/cacophony.log4j.properties
 *.class
+*.log
+*.log.*
