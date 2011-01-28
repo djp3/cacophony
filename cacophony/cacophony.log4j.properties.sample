@@ -53,4 +53,3 @@ log4j.logger.com.quub.util.webserver.WebServer=DEBUG
 		
 log4j.logger.org.apache.commons.configuration.ConfigurationUtils=WARN
 
-log4j.logger.me.prettyprint.cassandra.service=WARN
