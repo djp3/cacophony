@@ -266,7 +266,7 @@ public class AccessControlTest extends AccessControl{
 	}
 	
 	@Test
-	@edu.umd.cs.findbugs.annotations.SuppressWarnings( value={"UW_UNCOND_WAIT","WA_NOT_IN_LOOP"}, justification="This is testing code")
+	@edu.umd.cs.findbugs.annotations.SuppressWarnings(value={"UW_UNCOND_WAIT","WA_NOT_IN_LOOP"}, justification="This is testing code")
 	public void testCacheExpiring() {
 		final long cacheExpireTime = 5* 1000L; // 5 seconds, 1 second was too short
 		

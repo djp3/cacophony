@@ -142,6 +142,10 @@ public class WebServer implements Runnable,Quittable{
 		setWebServer(new Thread(this));
 		getWebServer().setName("WebServer:"+((testing)?"testing":"not testing"));
 		getWebServer().setDaemon(false); /* Force a clean shutdown */
+	}
+	
+	public void start(){
+		getWebServer().start();
 		
 		if(testing){
 			getLog().info("Sleeping 1 seconds so everything can stabilize");
@@ -151,11 +155,6 @@ public class WebServer implements Runnable,Quittable{
 			}
 			getLog().info("Done Sleeping");
 		}
-		
-	}
-	
-	public void start(){
-		getWebServer().start();
 	}
 	
 	
