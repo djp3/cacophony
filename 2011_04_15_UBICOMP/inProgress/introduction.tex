@@ -31,13 +31,25 @@ has been fixed, has been reporting levels that are rising and within predicted
 ranges, but not yet threatening to flood.
 
 
-in would like to know the level of water in
-a flood zone and makes us of a water level sensor which tweets it's reading
-every four hours through Twitter.
+\subsection{Privacy}
 
-which may Where sensors is
-interpretted broadly to include any source of information of context
-information.
+Unlike the Confab~\cite{Hong2004} system that is primarily concerned with
+privacy management, \Cacophony offers only simplistic control for controlling
+the presentation of data.  On the one hand because the basic configuration of \Cacophony
+manipulates data that is publically accessible, it does not inherently introduce
+new privacy risks.  Futhermore, a \Cacophony node does not necessarily monitor
+data that is personal at all (e.g., the flood scenario).   However, if a
+\Cacophony node \emph{is} paired with a source of data that is
+personal, it becomes easier to see historic trends in that data which, if not
+technically novel, creates new social concerns.  
+
+Although \Cacophony is compatible with
+the approach used in Confab, we implemented the widely supported robots protocol from the search
+engine community~\cite{robotstxt}.  This enables publishers of data to restrict
+a \Cacophony node from associating with data in the same way search engines
+are restricted from indexing web pages.  This is a voluntary protocol that is
+not enforced with technology (although it could be).
+
 
 
 
@@ -118,11 +130,6 @@ Is there prior work before liquid?
 What has come after liquid?  Does it relate?
 \cite{Hong2004}
 
-
-How do we handle privacy? We don't.  This is not about privacy it is about data
-aggregation.  
-
-\donNote{bad answer}
 
 
 \subsection{Ideas}
