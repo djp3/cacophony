@@ -285,6 +285,6 @@ public class Cacophony implements Quittable{
 			}
 		}
 			
-		getLog().info("\nDone in Cacophony main()\n");
+		getLog().info("\nDone in Cacophony main()\n"+System.getProperty("user.dir"));
 	}
 }
