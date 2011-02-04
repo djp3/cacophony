@@ -4,6 +4,7 @@ package edu.uci.ics.luci.cacophony;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.net.Socket;
 import java.util.Date;
 import java.util.HashMap;
@@ -11,6 +12,7 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.concurrent.ExecutorService;
 
+import org.apache.commons.configuration.ConfigurationException;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -259,6 +261,17 @@ public class RequestHandlerCacophony extends RequestHandler{
 					else if(request.equals("viz")){
 						contentTypeHeader="Content-type:  text/html; charset=utf-8";
 						outputBytes = Visualization.getWebsite(globals.getConfig(),getTesting());
+					}
+					else if(request.equals("config")){
+						contentTypeHeader="Content-type:  text/plain; charset=utf-8";
+						StringWriter w = new StringWriter();
+						try {
+							globals.getConfig().getLayout().save(w);
+						} catch (ConfigurationException e) {
+							getLog().error("Unable to write configuration to string."+e);
+							w.append("Error:"+e);
+						}
+						outputBytes = w.toString().getBytes();
 					}
 					else if(request.equals("shutdown")){
 						outputBytes = replyWithGoodbye();

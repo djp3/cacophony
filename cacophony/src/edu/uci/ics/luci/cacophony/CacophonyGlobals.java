@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.TimeZone;
 
-import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.log4j.Logger;
 
 import com.quub.Globals;
@@ -54,7 +54,7 @@ public class CacophonyGlobals extends Globals{
 	}
 	
 	private static transient volatile Logger log = null;
-	private Configuration config = null;
+	private PropertiesConfiguration config = null;
 		
 	public Logger getLog(){
 		if(log == null){
@@ -67,11 +67,11 @@ public class CacophonyGlobals extends Globals{
 		super(PROPERTY_FILENAME_DEFAULT);
 	}
 	
-	public void setConfig(Configuration config){
+	public void setConfig(PropertiesConfiguration config){
 		this.config = config;
 	}
 	
-	public Configuration getConfig(){
+	public PropertiesConfiguration getConfig(){
 		return (this.config);
 	}
 		

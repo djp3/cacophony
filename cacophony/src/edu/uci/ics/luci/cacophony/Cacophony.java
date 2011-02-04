@@ -6,7 +6,6 @@ import java.security.InvalidParameterException;
 import java.util.HashMap;
 import java.util.Iterator;
 
-import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.log4j.Logger;
@@ -268,7 +267,7 @@ public class Cacophony implements Quittable{
 		}    
 		
 		try {
-			Configuration config;
+			PropertiesConfiguration config;
 			config = new PropertiesConfiguration(commandLineOptions.getString("config"));
 			CacophonyGlobals.getCacophonyGlobals().setConfig(config);
 		} catch (ConfigurationException e1) {
