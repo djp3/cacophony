@@ -258,7 +258,7 @@ public class RequestHandlerCacophony extends RequestHandler{
 					}
 					else if(request.equals("viz")){
 						contentTypeHeader="Content-type:  text/html; charset=utf-8";
-						outputBytes = Visualization.getWebsite(getTesting());
+						outputBytes = Visualization.getWebsite(globals.getConfig(),getTesting());
 					}
 					else if(request.equals("shutdown")){
 						outputBytes = replyWithGoodbye();

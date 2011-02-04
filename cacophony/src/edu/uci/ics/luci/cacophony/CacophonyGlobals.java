@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.TimeZone;
 
+import org.apache.commons.configuration.Configuration;
 import org.apache.log4j.Logger;
 
 import com.quub.Globals;
@@ -25,7 +26,8 @@ public class CacophonyGlobals extends Globals{
 	}
 	
 	static volatile CacophonyGlobals _globals = null;
-	private static final String propertyFileNameDefault = "cacophony.log4j.properties";
+	private static final String PROPERTY_FILENAME_DEFAULT = "cacophony.log4j.properties";
+	public static final String CONFIG_FILENAME_DEFAULT = "cacophony.properties";
 	public static final int DEFAULT_PORT = 2011;
 
 
@@ -34,6 +36,13 @@ public class CacophonyGlobals extends Globals{
 			_globals = new CacophonyGlobals();
 		}
 		return (Globals) _globals;
+	}
+	
+	public static CacophonyGlobals getCacophonyGlobals(){
+		if(_globals == null){
+			_globals = new CacophonyGlobals();
+		}
+		return _globals;
 	}
 		
 	/**
@@ -45,6 +54,7 @@ public class CacophonyGlobals extends Globals{
 	}
 	
 	private static transient volatile Logger log = null;
+	private Configuration config = null;
 		
 	public Logger getLog(){
 		if(log == null){
@@ -54,7 +64,15 @@ public class CacophonyGlobals extends Globals{
 	}
 	
 	protected CacophonyGlobals() {
-		super(propertyFileNameDefault);
+		super(PROPERTY_FILENAME_DEFAULT);
+	}
+	
+	public void setConfig(Configuration config){
+		this.config = config;
+	}
+	
+	public Configuration getConfig(){
+		return (this.config);
 	}
 		
 	public List<String> getBadGuyList(){

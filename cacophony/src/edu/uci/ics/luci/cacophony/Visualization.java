@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.configuration.Configuration;
 import org.apache.log4j.Logger;
 
 public class Visualization {
@@ -20,7 +21,7 @@ public class Visualization {
 		
 		
 
-	public static byte[] getWebsite(boolean testing) {
+	public static byte[] getWebsite(Configuration config, boolean testing) {
 		
 		StringBuilder contents = new StringBuilder();
 			
@@ -58,12 +59,13 @@ public class Visualization {
 			getLog().error(ex);
 		}
 		
-		StringBuilder lineGraph = new StringBuilder();
+		StringBuilder name = new StringBuilder();
+		name.append(config.getString("cacophony.node.name"));
 			
-		Pattern p = Pattern.compile("<\\$lineGraph\\$>");
+		Pattern p = Pattern.compile("<\\$nodeName\\$>");
 		Matcher m = p.matcher(contents); // get a matcher object
 		while(m.find()) {
-			contents.replace(m.start(), m.end(), lineGraph.toString());
+			contents.replace(m.start(), m.end(), name.toString());
 			m.reset();
 		}
 		return contents.toString().getBytes();

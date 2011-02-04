@@ -6,6 +6,9 @@ import java.security.InvalidParameterException;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -62,8 +65,7 @@ public class Cacophony implements Quittable{
 			}
 		}
 	}	
-
-
+	
 	
 
 	private static JSAPResult parseCommandLine(String[] args) throws JSAPException {
@@ -88,8 +90,17 @@ public class Cacophony implements Quittable{
                       .setShortFlag('p') 
                       .setLongFlag("port");
 	        
-			fl.setHelp("Which port should I listen for REST commands on.");
+			fl.setHelp("Which port should I listen for REST commands on?");
+			jsap.registerParameter(fl);
 			
+			fl = new FlaggedOption("config")
+					.setStringParser(JSAP.STRING_PARSER)
+					.setDefault(""+CacophonyGlobals.CONFIG_FILENAME_DEFAULT) 
+					.setRequired(false) 
+					.setShortFlag('c') 
+					.setLongFlag("config");
+  
+			fl.setHelp("What is the name of the file with the configuation properties?");
 			jsap.registerParameter(fl);
         
 			sw = new Switch("help")
@@ -249,20 +260,29 @@ public class Cacophony implements Quittable{
 		Thread.currentThread().setName(Cacophony.class.getName());
 			
 		/*Get command line options */
-		JSAPResult config = null;
+		JSAPResult commandLineOptions = null;
 		try {
-			config = parseCommandLine(args);
+			commandLineOptions = parseCommandLine(args);
 		} catch (JSAPException e) {
 			throw new IllegalArgumentException(e);
 		}    
 		
+		try {
+			Configuration config;
+			config = new PropertiesConfiguration(commandLineOptions.getString("config"));
+			CacophonyGlobals.getCacophonyGlobals().setConfig(config);
+		} catch (ConfigurationException e1) {
+			getLog().error("Problem loading configuration from:"+commandLineOptions.getString("config")+"\n"+e1);
+		}
+		
+		
 		Cacophony cNode = new Cacophony();
-			
+		
 		WebServer ws = null;
 		try{
 			RequestHandlerFactory requestHandlerFactory = new RequestHandlerFactory(CacophonyGlobals.getGlobals(),RequestHandlerCacophony.class);
 			AccessControl accessControl = new AccessControl(CacophonyGlobals.getGlobals());
-			ws = new WebServer(CacophonyGlobals.getGlobals(), requestHandlerFactory, null, config.getInt("port"), config.getBoolean("testing"), accessControl);
+			ws = new WebServer(CacophonyGlobals.getGlobals(), requestHandlerFactory, null, commandLineOptions.getInt("port"), commandLineOptions.getBoolean("testing"), accessControl);
 			
 			ws.start();
 		} catch (RuntimeException e) {
@@ -279,7 +299,7 @@ public class Cacophony implements Quittable{
 		} catch (InterruptedException e) {
 		}
 		if(ws != null){
-			warmUpWebServer(config, ws);
+			warmUpWebServer(commandLineOptions, ws);
 			if(ws.getQuitting()){
 				cNode.setQuitting(true);
 			}
