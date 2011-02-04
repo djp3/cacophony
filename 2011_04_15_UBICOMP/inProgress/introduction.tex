@@ -50,6 +50,58 @@ a \Cacophony node from associating with data in the same way search engines
 are restricted from indexing web pages.  This is a voluntary protocol that is
 not enforced with technology (although it could be).
 
+\subsection{Cloning}
+
+\begin{figure}
+	\begin{center}
+		\includegraphics[width=1.00\columnwidth]{images/cloning}
+
+	\caption{\label{fig:cloning}To clone a \Cacophony node the public
+	configuration must be transferred.  Additionallly the historical data may be
+	transferred.  The private configuration contains authentication credentials
+	and is not transferred.}
+	\end{center}
+\end{figure}
+
+
+A \Cacophony node is a java program that can be run on a standard java virtual
+machine.  In order for the node to be valuable though, it needs to be connected
+to the node that it is tracking and the nodes that are features for prediction.
+Additionally it needs to observe those nodes over time to create a statistical
+model of how they are correlated.  A node's state is therefore described by it's code,
+it's connections and it's collected history.
+
+In order to create a robust ecosystem of \Cacophony nodes, we support rapid
+cloning of a node so that computation can be moved from one network location to
+another.
+
+The code of a \Cacophony node is open source and available online.  Since the
+code is the same on all nodes, this aspect of it's state is easy to obtain.
+
+The configuration of a \Cacophony node is separated into two files, a public
+configuration file which contains information about which other nodes this node
+connects to, and a private configuration file that contains access credentials
+that may be required to instantiate those connections.  The public configuration
+file can be obtained from any \Cacophony node via an http REST call.
+
+The history of data that \Cacophony node has collected is contained in a local data store, initally
+implemented as a SQLLite database.   This data is also available via a separate http
+REST call.
+
+In order to clone a \Cacophony node, one first downloads and executes the java
+jar file from the \Cacophony website\footnote{What is the Cacophony website?} to
+create the new node.
+Then, via the web interface to the new node, the URL of the node to be cloned is
+entered.  The new node requests the configuration of the old node and
+reconfigures itself to match the network connections and data processing
+parameters of the old node.  Once the configuration is complete, the history of
+data collected is requested from the old node and stored in the new node's data
+store.  Simply cloning the connections and bringing new \Cacophony node online takes less than a second under normal
+network conditions.  Additionally transferring the history depends on the size
+of the history and on current network conditions between the two nodes.
+
+
+
 
 
 
