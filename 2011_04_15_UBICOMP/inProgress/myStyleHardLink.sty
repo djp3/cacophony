@@ -1,0 +1,132 @@
+%\newcommand{\comment}[1]{{\small{\texttt{#1}}}}
+
+\newcommand{\ie}[0]{\emph{i.e.}}
+\newcommand{\eg}[0]{\emph{e.g.}}
+\newcommand{\etal}[0]{\emph{et.al.}}
+\newcommand{\etc}[0]{\emph{etc.}}
+\newcommand{\eqRef}[1]{(\ref{#1})}
+\newcommand{\secRef}[1]{Section~\ref{#1}}
+\newcommand{\eqDRef}[3]{Eq.~(\ref{#1}) #2 (\ref{#3})}
+\newcommand{\figDRef}[2]{Fig.~\ref{#1}(#2)}
+\newcommand{\figRef}[1]{Figure~\ref{#1}}
+
+\newcommand{\wrt}[0]{w.r.t.~}
+\newcommand{\rob}[1]{\texttt{#1}}
+\newcommand{\A}[0]{\texttt{A}}
+\newcommand{\B}[0]{\texttt{B}}
+
+\newcommand{\qj}[0]{q_{\mid j}}
+\newcommand{\qij}[0]{q_{i \mid j}}
+\newcommand{\fij}[0]{f_{i \mid j}}
+
+\newcommand{\bseq}[1]{\vspace*{-#1ex}\footnotesize\begin{eqnarray}}
+\newcommand{\eseq}[1]{\end{eqnarray}\vspace*{-#1ex}}
+\newcommand{\smid}[0]{\!\mid\!}
+\newcommand{\ssmid}[0]{\!\!\mid\!\!}
+
+\def\argmax{\mathop{\rm argmax}}
+\def\argmin{\mathop{\rm argmin}}
+
+\newcommand{\tab}[0]{\hspace*{-0ex}&&\hspace*{-4ex}}
+\newcommand{\spropto}[0]{\!\!&\propto&\!\!}
+
+\newcommand{\is}[0]{{\cal{I}}}
+\newcommand{\os}[0]{{\cal{O}}}
+\newcommand{\parm}[0]{{\cal{M}}}
+
+\newcommand{\si}[0]{{(i)}}
+\newcommand{\sij}[0]{{(\iota,m)}}
+\newcommand{\now}[0]{t}
+\newcommand{\ass}[0]{\theta}
+\newcommand{\suff}[0]{u}
+\newcommand{\track}[0]{t}
+%\newcommand{\ts}[2]{#1_{#2}}
+\newcommand{\tv}[3]{#1_{#2:#3}}
+\newcommand{\norm}[0]{\mathcal{N}}
+
+%\newcommand{\ts}[2]{#1({#2})}
+%\newcommand{\tv}[3]{#1^{#3}}
+
+\newcommand{\assTEq}[0]{\ts{\ass}{\now}=\ass^i}
+
+%------------ Template for state indexed with time
+
+\newcommand{\varT}[1]{\ts{#1}{\now}}
+\newcommand{\varTM}[1]{\ts{#1}{\now-1}}
+\newcommand{\varTMT}[1]{\tv{#1}{\now-1}{\now}}
+\newcommand{\varZero}[1]{\tv{#1}{1}{0}}
+\newcommand{\varOneOne}[1]{\tv{#1}{1}{1}}
+\newcommand{\varOneT}[1]{\tv{#1}{1}{\now}}
+\newcommand{\varOneTM}[1]{\tv{#1}{1}{\now-1}}
+\newcommand{\varOneTMM}[1]{\tv{#1}{1}{\now-2}}
+
+\newcommand{\assV}[1]{\ts{\ass}{#1}}
+\newcommand{\assT}[0]{\varT{\ass}}
+\newcommand{\assTM}[0]{\varTM{\ass}}
+\newcommand{\assTMT}[0]{\varTMT{\ass}}
+\newcommand{\assOneT}[0]{\varOneT{\ass}}
+\newcommand{\assOneTM}[0]{\varOneTM{\ass}}
+
+\newcommand{\xT}[0]{\varT{x}}
+\newcommand{\xTM}[0]{\varTM{x}}
+\newcommand{\xTMT}[0]{\varTMT{x}}
+\newcommand{\xOneT}[0]{\varOneT{x}}
+\newcommand{\xOneTM}[0]{\varOneTM{x}}
+
+\newcommand{\zT}[0]{\varT{z}}
+\newcommand{\zTM}[0]{\varTM{z}}
+\newcommand{\zTMT}[0]{\varTMT{z}}
+\newcommand{\zOneOne}[0]{\varOneOne{z}}
+\newcommand{\zOneT}[0]{\varOneT{z}}
+\newcommand{\zOneTM}[0]{\varOneTM{z}}
+
+\newcommand{\hzT}[0]{\varT{\hat{z}}}
+\newcommand{\hzTM}[0]{\varTM{\hat{z}}}
+\newcommand{\hzTMT}[0]{\varTMT{\hat{z}}}
+\newcommand{\hzOneOne}[0]{\varOneOne{\hat{z}}}
+\newcommand{\hzOneT}[0]{\varOneT{\hat{z}}}
+\newcommand{\hzOneTM}[0]{\varOneTM{\hat{z}}}
+
+\newcommand{\trackT}[0]{\varT{\track}}
+\newcommand{\trackTM}[0]{\varTM{\track}}
+\newcommand{\trackTMT}[0]{\varTMT{\track}}
+\newcommand{\trackOneT}[0]{\varOneT{\track}}
+\newcommand{\trackOneTM}[0]{\varOneTM{\track}}
+
+\newcommand{\xiT}[0]{\varT{x^{i}}}
+\newcommand{\xiTM}[0]{\varTM{x^{i}}}
+\newcommand{\xiTMT}[0]{\varTMT{x^{i}}}
+\newcommand{\xiOneT}[0]{\varOneT{x^{i}}}
+\newcommand{\xiOneTM}[0]{\varOneTM{x^{i}}}
+
+\newcommand{\eat}[1]{}
+\newcommand{\fix}[1]{\footnote{***#1***}}
+\newcommand{\note}[2]{\setlength{\fboxrule}{#2}\fbox{\parbox{\columnwidth}{#1}}}
+\newcommand{\donNote}[1]{\note{#1 \hfill {\bfseries djp3}}{0.5mm}}
+\newcommand{\sharonNote}[1]{\note{#1 \hfill {\bfseries sharon}}{0.2mm}}
+%\newcommand{\anonymize}[1]{{\{\scshape anonymized\}}}
+\newcommand{\anonymizecite}[1]{anonymous}
+\newcommand{\anonymize}[1]{#1}
+\newcommand{\Cacophony}{CACOPHONY }
+\hyphenation{CA-CO-PHO-NY-}
+\newcommand{\NomaticIM}{Nomatic*IM}
+%\newcommand{\NomaticIM}{{\sc AnonymizedSystem}~}
+\newcommand{\Nomatic}{Nomatic~}
+\newcommand{\NomaticViz}{Nomatic*Viz~}
+\newcommand{\myQuote}[1]{``{\textit{#1}}"}
+\newcommand{\myQuoteLong}[1]{\begin{quote}``{\sl#1}"\end{quote}}
+\newcommand{\myChi}[3]{($\chi^2=#1,p<#3$)}
+
+\newcommand{\reminder}[1]{\marginpar{\mbox{$<==$} #1}}
+\newcommand{\Bug}[1] {\mbox{\rule{2mm}{2mm}}\reminder{\footnote{BUG: {#1}}}}
+
+\newcommand{\AD}{AD}
+\newcommand{\MCI}{MCI}
+\newcommand{\AC}{AC}
+\newcommand{\OK}{OK}
+\newcommand{\ADL}{ADL}
+\newcommand{\ADLs}{\ADL s}
+\newcommand{\IADL}{IADL}
+\newcommand{\IADLs}{\IADL s}
+\newcommand{\UI}{UI}
+
