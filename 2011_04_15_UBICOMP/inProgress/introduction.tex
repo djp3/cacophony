@@ -1,30 +1,40 @@
 \section{Introduction and Related Work}
 
-Cacophony is a system that provides computational assistance with 
-obtaining data from sources or sensors that are on the internet, but not always
-available or up to date.  While it is designed to address contextual data
-sources, including sources of data that are human authored, it can be applied
-more generally.
+\Cacophony is a system that provides computational assistance with obtaining
+data from sources or sensors which are on the internet, but which are not always
+online or up to date.  It is designed for a use case inspired by an "Internet of
+Things" in which an entity and/or a related community together publish data
+about or on behalf of the entity.  This is in response to a realization that the
+cost of deploying, powering, and maintaining an \emph{reliable} infrastructure of sensors is too
+high for all but the most valuable data.  Additionally infrastructure investment
+can be resisted because of fears that a sensing technology that may quickly become obsolete,  a
+concern over the total cost of ownership of a sensing infrastructure including
+maintenance personnel,  a lack of
+parity between the cost of building a sensing infrastructure and the value of
+the data it will provide and due to rapid changes in the entities that people care about.
 
 \subsection{Scenario}
 
-Consider a community relief worker who is organizing a sandbagging team in
-response to a recent storm.  He lives in a river valley which is prone to
-flooding and which contains a series of water level indicators which reports the
+Consider community relief workers who are organizing sandbagging teams in
+response to a forecasted storm.  They lives in a river valley that has already
+flooded this season and that contains a series of water level indicators.  These
+indicators were thrown together quickly a few weeks ago by some local engineers
+and report the
 river's water level every four hours through Twitter~\cite{Starbird2010,flood}.
 One particular stretch of the river threatens to cause a great deal of damage if it
-overflows its banks, but the sensor associated with that stretch of the river is not
-responding.
+overflows its banks, but the sensor associated with that stretch of the river
+has stopped responding.
 
 Fortunately this Twitter feed is paired with a \Cacophony node and when the
-community relief worker queries the \Cacophony node, it responds with several
-alternative views of the data.  The first is the last known value of the sensor
-with a timestamp, the second is a predicted value for the sensor based on
-current weather and nearby flood sensors and the third is a response from
-another community relief worker that is near that stretch of the river.  From
-this rich data set, the relief worker decides that a better use of his team would be 
-to work at a different location for the day.  In the meantime he calls the local
-relief worker to fix that sensor.
+community relief workers want to gather information about the river level in
+order to organize their teams efficiently, they query the \Cacophony node first,
+it responds with several alternative views of the data.  The first is the last
+known value of the sensor with a timestamp, the second is a predicted value for
+the sensor based on current weather and nearby flood sensors and the third is a
+response from another community relief worker that is near that stretch of the
+river.  From this rich data set, the relief worker decides that a better use of
+his team would be to work at an upstream location for the day.  In the meantime
+they call a local volunteer to check on that sensor.
 
 Later in the day, when he queries the sensor's \Cacophony node he sees that it
 has been fixed, has been reporting levels that are rising and within predicted
@@ -49,6 +59,9 @@ engine community~\cite{robotstxt}.  This enables publishers of data to restrict
 a \Cacophony node from associating with data in the same way search engines
 are restricted from indexing web pages.  This is a voluntary protocol that is
 not enforced with technology (although it could be).
+
+\subsection{Pachube}
+How does this system compare to Pachube?
 
 \subsection{Cloning}
 
