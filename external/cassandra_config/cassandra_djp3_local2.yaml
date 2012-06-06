@@ -1,0 +1,8 @@
+cluster_name: CacophonyCluster1.0
+commitlog_sync: periodic
+commitlog_sync_period_in_ms: 10000
+partitioner: org.apache.cassandra.dht.ByteOrderedPartitioner
+data_file_directories: 
+    - /Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/cassandra_tmp/data 
+commitlog_directory: /Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/cassandra_tmp/commit_log
+saved_caches_directory: /Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/cassandra_tmp/saved_caches
