@@ -6,3 +6,4 @@ cacophony/cacophony.log4j.properties
 *.class
 *.log
 *.log.*
+*.DS_Store
