@@ -7,3 +7,5 @@ cacophony/cacophony.log4j.properties
 *.log
 *.log.*
 *.DS_Store
+external/cassandra
+external/cassandra_tmp
