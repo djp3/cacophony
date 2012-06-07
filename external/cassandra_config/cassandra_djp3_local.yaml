@@ -7,7 +7,7 @@
 
 # The name of the cluster. This is mainly used to prevent machines in
 # one logical cluster from joining another.
-cluster_name: Cacophony1.0
+cluster_name: CacophonyClusterV1.0
 
 # You should always specify InitialToken when setting up a production
 # cluster for the first time, and often when adding capacity later.
@@ -475,7 +475,7 @@ rpc_timeout_in_ms: 10000
 #
 # You can use a custom Snitch by setting this to the full class name
 # of the snitch, which will be assumed to be on your classpath.
-endpoint_snitch: SimpleSnitch
+endpoint_snitch: PropertyFileSnitch
 
 # controls how often to perform the more expensive part of host score
 # calculation

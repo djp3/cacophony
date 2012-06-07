@@ -21,6 +21,8 @@ $ECHO "$FORMAT" "Starting cassandra"
 
 cp -v /Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/cassandra_config/cassandra_djp3_local.yaml /Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/cassandra/conf/cassandra.yaml
 
+cp -v /Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/cassandra_config/cassandra_djp3-topology.properties /Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/cassandra/conf/cassandra-topology.properties
+
 pushd .
 
 cd /Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/cassandra
