@@ -9,3 +9,5 @@ cacophony/cacophony.log4j.properties
 *.DS_Store
 external/cassandra
 external/cassandra_tmp
+external/hector
+external/hector_examples
