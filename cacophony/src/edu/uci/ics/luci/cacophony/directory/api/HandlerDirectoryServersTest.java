@@ -198,7 +198,7 @@ public class HandlerDirectoryServersTest {
 			fail("IO Exception");
 		}
 		
-		System.out.println(responseString);
+		//System.out.println(responseString);
 
 		JSONObject response = null;
 		try {
@@ -221,6 +221,61 @@ public class HandlerDirectoryServersTest {
 		} catch (JSONException e) {
 			e.printStackTrace();
 			fail("Bad JSON Response");
+		}
+		
+
+	}
+	
+	
+	
+	@Test
+	public void testRunServersIndefinitely() {
+		
+		Directory.getInstance().startHeartbeat();
+		
+		String responseString = null;
+		try {
+			HashMap<String, String> params = new HashMap<String, String>();
+
+			responseString = WebUtil.fetchWebPage("http://localhost:" + testPort + "/servers", false, params, 30 * 1000);
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+			fail("Bad URL");
+		} catch (IOException e) {
+			e.printStackTrace();
+			fail("IO Exception");
+		}
+		
+		//System.out.println(responseString);
+
+		JSONObject response = null;
+		try {
+			response = new JSONObject(responseString);
+			try {
+				assertEquals("false",response.getString("error"));
+				assertEquals(CacophonyGlobals.getVersion(),response.getString("version"));
+				assertTrue(CacophonyGlobals.getVersion(),response.getString("servers").length() > 0);
+				InetAddress me = InetAddress.getLocalHost();
+    			String ip = me.getHostAddress();
+    			Long heartbeat = response.getJSONObject("servers").getLong(ip);
+				assertTrue(System.currentTimeMillis() - heartbeat < Directory.FIVE_MINUTES);
+			} catch (JSONException e) {
+				e.printStackTrace();
+				fail("No error code:"+e);
+			} catch (UnknownHostException e) {
+				e.printStackTrace();
+				fail("Problem with getting local host:"+e);
+			}
+		} catch (JSONException e) {
+			e.printStackTrace();
+			fail("Bad JSON Response");
+		}
+		
+		while(true){
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+			}
 		}
 		
 
