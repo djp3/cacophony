@@ -11,3 +11,4 @@ external/cassandra
 external/cassandra_tmp
 external/hector
 external/hector_examples
+external/bootstrap
