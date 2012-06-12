@@ -11,6 +11,13 @@ import com.quub.Globals;
 import com.quub.util.CalendarCache;
 
 public class CacophonyGlobals extends Globals{
+	
+	private static final String VERSION = "1.0";
+	private static final String PROPERTY_FILENAME_DEFAULT = "cacophony.log4j.properties";
+	public static final String CONFIG_FILENAME_DEFAULT = "cacophony.properties";
+	public static final int DEFAULT_PORT = 2011;
+	private static transient volatile Logger log = null;
+	private PropertiesConfiguration config = null;
 		
 	static{
 		/* Test that we are using GMT as the default */
@@ -25,46 +32,27 @@ public class CacophonyGlobals extends Globals{
 		}
 	}
 	
-	static volatile CacophonyGlobals _globals = null;
-	private static final String PROPERTY_FILENAME_DEFAULT = "cacophony.log4j.properties";
-	public static final String CONFIG_FILENAME_DEFAULT = "cacophony.properties";
-	public static final int DEFAULT_PORT = 2011;
-
-
-	public static Globals getGlobals(){
-		if(_globals == null){
-			_globals = new CacophonyGlobals();
-		}
-		return (Globals) _globals;
-	}
 	
-	public static CacophonyGlobals getCacophonyGlobals(){
-		if(_globals == null){
-			_globals = new CacophonyGlobals();
-		}
-		return _globals;
-	}
-		
 	/**
 	 * This is only need so far for testing in which the _globals sticks around from previous tests and is not reinitialized
 	 * @return
 	 */
 	public static void resetGlobals(){
-		_globals = null;
+		setGlobals(null);
+	}
+
+	public synchronized static CacophonyGlobals getGlobals(){
+		if(Globals.getGlobals() == null){
+			setGlobals(new CacophonyGlobals());
+		}
+		return (CacophonyGlobals) Globals.getGlobals();
 	}
 	
-	private static transient volatile Logger log = null;
-	private PropertiesConfiguration config = null;
-		
-	public Logger getLog(){
+	public synchronized Logger getLog(){
 		if(log == null){
 			log = Logger.getLogger(CacophonyGlobals.class);
 		}
 		return log;
-	}
-	
-	protected CacophonyGlobals() {
-		super(PROPERTY_FILENAME_DEFAULT);
 	}
 	
 	public void setConfig(PropertiesConfiguration config){
@@ -104,5 +92,18 @@ public class CacophonyGlobals extends Globals{
 				"80.84.236.230",
 				"host131.200-45-174.telecom.net.ar"));
 	}
+	
+
+	public static String getVersion() {
+		return VERSION;
+	}
+
+	protected CacophonyGlobals() {
+		super();
+		super.setPropertyFileName(PROPERTY_FILENAME_DEFAULT);
+		super.reloadLog4jProperties();
+		super.setHTTPServerHeader("Cacophony distributed prediction system");
+	}
 
 }
+

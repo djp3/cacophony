@@ -32,7 +32,7 @@ public class DirectoryTest {
 
 	@Test
 	public void testStartHeartbeat() {
-		Directory d = new Directory();
+		Directory d = Directory.getInstance();
 		d.startHeartbeat(0L, 500L);
 		try{
 			String me = InetAddress.getLocalHost().getHostAddress();
