@@ -11,4 +11,5 @@ external/cassandra
 external/cassandra_tmp
 external/hector
 external/hector_examples
-external/bootstrap
+cacophony/src/www/bootstrap
+cacophony/bin
