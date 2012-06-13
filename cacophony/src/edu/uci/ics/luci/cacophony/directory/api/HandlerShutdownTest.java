@@ -17,11 +17,13 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.quub.Globals;
 import com.quub.webserver.AccessControl;
 import com.quub.webserver.RequestHandlerFactory;
-import com.quub.webserver.RequestHandlerHelper;
+import com.quub.webserver.HandlerAbstract;
 import com.quub.webserver.WebServer;
 import com.quub.webserver.WebUtil;
+import com.quub.webserver.handlers.HandlerVersion;
 
 import edu.uci.ics.luci.cacophony.CacophonyGlobals;
 
@@ -31,7 +33,7 @@ public class HandlerShutdownTest {
 
 	private WebServer ws = null;
 	
-	Map<String, Class<? extends RequestHandlerHelper>> requestHandlerRegistry;
+	Map<String, Class<? extends HandlerAbstract>> requestHandlerRegistry;
 
 
 	@BeforeClass
@@ -57,14 +59,14 @@ public class HandlerShutdownTest {
 		/* Start the webserver */
 		testPort++;
 		try {
-			requestHandlerRegistry = new TreeMap<String, Class<? extends RequestHandlerHelper>>();
+			requestHandlerRegistry = new TreeMap<String, Class<? extends HandlerAbstract>>();
 			requestHandlerRegistry.put("",HandlerVersion.class);
 			requestHandlerRegistry.put("shutdown",HandlerShutdown.class);
 			
 			CacophonyGlobals.resetGlobals();
 			CacophonyGlobals g = CacophonyGlobals.getGlobals();
-			RequestHandlerFactory factory = new RequestHandlerFactory(g, requestHandlerRegistry,true);
-			ws = new WebServer(g, factory, null, testPort, false, true, new AccessControl(g));
+			RequestHandlerFactory factory = new RequestHandlerFactory(g, requestHandlerRegistry);
+			ws = new WebServer(g, factory, null, testPort, false, true, new AccessControl());
 			ws.start();
 			g.addQuittables(ws);
 		} catch (RuntimeException e1) {
@@ -138,7 +140,7 @@ public class HandlerShutdownTest {
 		
 		try{
 			HashMap<String, String> params = new HashMap<String, String>();
-			params.put("version", CacophonyGlobals.getVersion());
+			params.put("version", Globals.getGlobals().getVersion());
 		
 			responseString1 = WebUtil.fetchWebPage("http://localhost:" + testPort + "/shutdown", false, params, 30 * 1000);
 		} catch (MalformedURLException e3) {
@@ -201,7 +203,7 @@ public class HandlerShutdownTest {
 		try{
 			HashMap<String, String> params = new HashMap<String, String>();
 			params.put("seriously", "true");
-			params.put("version", CacophonyGlobals.getVersion());
+			params.put("version", Globals.getGlobals().getVersion());
 		
 			responseString1 = WebUtil.fetchWebPage("http://localhost:" + testPort + "/shutdown", false, params, 30 * 1000);
 		} catch (MalformedURLException e3) {

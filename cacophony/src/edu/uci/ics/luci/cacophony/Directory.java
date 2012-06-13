@@ -33,12 +33,13 @@ import com.martiansoftware.jsap.Switch;
 import com.quub.database.QuubDBConnectionPool;
 import com.quub.util.Quittable;
 import com.quub.webserver.AccessControl;
+import com.quub.webserver.HandlerAbstract;
 import com.quub.webserver.RequestHandlerFactory;
-import com.quub.webserver.RequestHandlerHelper;
 import com.quub.webserver.WebServer;
+import com.quub.webserver.handlers.HandlerFavicon;
+import com.quub.webserver.handlers.HandlerFileServer;
+import com.quub.webserver.handlers.HandlerVersion;
 
-import edu.uci.ics.luci.cacophony.directory.api.HandlerFavicon;
-import edu.uci.ics.luci.cacophony.directory.api.HandlerVersion;
 import edu.uci.ics.luci.cacophony.directory.api.WebServerWarmUp;
 
 
@@ -170,9 +171,8 @@ public class Directory implements Quittable{
 		for(String keyI: keyIterator){
 			try {
 			    if(keyI.equals(key)){
-			    	LongSerializer ls = longSerializer;
 			    	ColumnFamilyResult<String, String> res = directoryServerTemplate.queryColumns(keyI);
-			    	ret = ls.fromBytes(res.getString("heartbeat").getBytes());
+			    	ret = res.getLong("heartbeat");
 			    }
 			} catch (HectorException e) {
 			}
@@ -187,9 +187,8 @@ public class Directory implements Quittable{
 		
 		for(String keyI: keyIterator){
 			try {
-				LongSerializer ls = longSerializer;
 		    	ColumnFamilyResult<String, String> res = directoryServerTemplate.queryColumns(keyI);
-		    	ret.put(keyI, ls.fromBytes(res.getString("heartbeat").getBytes()));
+		    	ret.put(keyI, res.getLong("heartbeat"));
 			} catch (HectorException e) {
 			}
 		}
@@ -305,13 +304,13 @@ public class Directory implements Quittable{
 		/* Create the webserver to catch rest action*/
 		WebServer ws = null;
 		try{
-			Map<String, Class<? extends RequestHandlerHelper>> requestHandlerRegistry = new TreeMap<String, Class<? extends RequestHandlerHelper>>();
+			Map<String, Class<? extends HandlerAbstract>> requestHandlerRegistry = new TreeMap<String, Class<? extends HandlerAbstract>>();
 			requestHandlerRegistry.put("",HandlerVersion.class);
-			requestHandlerRegistry.put("favicon.ico",HandlerFavicon.class);
 			requestHandlerRegistry.put("version",HandlerVersion.class);
+			requestHandlerRegistry.put(null, HandlerFileServer.class); //Default response
 
-			RequestHandlerFactory requestHandlerFactory = new RequestHandlerFactory(g,requestHandlerRegistry,true);
-			AccessControl accessControl = new AccessControl(g);
+			RequestHandlerFactory requestHandlerFactory = new RequestHandlerFactory(g,requestHandlerRegistry);
+			AccessControl accessControl = new AccessControl();
 			
 			Integer port = getConfig(clo,g.getConfig(),"port");
 			Boolean testing = getConfig(clo,g.getConfig(),"testing");

@@ -25,11 +25,14 @@ import com.martiansoftware.jsap.JSAP;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import com.martiansoftware.jsap.Switch;
+import com.quub.Globals;
 import com.quub.webserver.AccessControl;
+import com.quub.webserver.HandlerAbstract;
 import com.quub.webserver.RequestHandlerFactory;
-import com.quub.webserver.RequestHandlerHelper;
 import com.quub.webserver.WebServer;
 import com.quub.webserver.WebUtil;
+import com.quub.webserver.handlers.HandlerFileServer;
+import com.quub.webserver.handlers.HandlerVersion;
 
 import edu.uci.ics.luci.cacophony.CacophonyGlobals;
 import edu.uci.ics.luci.cacophony.Directory;
@@ -40,7 +43,7 @@ public class HandlerDirectoryServersTest {
 
 	private WebServer ws = null;
 
-	Map<String, Class<? extends RequestHandlerHelper>> requestHandlerRegistry;
+	Map<String, Class<? extends HandlerAbstract>> requestHandlerRegistry;
 
 	@BeforeClass
 	public static void setUpClass() throws Exception {
@@ -72,16 +75,17 @@ public class HandlerDirectoryServersTest {
 	private void startAWebServer() {
 		testPort++;
 		try {
-			requestHandlerRegistry = new TreeMap<String, Class<? extends RequestHandlerHelper>>();
+			requestHandlerRegistry = new HashMap<String, Class<? extends HandlerAbstract>>();
 			requestHandlerRegistry.put("",HandlerVersion.class);
 			requestHandlerRegistry.put("version",HandlerVersion.class);
 			requestHandlerRegistry.put("servers",HandlerDirectoryServers.class);
 			requestHandlerRegistry.put("shutdown",HandlerShutdown.class);
+			requestHandlerRegistry.put(null,HandlerFileServer.class);
 			
 			CacophonyGlobals.resetGlobals();
 			CacophonyGlobals g = CacophonyGlobals.getGlobals();
-			RequestHandlerFactory factory = new RequestHandlerFactory(g, requestHandlerRegistry,true);
-			ws = new WebServer(g, factory, null, testPort, false, true, new AccessControl(g));
+			RequestHandlerFactory factory = new RequestHandlerFactory(g, requestHandlerRegistry);
+			ws = new WebServer(g, factory, null, testPort, false, true, new AccessControl());
 			ws.start();
 			g.addQuittables(ws);
 		} catch (RuntimeException e) {
@@ -96,7 +100,7 @@ public class HandlerDirectoryServersTest {
 		try{
 			HashMap<String, String> params = new HashMap<String, String>();
 			params.put("seriously", "true");
-			params.put("version", CacophonyGlobals.getVersion());
+			params.put("version", Globals.getGlobals().getVersion());
 
 			responseString = WebUtil.fetchWebPage("http://localhost:" + testPort + "/shutdown", false, params, 30 * 1000);
 		} catch (MalformedURLException e) {
@@ -205,8 +209,8 @@ public class HandlerDirectoryServersTest {
 			response = new JSONObject(responseString);
 			try {
 				assertEquals("false",response.getString("error"));
-				assertEquals(CacophonyGlobals.getVersion(),response.getString("version"));
-				assertTrue(CacophonyGlobals.getVersion(),response.getString("servers").length() > 0);
+				assertEquals(Globals.getGlobals().getVersion(),response.getString("version"));
+				assertTrue(Globals.getGlobals().getVersion(),response.getString("servers").length() > 0);
 				InetAddress me = InetAddress.getLocalHost();
     			String ip = me.getHostAddress();
     			Long heartbeat = response.getJSONObject("servers").getLong(ip);
@@ -253,8 +257,8 @@ public class HandlerDirectoryServersTest {
 			response = new JSONObject(responseString);
 			try {
 				assertEquals("false",response.getString("error"));
-				assertEquals(CacophonyGlobals.getVersion(),response.getString("version"));
-				assertTrue(CacophonyGlobals.getVersion(),response.getString("servers").length() > 0);
+				assertEquals(Globals.getGlobals().getVersion(),response.getString("version"));
+				assertTrue(Globals.getGlobals().getVersion(),response.getString("servers").length() > 0);
 				InetAddress me = InetAddress.getLocalHost();
     			String ip = me.getHostAddress();
     			Long heartbeat = response.getJSONObject("servers").getLong(ip);

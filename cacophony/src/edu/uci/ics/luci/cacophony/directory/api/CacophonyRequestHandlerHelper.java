@@ -9,11 +9,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.quub.util.Pair;
-import com.quub.webserver.RequestHandlerHelper;
+import com.quub.webserver.HandlerAbstract;
 
 import edu.uci.ics.luci.cacophony.CacophonyGlobals;
 
-public class CacophonyRequestHandlerHelper extends RequestHandlerHelper{
+public class CacophonyRequestHandlerHelper extends HandlerAbstract{
 	
 	public static final long ONE_SEC = 1000L;
 	public static final long ONE_MIN = 60 * ONE_SEC;
@@ -60,7 +60,7 @@ public class CacophonyRequestHandlerHelper extends RequestHandlerHelper{
 			errors.put("REST call to "+restFunction+" requested unsupported version:"+parameters.get("version")+". Valid version is "+CacophonyGlobals.getVersion());
 			ret.put("errors",errors);
 			
-			pair = new Pair<byte[],String>(RequestHandlerHelper.contentTypeHeader_JSON,ret.toString());
+			pair = new Pair<byte[],String>(HandlerAbstract.contentTypeHeader_JSON,ret.toString());
 		} catch (JSONException e) {
 			getLog().error("Unable to respond with version:"+e);
 		}

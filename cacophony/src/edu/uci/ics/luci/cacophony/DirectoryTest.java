@@ -5,6 +5,8 @@ import static org.junit.Assert.fail;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -22,17 +24,22 @@ public class DirectoryTest {
 	public static void tearDownAfterClass() throws Exception {
 	}
 
+
+
+	private Directory d;
+
 	@Before
 	public void setUp() throws Exception {
+		d = Directory.getInstance();
 	}
 
 	@After
 	public void tearDown() throws Exception {
+		d.setQuitting(true);
 	}
 
 	@Test
 	public void testStartHeartbeat() {
-		Directory d = Directory.getInstance();
 		d.startHeartbeat(0L, 500L);
 		try{
 			String me = InetAddress.getLocalHost().getHostAddress();
@@ -45,6 +52,28 @@ public class DirectoryTest {
 		} catch (UnknownHostException e) {
 			fail(e.toString());
 		} catch (InterruptedException e) {
+			fail(e.toString());
+		}
+	}
+	
+	
+	
+	@Test
+	public void testGetServers() {
+		d.startHeartbeat(0L, 500L);
+		try{
+			String me = InetAddress.getLocalHost().getHostAddress();
+			Map<String, Long> list = d.getServers();
+			for(Entry<String,Long> e : list.entrySet()){
+				if(e.getKey().equals(me)){
+					assert(System.currentTimeMillis()-e.getValue() < Directory.FIVE_MINUTES);
+				}
+				else{
+					assert(System.currentTimeMillis()-e.getValue() > Directory.FIVE_MINUTES);
+				}
+				
+			}
+		} catch (UnknownHostException e) {
 			fail(e.toString());
 		}
 	}

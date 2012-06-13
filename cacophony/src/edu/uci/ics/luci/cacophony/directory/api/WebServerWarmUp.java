@@ -9,6 +9,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.martiansoftware.jsap.JSAPResult;
+import com.quub.Globals;
 import com.quub.webserver.WebServer;
 import com.quub.webserver.WebUtil;
 
@@ -99,11 +100,11 @@ public class WebServerWarmUp {
 						}
 							
 						if(answer == null){
-							getLog().fatal("Didn't get expected version number, wanted:"+CacophonyGlobals.getVersion()+", got: null");
+							getLog().fatal("Didn't get expected version number, wanted:"+Globals.getGlobals().getVersion()+", got: null");
 							ws.setQuitting(true);
 						} else {
-							if(!answer.equals(CacophonyGlobals.getVersion())){
-								getLog().fatal("Didn't get expected version number, wanted:"+CacophonyGlobals.getVersion()+", got: "+answer);
+							if(!answer.equals(Globals.getGlobals().getVersion())){
+								getLog().fatal("Didn't get expected version number, wanted:"+Globals.getGlobals().getVersion()+", got: "+answer);
 								ws.setQuitting(true);
 							}
 							else{

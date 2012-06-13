@@ -11,7 +11,8 @@ import org.json.JSONObject;
 
 import com.quub.database.QuubDBConnectionPool;
 import com.quub.util.Pair;
-import com.quub.webserver.RequestHandlerHelper;
+import com.quub.webserver.HandlerAbstract;
+
 
 public class HandlerShutdown extends CacophonyRequestHandlerHelper {
 	
@@ -73,7 +74,7 @@ public class HandlerShutdown extends CacophonyRequestHandlerHelper {
 			}
 		}
 		
-		pair = new Pair<byte[],String>(RequestHandlerHelper.contentTypeHeader_JSON,wrapCallback(parameters,ret.toString()));
+		pair = new Pair<byte[],String>(HandlerAbstract.contentTypeHeader_JSON,wrapCallback(parameters,ret.toString()));
 		
 		return pair;
 	}

@@ -93,10 +93,10 @@ public class CacophonyGlobals extends Globals{
 				"host131.200-45-174.telecom.net.ar"));
 	}
 	
-
-	public static String getVersion() {
+	public String getVersion() {
 		return VERSION;
 	}
+
 
 	protected CacophonyGlobals() {
 		super();

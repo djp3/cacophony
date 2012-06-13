@@ -7,14 +7,15 @@ import org.apache.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.quub.Globals;
 import com.quub.database.QuubDBConnectionPool;
 import com.quub.util.Pair;
-import com.quub.webserver.RequestHandlerHelper;
+import com.quub.webserver.HandlerAbstract;
 
 import edu.uci.ics.luci.cacophony.CacophonyGlobals;
 import edu.uci.ics.luci.cacophony.Directory;
 
-public class HandlerDirectoryServers extends RequestHandlerHelper {
+public class HandlerDirectoryServers extends HandlerAbstract {
 	
 	private static transient volatile Logger log = null;
 	public static Logger getLog(){
@@ -46,7 +47,7 @@ public class HandlerDirectoryServers extends RequestHandlerHelper {
 		Map<String, Long> servers = Directory.getInstance().getServers();
 		JSONObject retServers = new JSONObject(servers);
 		
-		String version = CacophonyGlobals.getVersion();
+		String version = Globals.getGlobals().getVersion();
 		
 		JSONObject ret = new JSONObject();
 		try {
@@ -57,7 +58,7 @@ public class HandlerDirectoryServers extends RequestHandlerHelper {
 			getLog().error("Unable to respond with version:"+e);
 		}
 		
-		pair = new Pair<byte[],String>(RequestHandlerHelper.contentTypeHeader_JSON,wrapCallback(parameters,ret.toString()));
+		pair = new Pair<byte[],String>(HandlerAbstract.contentTypeHeader_JSON,wrapCallback(parameters,ret.toString()));
 		
 		getLog().info("Version is "+version);
 		return pair;
