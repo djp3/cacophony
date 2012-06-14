@@ -235,7 +235,18 @@ public class HandlerDirectoryServersTest {
 	@Test
 	public void testRunServersIndefinitely() {
 		
-		Directory.getInstance().startHeartbeat();
+		String url;
+		try {
+			url = InetAddress.getLocalHost().getHostName();
+			url = Directory.getInstance().startHeartbeat(url+":"+testPort);
+		} catch (UnknownHostException e1) {
+			try {
+				url = InetAddress.getLocalHost().getHostAddress();
+				url = Directory.getInstance().startHeartbeat(url+":"+testPort);
+			} catch (UnknownHostException e) {
+				url = Directory.getInstance().startHeartbeat();
+			}
+		}
 		
 		String responseString = null;
 		try {
@@ -259,16 +270,11 @@ public class HandlerDirectoryServersTest {
 				assertEquals("false",response.getString("error"));
 				assertEquals(Globals.getGlobals().getVersion(),response.getString("version"));
 				assertTrue(Globals.getGlobals().getVersion(),response.getString("servers").length() > 0);
-				InetAddress me = InetAddress.getLocalHost();
-    			String ip = me.getHostAddress();
-    			Long heartbeat = response.getJSONObject("servers").getLong(ip);
+    			Long heartbeat = response.getJSONObject("servers").getLong(url);
 				assertTrue(System.currentTimeMillis() - heartbeat < Directory.FIVE_MINUTES);
 			} catch (JSONException e) {
 				e.printStackTrace();
 				fail("No error code:"+e);
-			} catch (UnknownHostException e) {
-				e.printStackTrace();
-				fail("Problem with getting local host:"+e);
 			}
 		} catch (JSONException e) {
 			e.printStackTrace();

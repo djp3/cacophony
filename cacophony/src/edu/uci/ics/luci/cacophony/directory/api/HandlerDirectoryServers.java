@@ -40,8 +40,8 @@ public class HandlerDirectoryServers extends HandlerAbstract {
 	 * @return a pair where the first element is the content type and the bytes are the output bytes to send back
 	 */
 	@Override
-	public Pair<byte[], String> handle(String restFunction,Map<String, String> headers, Map<String, String> parameters, InetAddress ip, QuubDBConnectionPool odbcp){
-		Pair<byte[], String> pair = null;
+	public Pair<byte[], byte[]> handle(String restFunction,Map<String, String> headers, Map<String, String> parameters, InetAddress ip, QuubDBConnectionPool odbcp){
+		Pair<byte[], byte[]> pair = null;
 		
 		
 		Map<String, Long> servers = Directory.getInstance().getServers();
@@ -58,7 +58,7 @@ public class HandlerDirectoryServers extends HandlerAbstract {
 			getLog().error("Unable to respond with version:"+e);
 		}
 		
-		pair = new Pair<byte[],String>(HandlerAbstract.contentTypeHeader_JSON,wrapCallback(parameters,ret.toString()));
+		pair = new Pair<byte[],byte[]>(HandlerAbstract.contentTypeHeader_JSON,wrapCallback(parameters,ret.toString()).getBytes());
 		
 		getLog().info("Version is "+version);
 		return pair;

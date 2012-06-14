@@ -36,7 +36,6 @@ import com.quub.webserver.AccessControl;
 import com.quub.webserver.HandlerAbstract;
 import com.quub.webserver.RequestHandlerFactory;
 import com.quub.webserver.WebServer;
-import com.quub.webserver.handlers.HandlerFavicon;
 import com.quub.webserver.handlers.HandlerFileServer;
 import com.quub.webserver.handlers.HandlerVersion;
 
@@ -125,11 +124,25 @@ public class Directory implements Quittable{
 		return theOne;
 	}
 	
-	public void startHeartbeat(){
-		startHeartbeat(null,null);
+	public String startHeartbeat(){
+		String url = null;
+		try {
+			url = InetAddress.getLocalHost().getHostName();
+		} catch (UnknownHostException e) {
+			try {
+				url = InetAddress.getLocalHost().getHostAddress();
+			} catch (UnknownHostException e1) {
+				url ="localhost";
+			}
+		}
+		return(startHeartbeat(url));
 	}
 	
-	public void startHeartbeat(Long delay,Long period){
+	public String startHeartbeat(String url){
+		return(startHeartbeat(null,null,url));
+	}
+	
+	public String startHeartbeat(Long delay,Long period,final String url){
 		
 		if(delay == null){
 			delay = 0L;
@@ -149,17 +162,13 @@ public class Directory implements Quittable{
 			    new TimerTask(){
 					@Override
 			    	public void run(){
-			    		try {
-			    			InetAddress me = InetAddress.getLocalHost();
-			    			String ip = me.getHostAddress();
-			    			ColumnFamilyUpdater<String, String> updater = directoryServerTemplate.createUpdater(ip);
-			    			updater.setLong("heartbeat", System.currentTimeMillis());
-			    			directoryServerTemplate.update(updater);
-			    		}catch (UnknownHostException e) {
-			    			getLog().warn("Directory Server unable to issue heartbeat:"+e);
-			    		}
+			    		ColumnFamilyUpdater<String, String> updater = directoryServerTemplate.createUpdater(url);
+						updater.setLong("heartbeat", System.currentTimeMillis());
+						directoryServerTemplate.update(updater);
 					}
 					}, delay, period);
+		 
+		 return url;
 		 
 	}
 	

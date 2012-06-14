@@ -35,9 +35,9 @@ public class HandlerShutdown extends CacophonyRequestHandlerHelper {
 	 * @return a pair where the first element is the content type and the bytes are the output bytes to send back
 	 */
 	@Override
-	public Pair<byte[],String> handle(String restFunction, Map<String,String> headers,Map<String,String> parameters, InetAddress ip, QuubDBConnectionPool odbcp){
+	public Pair<byte[],byte[]> handle(String restFunction, Map<String,String> headers,Map<String,String> parameters, InetAddress ip, QuubDBConnectionPool odbcp){
 
-		Pair<byte[], String> pair = null;
+		Pair<byte[], byte[]> pair = null;
 		boolean shutdown = false;
 		
 		getLog().info("Handling shutdown");
@@ -74,7 +74,7 @@ public class HandlerShutdown extends CacophonyRequestHandlerHelper {
 			}
 		}
 		
-		pair = new Pair<byte[],String>(HandlerAbstract.contentTypeHeader_JSON,wrapCallback(parameters,ret.toString()));
+		pair = new Pair<byte[],byte[]>(HandlerAbstract.contentTypeHeader_JSON,wrapCallback(parameters,ret.toString()).getBytes());
 		
 		return pair;
 	}
