@@ -13,18 +13,18 @@ if [ -z "$1" ]
 fi
 
 
-$ECHO "$FORMAT" "Stopping cassandra"
-PID=`cat /Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/cassandra_tmp/cassandra.pid`
+$ECHO "$FORMAT" "Stopping cassandra single"
+PID=`cat /Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/cassandra_tmp/cassandra.single.pid`
 
 if [ -z "$PID" ]
    then
-		echo "Cassandra is not runnning"
+		echo "Cassandra is not running"
    else
 		echo "killing job: $PID"
 		kill $PID
 fi
 
-sleep 1
+sleep 5
 
 $ECHO "$FORMAT" ""
 

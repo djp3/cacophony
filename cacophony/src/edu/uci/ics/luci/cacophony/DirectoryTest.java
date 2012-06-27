@@ -42,15 +42,18 @@ public class DirectoryTest {
 	public void testStartHeartbeat() {
 		d.startHeartbeat(0L, 500L);
 		try{
-			String me = InetAddress.getLocalHost().getHostAddress();
-			Long heartbeat01 = d.getHeartbeat(me);
+			String url = null;
+			try {
+				url = InetAddress.getLocalHost().getHostAddress();
+			} catch (UnknownHostException e1) {
+				url ="127.0.0.1";
+			}
+			Long heartbeat01 = d.getHeartbeat(url);
 			assertTrue(heartbeat01 != null);
 			Thread.sleep(750);
-			Long heartbeat02 = d.getHeartbeat(me);
+			Long heartbeat02 = d.getHeartbeat(url);
 			assertTrue(heartbeat02 != null);
 			assertTrue(!heartbeat01.equals(heartbeat02));
-		} catch (UnknownHostException e) {
-			fail(e.toString());
 		} catch (InterruptedException e) {
 			fail(e.toString());
 		}

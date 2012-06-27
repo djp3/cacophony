@@ -6,11 +6,11 @@ CASSANDRA_CLI=/Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/cas
 CASSANDRA_PORT=9160
 
 echo "
-create keyspace CacophonyKeyspaceV1_0
+create keyspace CacophonyKeyspaceV1_0s
     with strategy_options = {DC1:1}
     and placement_strategy = 'org.apache.cassandra.locator.NetworkTopologyStrategy';
 
-use CacophonyKeyspaceV1_0;
+use CacophonyKeyspaceV1_0s;
 create column family directory_server
     with column_type = 'Standard'
     with comparator = 'UTF8Type'

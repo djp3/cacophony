@@ -10,7 +10,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
-import java.util.concurrent.ExecutorService;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.log4j.Logger;
@@ -71,22 +70,21 @@ public class RequestHandlerCacophony extends RequestHandler{
 	}
 	
 	public RequestHandlerCacophony() {
-		this(null,null,null,null,null,null);
+		this(null,null,null,null,null);
 	}
 	
-	public RequestHandlerCacophony(WebServer ws,AccessControl ac,ExecutorService threadExecutor,QuubDBConnectionPool pool,Socket soc) {
-		this(ws,ac,threadExecutor,pool,soc,false);
+	public RequestHandlerCacophony(WebServer ws,AccessControl ac,QuubDBConnectionPool pool,Socket soc) {
+		this(ws,ac,pool,soc,false);
 	}
 	
-	public RequestHandlerCacophony(WebServer ws,AccessControl ac,ExecutorService threadExecutor,Socket soc, Boolean testing){
-		this(ws,ac,threadExecutor,null,soc,testing);
+	public RequestHandlerCacophony(WebServer ws,AccessControl ac,Socket soc, Boolean testing){
+		this(ws,ac,null,soc,testing);
 	}
 	
-	public RequestHandlerCacophony(WebServer ws,AccessControl ac,ExecutorService threadExecutor,QuubDBConnectionPool pool,Socket soc, Boolean testing){
+	public RequestHandlerCacophony(WebServer ws,AccessControl ac,QuubDBConnectionPool pool,Socket soc, Boolean testing){
 		
 		this.setWebServer(ws);
 		this.setAccessControl(ac);
-		this.setThreadExecutor(threadExecutor);
 		this.setConnectionPool(pool);
 		this.setSocket(soc);
 		this.setTesting(testing);

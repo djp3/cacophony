@@ -13,15 +13,15 @@ if [ -z "$1" ]
 fi
 
 
-./local.djp3.killcassandra.sh
+./local.djp3.single.killcassandra.sh
 
 sleep 2
 
-$ECHO "$FORMAT" "Starting cassandra"
+$ECHO "$FORMAT" "Starting cassandra on single local machine"
 
-cp -v /Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/cassandra_config/cassandra_djp3_local.yaml /Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/cassandra/conf/cassandra.yaml
+cp -v /Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/cassandra_config/local.djp3.single.yaml /Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/cassandra/conf/cassandra.yaml
 
-cp -v /Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/cassandra_config/cassandra_djp3-topology.properties /Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/cassandra/conf/cassandra-topology.properties
+cp -v /Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/cassandra_config/local.djp3.single.topology.properties /Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/cassandra/conf/cassandra-topology.properties
 
 pushd .
 
@@ -48,14 +48,7 @@ for jar in $cassandra_home/lib/*.jar $cassandra_home/build/lib/jars/*.jar; do
 done
 
 
-bin/cassandra -p /Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/cassandra_tmp/cassandra.pid > /Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/cassandra_tmp/cassandra.$S1.output &
-
-
-#$ECHO "$FORMAT" ""
-#$ECHO "$FORMAT" "Pausing to get ring"
-#sleep 1
-
-#bin/nodetool -h 127.0.0.1 -p 8080 ring
+bin/cassandra -p /Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/cassandra_tmp/cassandra.single.pid > /Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/cassandra_tmp/cassandra.$S1.single.output &
 
 $ECHO "$FORMAT" ""
 
@@ -65,4 +58,4 @@ $ECHO "$FORMAT" "Output"
 $ECHO "$FORMAT" ""
 sleep 2
 
-tail -n 500 -F /Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/cassandra_tmp/cassandra.$S1.output 
+tail -n 500 -F /Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/cassandra_tmp/cassandra.$S1.single.output 

@@ -30,6 +30,7 @@ import com.martiansoftware.jsap.JSAP;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import com.martiansoftware.jsap.Switch;
+import com.quub.Globals;
 import com.quub.database.QuubDBConnectionPool;
 import com.quub.util.Quittable;
 import com.quub.webserver.AccessControl;
@@ -39,12 +40,15 @@ import com.quub.webserver.WebServer;
 import com.quub.webserver.handlers.HandlerFileServer;
 import com.quub.webserver.handlers.HandlerVersion;
 
+import edu.uci.ics.luci.cacophony.directory.api.HandlerDirectoryServers;
+import edu.uci.ics.luci.cacophony.directory.api.HandlerShutdown;
 import edu.uci.ics.luci.cacophony.directory.api.WebServerWarmUp;
 
 
 public class Directory implements Quittable{
 	
-	private static final String KEYSPACE = "CacophonyKeyspaceV1_0";
+	private static String KEYSPACE = "CacophonyKeyspaceV1_0s";
+	private static final Integer CASSANDRA_PORT=9160;
 	private static StringSerializer stringSerializer = null;
 	private static LongSerializer longSerializer = null;
 	
@@ -67,6 +71,7 @@ public class Directory implements Quittable{
 	private Timer heartbeat;
 	
 	private boolean shuttingDown = false;
+	private boolean testing = true;
 	
 	public synchronized void setQuitting(boolean quitting) {
 		if(shuttingDown == false){
@@ -87,8 +92,24 @@ public class Directory implements Quittable{
 	
 	
 	private Directory(){
+		Globals g = Globals.getGlobals();
 		
-		cluster = HFactory.getOrCreateCluster("CacophonyClusterV1_0","localhost:9160");
+		String url = null;
+		try {
+			url = InetAddress.getLocalHost().getHostAddress();
+			getLog().info("Connecting to Cassandra ring on: "+url);
+		} catch (UnknownHostException e1) {
+			url ="127.0.0.1";
+		}
+		
+		cluster = HFactory.getOrCreateCluster("CacophonyClusterV1_0",url+":"+Integer.toString(Directory.CASSANDRA_PORT));
+		
+		if((g == null) || (g.isTesting())){
+			KEYSPACE = "CacophonyKeyspaceV1_0s";
+		}
+		else{
+			KEYSPACE = "CacophonyKeyspaceV1_0r";
+		}
 		
 		ksp = HFactory.createKeyspace(KEYSPACE, cluster);
 		if (ksp == null) {
@@ -125,24 +146,18 @@ public class Directory implements Quittable{
 	}
 	
 	public String startHeartbeat(){
-		String url = null;
-		try {
-			url = InetAddress.getLocalHost().getHostName();
-		} catch (UnknownHostException e) {
-			try {
-				url = InetAddress.getLocalHost().getHostAddress();
-			} catch (UnknownHostException e1) {
-				url ="localhost";
-			}
-		}
-		return(startHeartbeat(url));
+		return(startHeartbeat(null,null,null));
+	}
+	
+	public String startHeartbeat(Long delay, Long period){
+		return(startHeartbeat(delay,period,null));
 	}
 	
 	public String startHeartbeat(String url){
 		return(startHeartbeat(null,null,url));
 	}
 	
-	public String startHeartbeat(Long delay,Long period,final String url){
+	public String startHeartbeat(Long delay,Long period,String url){
 		
 		if(delay == null){
 			delay = 0L;
@@ -151,6 +166,16 @@ public class Directory implements Quittable{
 		if(period == null){
 			period = FIVE_MINUTES;
 		}
+		
+		if(url == null){
+			try {
+				url = InetAddress.getLocalHost().getHostAddress();
+			} catch (UnknownHostException e1) {
+				url ="127.0.0.1";
+			}
+		}
+		
+		final String local_url = url;
 		
 		if(heartbeat != null){
 			heartbeat.cancel();
@@ -162,7 +187,7 @@ public class Directory implements Quittable{
 			    new TimerTask(){
 					@Override
 			    	public void run(){
-			    		ColumnFamilyUpdater<String, String> updater = directoryServerTemplate.createUpdater(url);
+			    		ColumnFamilyUpdater<String, String> updater = directoryServerTemplate.createUpdater(local_url);
 						updater.setLong("heartbeat", System.currentTimeMillis());
 						directoryServerTemplate.update(updater);
 					}
@@ -301,6 +326,8 @@ public class Directory implements Quittable{
 			getLog().error("Problem loading configuration from:"+clo.getString("config")+"\n"+e1);
 		}
 		
+		Globals.getGlobals().setTesting((Boolean)getConfig(clo,g.getConfig(),"testing"));
+		
 		/* Get a DB Pool */
 		QuubDBConnectionPool odbcp = null;
 		if(clo.getBoolean("testing")){
@@ -313,10 +340,11 @@ public class Directory implements Quittable{
 		/* Create the webserver to catch rest action*/
 		WebServer ws = null;
 		try{
-			Map<String, Class<? extends HandlerAbstract>> requestHandlerRegistry = new TreeMap<String, Class<? extends HandlerAbstract>>();
-			requestHandlerRegistry.put("",HandlerVersion.class);
-			requestHandlerRegistry.put("version",HandlerVersion.class);
+			Map<String, Class<? extends HandlerAbstract>> requestHandlerRegistry = new HashMap<String, Class<? extends HandlerAbstract>>();
 			requestHandlerRegistry.put(null, HandlerFileServer.class); //Default response
+			requestHandlerRegistry.put("version",HandlerVersion.class);
+			requestHandlerRegistry.put("servers",HandlerDirectoryServers.class);
+			requestHandlerRegistry.put("shutdown",HandlerShutdown.class);
 
 			RequestHandlerFactory requestHandlerFactory = new RequestHandlerFactory(g,requestHandlerRegistry);
 			AccessControl accessControl = new AccessControl();
@@ -326,7 +354,7 @@ public class Directory implements Quittable{
 			
 			ws = new WebServer(g, requestHandlerFactory, odbcp, port, false,testing,accessControl);
 		} catch (RuntimeException e) {
-			getLog().fatal("Couldn't start webserver:"+e.toString());
+			getLog().fatal("Couldn't start webserver:"+e);
 			if(ws != null){
 				ws.setQuitting(true);
 			}
@@ -351,7 +379,16 @@ public class Directory implements Quittable{
 		
 		/* Launch Directory Node */
 		Directory directory = new Directory();
-		directory.startHeartbeat();
+		
+		String url = "";
+		try {
+			url = InetAddress.getLocalHost().getHostAddress();
+		} catch (UnknownHostException e) {
+			url = "127.0.0.1";
+		}
+		url = url+":"+getConfig(clo,g.getConfig(),"port");
+
+		directory.startHeartbeat(url);
 		
 		/*Set up clean shutdown hooks*/
 		g.addQuittables(ws);
