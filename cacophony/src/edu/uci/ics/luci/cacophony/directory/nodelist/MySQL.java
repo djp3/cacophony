@@ -91,12 +91,16 @@ public class MySQL extends NodeListLoader{
 				getLog().error("Query does not contain \"SELECT\"");
 				error = true;
 			}
-			if(!query.toUpperCase().contains("AS ID")){
+			if(!query.contains("AS ID")){
 				getLog().error("Query does not contain as selector for \"ID\"");
 				error = true;
 			}
-			if(!query.toUpperCase().contains("AS NAME")){
+			if(!query.contains("AS NAME")){
 				getLog().error("Query does not contain as selector for \"NAME\"");
+				error = true;
+			}
+			if(!query.contains("AS CALL_COUNT")){
+				getLog().error("Query does not contain as selector for \"CALL_COUNT\"");
 				error = true;
 			}
 		}
@@ -126,6 +130,8 @@ public class MySQL extends NodeListLoader{
 							cNode.setId(id);
 							String name = rs.getString("NAME");
 							cNode.setName(name);
+							int callCount = rs.getInt("CALL_COUNT");
+							cNode.setCallCount(callCount);
 							ret.put(id,cNode);
 						} catch (SQLException e) {
 							getLog().error("Query failed to return good results\n"+e);

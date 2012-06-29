@@ -237,10 +237,14 @@
 				$('#nodeList').html('');
 				var myIndex=0;
 
-				var newHtml='<table id="myNodeListTable" class="tablesorter table table-striped table-bordered table-condensed"><thead><tr><th>ID</th><th>Name</th><th>Health</th><th>Hits</th><th>Subscribed Servers</th></tr></thead><tbody>';
+				var newHtml='<table id="myNodeListTable" class="tablesorter table table-striped table-bordered table-condensed"><thead><tr><th>ID</th><th>Name</th><th>Call Count</th><th>Health</th><th>Hits</th><th>Subscribed Servers</th></tr></thead><tbody>';
 
 				$.each(myNodeList.nodes,function(k,v){
-					newHtml = newHtml +'<tr><td>'+k+'</td><td>'+v.name+'</td><td>Health_Stub</td><td>Hits_Stub</td><td>Sub_Stub</td></tr>';
+					var call_count = v.call_count;
+					if(call_count == undefined){
+						call_count = 0;
+					}
+					newHtml = newHtml +'<tr><td>'+k+'</td><td>'+v.name+'</td><td>'+call_count+'</td><td>Health_Stub</td><td>Hits_Stub</td><td>Sub_Stub</td></tr>';
 					//checkDirectoryServer(myIndex,i);
 					myIndex=myIndex+1;
 				});

@@ -15,6 +15,7 @@ public class CNode {
 
 	private String id;
 	private String name;
+	private int callCount;
 	
 	public String getId() {
 		return id;
@@ -29,11 +30,20 @@ public class CNode {
 		this.name = name;
 	}
 	
+	public int getCallCount() {
+		return callCount;
+	}
+	
+	public void setCallCount(int callCount) {
+		this.callCount = callCount;
+	}
+	
 	public JSONObject toJSONObject() {
 		JSONObject jsonObject = new JSONObject();
 		try {
 			jsonObject.put("id", getId());
 			jsonObject.put("name", getName());
+			jsonObject.put("call_count", getCallCount());
 		} catch (JSONException e) {
 			getLog().error("Unable to make JSONObject: id = "+getId()+", name = "+getName()+"\n"+e);
 		}
