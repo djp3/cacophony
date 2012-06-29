@@ -318,6 +318,8 @@ public class Directory implements Quittable{
 			updater.setString("json_data", e.getValue().toJSONObject().toString());
 			this.cacophonyNodeTemplate.update(updater);
 		}
+		
+		getLog().info("Loaded "+map.size()+" CNodes");
 	}
 
 	protected static JSAPResult parseCommandLine(String[] args) throws JSAPException {
@@ -419,50 +421,7 @@ public class Directory implements Quittable{
 		Globals.getGlobals().setTesting((Boolean)getConfig(clo,g.getConfig(),"testing"));
 		
 
-		/* Launch Directory Node */
-		Directory directory = new Directory();
-		
-		/* Get Directory properties and initialize */
-		String directoryPropertiesLocation = "cacophony.directory.properties";
-		try {
-			XMLPropertiesConfiguration config;
-			config = new XMLPropertiesConfiguration(directoryPropertiesLocation);
-			
-			String namespace = config.getString("namespace");
-			directory.setDirectoryNamespace(namespace);
-			
-			String nodeListLoader = config.getString("nodelist.loader.class");
-			Class<? extends NodeListLoader> c = null;
-			try {
-				 c = (Class<? extends NodeListLoader>) Class.forName(nodeListLoader);
-			} catch(ClassCastException e){
-				getLog().error("Class does not extend NodeListLoader "+nodeListLoader);
-			} catch (ClassNotFoundException e) {
-				getLog().error("Unable to locate class to load nodes with "+nodeListLoader+"\n"+e);
-			}
-			
-			if( c != null){
-				String nodeListLoaderOptions = config.getString("nodelist.loader.class.options");
-				try {
-					JSONObject nllOptions = new JSONObject(nodeListLoaderOptions);
-					NodeListLoader i = null;;
-					try {
-						i = c.newInstance();
-						i.init(nllOptions);
-						directory.setNodeList(i);
-					} catch (InstantiationException e) {
-						getLog().error("Unable to instantiate class to load nodes with "+nodeListLoader+"\n"+e);
-					} catch (IllegalAccessException e) {
-						getLog().error("Unable to instantiate class to load nodes with "+nodeListLoader+"\n"+e);
-					}
-				} catch (JSONException e) {
-					getLog().error("Property file does not contain valid json\n"+nodeListLoaderOptions+"\n"+e);
-				}
-				finally{}
-			}
-		} catch (ConfigurationException e1) {
-			getLog().error("Problem loading configuration from:"+directoryPropertiesLocation+"\n"+e1);
-		}
+		Directory directory = launchDirectory();
 		
 		
 		/* Get a DB Pool */
@@ -533,6 +492,60 @@ public class Directory implements Quittable{
 		
 		getLog().info("\nDone in "+Directory.class.getCanonicalName()+" main()\n");
 		
+	}
+
+	
+	public static Directory launchDirectory() {
+		String directoryPropertiesLocation = "cacophony.directory.properties";
+		return(launchDirectory(directoryPropertiesLocation));
+	}
+
+
+	public static Directory launchDirectory(String directoryPropertiesLocation) {
+		/* Launch Directory Node */
+		Directory directory = new Directory();
+		
+		/* Get Directory properties and initialize */
+		try {
+			XMLPropertiesConfiguration config;
+			config = new XMLPropertiesConfiguration(directoryPropertiesLocation);
+			
+			String namespace = config.getString("namespace");
+			directory.setDirectoryNamespace(namespace);
+			
+			String nodeListLoader = config.getString("nodelist.loader.class");
+			Class<? extends NodeListLoader> c = null;
+			try {
+				 c = (Class<? extends NodeListLoader>) Class.forName(nodeListLoader);
+			} catch(ClassCastException e){
+				getLog().error("Class does not extend NodeListLoader "+nodeListLoader);
+			} catch (ClassNotFoundException e) {
+				getLog().error("Unable to locate class to load nodes with "+nodeListLoader+"\n"+e);
+			}
+			
+			if( c != null){
+				String nodeListLoaderOptions = config.getString("nodelist.loader.class.options");
+				try {
+					JSONObject nllOptions = new JSONObject(nodeListLoaderOptions);
+					NodeListLoader i = null;;
+					try {
+						i = c.newInstance();
+						i.init(nllOptions);
+						directory.setNodeList(i);
+					} catch (InstantiationException e) {
+						getLog().error("Unable to instantiate class to load nodes with "+nodeListLoader+"\n"+e);
+					} catch (IllegalAccessException e) {
+						getLog().error("Unable to instantiate class to load nodes with "+nodeListLoader+"\n"+e);
+					}
+				} catch (JSONException e) {
+					getLog().error("Property file does not contain valid json\n"+nodeListLoaderOptions+"\n"+e);
+				}
+				finally{}
+			}
+		} catch (ConfigurationException e1) {
+			getLog().error("Problem loading configuration from:"+directoryPropertiesLocation+"\n"+e1);
+		}
+		return directory;
 	}
 
 

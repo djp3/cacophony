@@ -37,6 +37,11 @@ public class MySQLTest {
 		@Override
 		public String getVersion() {
 			return "1.0";
+		}
+
+		@Override
+		public String getFileResourcePrefix() {
+			return "/www/";
 		}};
 
 	@Before

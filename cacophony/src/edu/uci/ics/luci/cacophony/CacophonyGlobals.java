@@ -16,8 +16,8 @@ public class CacophonyGlobals extends Globals{
 	private static final String PROPERTY_FILENAME_DEFAULT = "cacophony.log4j.properties";
 	public static final String CONFIG_FILENAME_DEFAULT = "cacophony.properties";
 	public static final int DEFAULT_PORT = 2011;
-	private static transient volatile Logger log = null;
 	private PropertiesConfiguration config = null;
+	private transient volatile Logger log = null;
 		
 	static{
 		/* Test that we are using GMT as the default */
@@ -103,6 +103,11 @@ public class CacophonyGlobals extends Globals{
 		super.setPropertyFileName(PROPERTY_FILENAME_DEFAULT);
 		super.reloadLog4jProperties();
 		super.setHTTPServerHeader("Cacophony distributed prediction system");
+	}
+
+	@Override
+	public String getFileResourcePrefix() {
+		return("/www/");
 	}
 
 }

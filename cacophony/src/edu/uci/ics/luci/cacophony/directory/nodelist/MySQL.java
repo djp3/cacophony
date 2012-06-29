@@ -87,22 +87,21 @@ public class MySQL extends NodeListLoader{
 			error = true;
 		}
 		else{
-			query = query.toUpperCase();
-			if(!query.contains("SELECT ")){
+			if(!query.toUpperCase().contains("SELECT ")){
 				getLog().error("Query does not contain \"SELECT\"");
 				error = true;
 			}
-			if(!query.contains("AS ID")){
+			if(!query.toUpperCase().contains("AS ID")){
 				getLog().error("Query does not contain as selector for \"ID\"");
 				error = true;
 			}
-			if(!query.contains("AS NAME")){
+			if(!query.toUpperCase().contains("AS NAME")){
 				getLog().error("Query does not contain as selector for \"NAME\"");
 				error = true;
 			}
 		}
 		if(!error){
-			pool = new QuubDBConnectionPool(g,databaseDomain, database, username, password);
+			pool = new QuubDBConnectionPool(g,databaseDomain, database, username, password,1,1);
 			connection = pool.getConnection();
 			try {
 				preparedStatement = connection.prepareStatement(query);

@@ -2,10 +2,12 @@ directory.jar
 launch.sh
 
 cacophony.log4j.properties
+cacophony.directory.properties
 quub.log4j.properties
 access_control_list.properties
 
 cacophony/cacophony.properties
+cacophony/cacophony.directory.properties
 cacophony/quub.log4j.properties
 cacophony/cacophony.log4j.properties
 cacophony/access_control_list.properties

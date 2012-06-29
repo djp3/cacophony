@@ -44,7 +44,7 @@ public class HandlerDirectoryServers extends HandlerAbstract {
 		Pair<byte[], byte[]> pair = null;
 		
 		
-		Map<String, Long> servers = Directory.getInstance().getServers();
+		Map<String, JSONObject> servers = Directory.getInstance().getServers();
 		JSONObject retServers = new JSONObject(servers);
 		
 		String version = Globals.getGlobals().getVersion();
