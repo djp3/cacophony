@@ -6,9 +6,9 @@ import java.security.InvalidParameterException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.TreeMap;
 
 import me.prettyprint.cassandra.serializers.LongSerializer;
 import me.prettyprint.cassandra.serializers.StringSerializer;
@@ -23,7 +23,10 @@ import me.prettyprint.hector.api.factory.HFactory;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.commons.configuration.XMLPropertiesConfiguration;
 import org.apache.log4j.Logger;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import com.martiansoftware.jsap.FlaggedOption;
 import com.martiansoftware.jsap.JSAP;
@@ -41,8 +44,11 @@ import com.quub.webserver.handlers.HandlerFileServer;
 import com.quub.webserver.handlers.HandlerVersion;
 
 import edu.uci.ics.luci.cacophony.directory.api.HandlerDirectoryServers;
+import edu.uci.ics.luci.cacophony.directory.api.HandlerNodeList;
 import edu.uci.ics.luci.cacophony.directory.api.HandlerShutdown;
 import edu.uci.ics.luci.cacophony.directory.api.WebServerWarmUp;
+import edu.uci.ics.luci.cacophony.directory.nodelist.CNode;
+import edu.uci.ics.luci.cacophony.directory.nodelist.NodeListLoader;
 
 
 public class Directory implements Quittable{
@@ -63,10 +69,13 @@ public class Directory implements Quittable{
 	
 	private Cluster cluster = null;
 	private Keyspace ksp = null;
+	
+	private String directoryNamespace = null;
+	
 	private ThriftColumnFamilyTemplate<String, String> directoryServerTemplate = null;
 	private final String DIRECTORY_SERVER_CF="directory_server";
 	private ThriftColumnFamilyTemplate<String, String> cacophonyNodeTemplate = null;
-	private final String CACOPHONY_NODE_CF="cacophony_server";
+	private final String C_NODE_LIST_CF="cnode_list";
 	public final static long FIVE_MINUTES  = 5 * 60 * 1000;
 	private Timer heartbeat;
 	
@@ -132,7 +141,7 @@ public class Directory implements Quittable{
 				stringSerializer);
 		
 		cacophonyNodeTemplate = new ThriftColumnFamilyTemplate<String,String>(ksp,
-				CACOPHONY_NODE_CF,
+				this.C_NODE_LIST_CF,
 				stringSerializer,
 				stringSerializer);
 		
@@ -145,6 +154,22 @@ public class Directory implements Quittable{
 		return theOne;
 	}
 	
+	protected String getDirectoryNamespace() {
+		return directoryNamespace;
+	}
+
+
+	protected void setDirectoryNamespace(String directoryNamespace) {
+		if(this.directoryNamespace == null){
+			this.directoryNamespace = directoryNamespace;
+		}
+		else{
+			getLog().error("Doublesetting directory namespace: "+this.directoryNamespace+" ->"+directoryNamespace);
+			this.directoryNamespace = directoryNamespace;
+		}
+	}
+
+
 	public String startHeartbeat(){
 		return(startHeartbeat(null,null,null));
 	}
@@ -176,6 +201,10 @@ public class Directory implements Quittable{
 		}
 		
 		final String local_url = url;
+		final String local_namespace = getDirectoryNamespace();
+		if(local_namespace == null){
+			getLog().error("Set the namespace before starting the heartbeat");
+		}
 		
 		if(heartbeat != null){
 			heartbeat.cancel();
@@ -185,10 +214,27 @@ public class Directory implements Quittable{
 		 heartbeat = new Timer(true);
 		 heartbeat.scheduleAtFixedRate(
 			    new TimerTask(){
+			    	
+			    	JSONObject data = null;
+			    	{
+			    		data = new JSONObject();
+			    		try {
+							data.put("namespace", local_namespace);
+						} catch (JSONException e) {
+							getLog().fatal("Something is wrong with JSON:"+local_namespace+"\n"+e);
+						}
+			    	}
+			    	
 					@Override
 			    	public void run(){
 			    		ColumnFamilyUpdater<String, String> updater = directoryServerTemplate.createUpdater(local_url);
-						updater.setLong("heartbeat", System.currentTimeMillis());
+			    		String now = Long.toString(System.currentTimeMillis());
+			    		try {
+							data.put("heartbeat",now);
+						} catch (JSONException e) {
+							getLog().fatal("Something is wrong with JSON:"+now+"\n"+e);
+						}
+						updater.setString("json_data", data.toString());
 						directoryServerTemplate.update(updater);
 					}
 					}, delay, period);
@@ -206,31 +252,75 @@ public class Directory implements Quittable{
 			try {
 			    if(keyI.equals(key)){
 			    	ColumnFamilyResult<String, String> res = directoryServerTemplate.queryColumns(keyI);
-			    	ret = res.getLong("heartbeat");
+			    	String jsonString = res.getString("json_data");
+			    	JSONObject jsonObject = new JSONObject(jsonString);
+			    	ret = jsonObject.getLong("heartbeat");
 			    }
 			} catch (HectorException e) {
+				getLog().error("Problem getting a Heartbeat:\n"+e);
+			} catch (JSONException e) {
+				getLog().error("Problem with JSON getting a Heartbeat:\n"+e);
 			}
 		}
 		return ret;
 	}
 	
-	public Map<String, Long> getServers(){
-		Map<String,Long> ret = new HashMap<String,Long>();
+	public Map<String, JSONObject> getServers(){
+		Map<String,JSONObject> ret = new HashMap<String,JSONObject>();
 		
 		KeyIterator<String> keyIterator = new KeyIterator<String>(ksp, DIRECTORY_SERVER_CF,stringSerializer);
 		
 		for(String keyI: keyIterator){
+			String jsonData = null;
 			try {
 		    	ColumnFamilyResult<String, String> res = directoryServerTemplate.queryColumns(keyI);
-		    	ret.put(keyI, res.getLong("heartbeat"));
+				jsonData = res.getString("json_data");
+				if(jsonData != null){
+					JSONObject jsonObject = new JSONObject(jsonData);
+					ret.put(keyI, jsonObject);
+				}
 			} catch (HectorException e) {
+				getLog().error("Problem getting a Directory Server List:\n"+e);
+			} catch (JSONException e) {
+				getLog().error("Bad JSON Data in Cassandra ring:\n"+jsonData+"\n"+e);
 			}
 		}
 		return ret;
 	}
 	
+	
+	public Map<String, JSONObject> getNodeList(){
+		Map<String,JSONObject> ret = new HashMap<String,JSONObject>();
+		
+		KeyIterator<String> keyIterator = new KeyIterator<String>(ksp, C_NODE_LIST_CF,stringSerializer);
+		
+		for(String keyI: keyIterator){
+			String jsonData = null;
+			try {
+		    	ColumnFamilyResult<String, String> res = this.cacophonyNodeTemplate.queryColumns(keyI);
+				jsonData = res.getString("json_data");
+		    	JSONObject jsonObject = new JSONObject(jsonData);
+		    	ret.put(keyI, jsonObject);
+			} catch (HectorException e) {
+				getLog().error("Problem getting a c node list:\n"+e);
+			} catch (JSONException e) {
+				getLog().error("Bad JSON Data in Cassandra ring:\n"+jsonData+"\n"+e);
+			}
+		}
+		return ret;
+	}
+	
+	protected void setNodeList(NodeListLoader i) {
+		Map<String, CNode> map = i.loadNodeList();
+		
+		for(Entry<String, CNode> e : map.entrySet()){
+			ColumnFamilyUpdater<String, String> updater = this.cacophonyNodeTemplate.createUpdater(e.getKey());
+			updater.setString("json_data", e.getValue().toJSONObject().toString());
+			this.cacophonyNodeTemplate.update(updater);
+		}
+	}
 
-	private static JSAPResult parseCommandLine(String[] args) throws JSAPException {
+	protected static JSAPResult parseCommandLine(String[] args) throws JSAPException {
 		JSAP jsap = new JSAP();
 		JSAPResult config = null;
 		Switch sw = null;
@@ -328,6 +418,53 @@ public class Directory implements Quittable{
 		
 		Globals.getGlobals().setTesting((Boolean)getConfig(clo,g.getConfig(),"testing"));
 		
+
+		/* Launch Directory Node */
+		Directory directory = new Directory();
+		
+		/* Get Directory properties and initialize */
+		String directoryPropertiesLocation = "cacophony.directory.properties";
+		try {
+			XMLPropertiesConfiguration config;
+			config = new XMLPropertiesConfiguration(directoryPropertiesLocation);
+			
+			String namespace = config.getString("namespace");
+			directory.setDirectoryNamespace(namespace);
+			
+			String nodeListLoader = config.getString("nodelist.loader.class");
+			Class<? extends NodeListLoader> c = null;
+			try {
+				 c = (Class<? extends NodeListLoader>) Class.forName(nodeListLoader);
+			} catch(ClassCastException e){
+				getLog().error("Class does not extend NodeListLoader "+nodeListLoader);
+			} catch (ClassNotFoundException e) {
+				getLog().error("Unable to locate class to load nodes with "+nodeListLoader+"\n"+e);
+			}
+			
+			if( c != null){
+				String nodeListLoaderOptions = config.getString("nodelist.loader.class.options");
+				try {
+					JSONObject nllOptions = new JSONObject(nodeListLoaderOptions);
+					NodeListLoader i = null;;
+					try {
+						i = c.newInstance();
+						i.init(nllOptions);
+						directory.setNodeList(i);
+					} catch (InstantiationException e) {
+						getLog().error("Unable to instantiate class to load nodes with "+nodeListLoader+"\n"+e);
+					} catch (IllegalAccessException e) {
+						getLog().error("Unable to instantiate class to load nodes with "+nodeListLoader+"\n"+e);
+					}
+				} catch (JSONException e) {
+					getLog().error("Property file does not contain valid json\n"+nodeListLoaderOptions+"\n"+e);
+				}
+				finally{}
+			}
+		} catch (ConfigurationException e1) {
+			getLog().error("Problem loading configuration from:"+directoryPropertiesLocation+"\n"+e1);
+		}
+		
+		
 		/* Get a DB Pool */
 		QuubDBConnectionPool odbcp = null;
 		if(clo.getBoolean("testing")){
@@ -344,6 +481,7 @@ public class Directory implements Quittable{
 			requestHandlerRegistry.put(null, HandlerFileServer.class); //Default response
 			requestHandlerRegistry.put("version",HandlerVersion.class);
 			requestHandlerRegistry.put("servers",HandlerDirectoryServers.class);
+			requestHandlerRegistry.put("nodes",HandlerNodeList.class);
 			requestHandlerRegistry.put("shutdown",HandlerShutdown.class);
 
 			RequestHandlerFactory requestHandlerFactory = new RequestHandlerFactory(g,requestHandlerRegistry);
@@ -377,8 +515,6 @@ public class Directory implements Quittable{
 			}
 		}
 		
-		/* Launch Directory Node */
-		Directory directory = new Directory();
 		
 		String url = "";
 		try {
@@ -398,6 +534,11 @@ public class Directory implements Quittable{
 		getLog().info("\nDone in "+Directory.class.getCanonicalName()+" main()\n");
 		
 	}
+
+
+
+
+
 
 	@SuppressWarnings("unchecked")
 	private static <T> T getConfig(JSAPResult clo, PropertiesConfiguration config, String string) {

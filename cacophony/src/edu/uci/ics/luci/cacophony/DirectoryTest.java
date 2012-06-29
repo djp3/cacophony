@@ -1,5 +1,6 @@
 package edu.uci.ics.luci.cacophony;
 
+import static org.junit.Assert.*;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -8,6 +9,10 @@ import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration.XMLPropertiesConfiguration;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -66,18 +71,37 @@ public class DirectoryTest {
 		d.startHeartbeat(0L, 500L);
 		try{
 			String me = InetAddress.getLocalHost().getHostAddress();
-			Map<String, Long> list = d.getServers();
-			for(Entry<String,Long> e : list.entrySet()){
-				if(e.getKey().equals(me)){
-					assert(System.currentTimeMillis()-e.getValue() < Directory.FIVE_MINUTES);
+			Map<String, JSONObject> list = d.getServers();
+			for(Entry<String,JSONObject> e : list.entrySet()){
+				JSONObject jsonData = null;
+				try{
+					jsonData = e.getValue();
+					if(e.getKey().equals(me)){
+						assertTrue(System.currentTimeMillis()- jsonData.getLong("heartbeat") < Directory.FIVE_MINUTES);
+					}
+					else{
+						assertTrue(System.currentTimeMillis() - jsonData.getLong("heartbeat") > Directory.FIVE_MINUTES);
+					}
+				} catch (JSONException e1) {
+					fail("Bad JSON Data in Cassandra ring:\n"+jsonData.toString()+"\n"+e1);
 				}
-				else{
-					assert(System.currentTimeMillis()-e.getValue() > Directory.FIVE_MINUTES);
-				}
-				
 			}
 		} catch (UnknownHostException e) {
 			fail(e.toString());
+		}
+	}
+	
+	@Test
+	public void testOpenProperties() {
+	
+		/* Get Directory properties */
+		String directoryPropertiesLocation = "cacophony.directory.properties";
+		try {
+			XMLPropertiesConfiguration config;
+			config = new XMLPropertiesConfiguration(directoryPropertiesLocation);
+			assertEquals("value",config.getString("test"));
+		} catch (ConfigurationException e1) {
+			fail("Problem loading configuration from:"+directoryPropertiesLocation+"\n"+e1);
 		}
 	}
 
