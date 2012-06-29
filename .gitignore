@@ -8,6 +8,7 @@ cacophony/cacophony.log4j.properties
 *.log.*
 *.DS_Store
 external/cassandra
+external/cassandra_config/trash
 external/cassandra_tmp
 external/hector
 external/hector_examples
@@ -18,3 +19,6 @@ cacophony/src/www/lib/jquery.tablesorter
 cacophony/bin
 cacophony/cacophony.directory.properties
 directory.jar
+cacophony.directory.properties
+cacophony/src/edu/uci/ics/luci/cacophony/DirectoryTest.cacophony.directory.properties
+jar-in-jar-loader.zip
