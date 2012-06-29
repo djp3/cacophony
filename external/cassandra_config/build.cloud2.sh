@@ -2,15 +2,16 @@
 
 ECHO=/bin/echo
 ID=/usr/bin/id
-CASSANDRA_CLI=/Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/cassandra/bin/cassandra-cli
+CASSANDRA_CLI=/home/don/external/cassandra/bin/cassandra-cli
+CASSANDRA_HOST=cloud2.waitscout.com
 CASSANDRA_PORT=9160
 
 echo "
-create keyspace CacophonyKeyspaceV1_0s
+create keyspace CacophonyKeyspaceV1_0r
     with strategy_options = {DC1:1}
     and placement_strategy = 'org.apache.cassandra.locator.NetworkTopologyStrategy';
 
-use CacophonyKeyspaceV1_0s;
+use CacophonyKeyspaceV1_0r;
 create column family directory_server
     with column_type = 'Standard'
     with comparator = 'UTF8Type'
@@ -20,7 +21,7 @@ create column family directory_server
 		{	column_name : 'heartbeat',
 			validation_class : LongType}]; 
 
-create column family cacophony_node
+create column family cnode_list
     with column_type = 'Standard'
     with comparator = 'UTF8Type'
     and default_validation_class = 'UTF8Type'
@@ -31,7 +32,7 @@ create column family cacophony_node
 		{	column_name : 'json_data',
 			validation_class : UTF8Type},
 			]; 
-	" | $CASSANDRA_CLI -p$CASSANDRA_PORT
+	" | $CASSANDRA_CLI -h$CASSANDRA_HOST -p$CASSANDRA_PORT
     
 
 

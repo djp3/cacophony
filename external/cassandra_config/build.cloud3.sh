@@ -3,7 +3,7 @@
 ECHO=/bin/echo
 ID=/usr/bin/id
 CASSANDRA_CLI=/home/don/external/cassandra/bin/cassandra-cli
-CASSANDRA_HOST=cloud2.waitscout.com
+CASSANDRA_HOST=cloud3.waitscout.com
 CASSANDRA_PORT=9160
 
 echo "
@@ -21,7 +21,7 @@ create column family directory_server
 		{	column_name : 'heartbeat',
 			validation_class : LongType}]; 
 
-create column family cacophony_node
+create column family cnode_list
     with column_type = 'Standard'
     with comparator = 'UTF8Type'
     and default_validation_class = 'UTF8Type'
