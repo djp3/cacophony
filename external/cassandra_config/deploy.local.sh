@@ -13,7 +13,7 @@ if [ -z "$1" ]
 fi
 
 
-./local.djp3.single.killcassandra.sh
+./kill.local.sh
 
 sleep 2
 

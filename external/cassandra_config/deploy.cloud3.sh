@@ -13,7 +13,7 @@ if [ -z "$1" ]
 fi
 
 
-./cloud.djp3.ring.killcassandra.sh
+./kill.cloud.sh
 
 sleep 2
 
