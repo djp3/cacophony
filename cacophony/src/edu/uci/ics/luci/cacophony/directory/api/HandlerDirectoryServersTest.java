@@ -10,7 +10,6 @@ import java.net.MalformedURLException;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.TreeMap;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -86,7 +85,7 @@ public class HandlerDirectoryServersTest {
 			CacophonyGlobals.resetGlobals();
 			CacophonyGlobals g = CacophonyGlobals.getGlobals();
 			RequestHandlerFactory factory = new RequestHandlerFactory(g, requestHandlerRegistry);
-			ws = new WebServer(g, factory, null, testPort, false, true, new AccessControl());
+			ws = new WebServer(g, factory, null, testPort, false, new AccessControl());
 			ws.start();
 			g.addQuittables(ws);
 		} catch (RuntimeException e) {
@@ -179,7 +178,7 @@ public class HandlerDirectoryServersTest {
 			String[] args = new String[0];
 			config = jsap.parse(args);
 		}
-		catch(Exception e){
+		catch(RuntimeException e){
 			config=null;
 		}
 		return config;

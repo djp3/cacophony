@@ -31,6 +31,7 @@ import com.quub.webserver.WebUtil;
 import com.quub.webserver.handlers.HandlerFileServer;
 import com.quub.webserver.handlers.HandlerVersion;
 
+import edu.uci.ics.luci.cacophony.directory.api.HandlerDirectoryNamespace;
 import edu.uci.ics.luci.cacophony.directory.api.HandlerDirectoryServers;
 import edu.uci.ics.luci.cacophony.directory.api.HandlerNodeList;
 import edu.uci.ics.luci.cacophony.directory.api.HandlerShutdown;
@@ -136,13 +137,15 @@ public class DirectoryTest {
 			requestHandlerRegistry.put("version",HandlerVersion.class);
 			requestHandlerRegistry.put("servers",HandlerDirectoryServers.class);
 			requestHandlerRegistry.put("nodes",HandlerNodeList.class);
+			requestHandlerRegistry.put("namespace",HandlerDirectoryNamespace.class);
 			requestHandlerRegistry.put("shutdown",HandlerShutdown.class);
 			requestHandlerRegistry.put(null,HandlerFileServer.class);
 			
 			CacophonyGlobals.resetGlobals();
 			CacophonyGlobals g = CacophonyGlobals.getGlobals();
+			g.setTesting(true);
 			RequestHandlerFactory factory = new RequestHandlerFactory(g, requestHandlerRegistry);
-			ws = new WebServer(g, factory, null, testPort, false, true, new AccessControl());
+			ws = new WebServer(g, factory, null, testPort, false, new AccessControl());
 			ws.start();
 			g.addQuittables(ws);
 		} catch (RuntimeException e) {

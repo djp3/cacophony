@@ -108,7 +108,8 @@ public class MySQLTest {
 								"user:\"testuser\","+
 								"password:\"testuserPassword\","+
 								"database:\"testDatabase\","+
-								"query:\"SELECT id AS ID, name AS NAME from "+tableName+" limit 1000\"}";
+								"listViewQuery:\"SELECT id AS ID, name AS NAME , 1 AS CALL_COUNT from "+tableName+" limit 1000\","+
+								"mapViewQuery:\"SELECT id AS ID, 1 AS X, 2 AS Y, 1 AS MAP_WEIGHT from "+tableName+" limit 1000\"}";
 
 			JSONObject jsonObject = null;
 			try {
@@ -118,7 +119,7 @@ public class MySQLTest {
 			}
 			m = new MySQL();
 			m.init(jsonObject);
-			Map<String, CNode> map = m.loadNodeList();
+			Map<String, MetaCNode> map = m.loadNodeList();
 			m = null;
 			assertEquals(4,map.size());
 			

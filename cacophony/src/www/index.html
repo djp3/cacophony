@@ -34,7 +34,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </a>
-          <a class="brand" href="#">Namespace</a>
+          <a class="brand" href="#"><i class="icon-time" id="namespaceStatus"></i><span id="namespace"></span></a>
           <div class="nav-collapse">
             <ul class="nav">
               <li class="active"><a href="#">Home</a></li>
@@ -123,7 +123,25 @@
 		</div>
 		<div class="row-fluid">
 			<div class="span12">
-				<div id="nodeList">
+				<div class="tabbable"> 
+  					<ul class="nav nav-tabs">
+						<li><a href="#tab1" data-toggle="tab">List View</a></li>
+						<li class="active"><a href="#tab2" data-toggle="tab">Map View</a></li>
+					</ul>
+					<div class="tab-content">
+						<div class="tab-pane" id="tab1">
+							<div id="nodeList">
+							</div>
+						</div>
+						<div class="tab-pane active" id="tab2">
+							<div id="nodeMap" style="height: 600px; width:100%;">
+								<div class="progress progress-striped active">
+									<div id="nodeMapProgressBar" class="bar" style="float:left;width:0%"></div>
+								</div>
+							</div>
+							
+    					</div>
+    				</div>
 				</div>
 			</div>
 		</div>
@@ -149,6 +167,9 @@
     <script src="/bootstrap/docs/assets/js/bootstrap-carousel.js"></script>
     <script src="/bootstrap/docs/assets/js/bootstrap-typeahead.js"></script>
     <script src="/lib/d3/d3.v2.min.js"></script>
+
+	<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?sensor=false&libraries=visualization"></script>
+	
 	
 	<script>
 		var myServerList = null;
@@ -163,6 +184,22 @@
 					$(selector).animate({opacity:1.0},500);
 				})
 		};
+
+		function updateNamespace(){
+			$.ajax({
+				url:'/namespace',
+				dataType:'jsonp',
+				timeout : 15000,
+				success:function(data){
+					myIconChange('#namespaceStatus','icon-time','icon-ok');
+					$('#namespace').html(data.namespace);
+				},
+				error:function(){
+					myIconChange('#namespaceStatus','icon-time','icon-remove');
+					$('#namespace').html('Unknown namespace');
+				}
+			});
+		}
 
 
 		function updateCurrentLocation(){
@@ -256,7 +293,50 @@
 									cssHeader:'label',
 									widthFixed:true});});
 			});
+		}
 
+
+		
+
+
+
+		function updateMyNodeMap(){
+			$('#nodeMap').animate({opacity:0.0},500,function(){
+				var myIndex=0;
+				var heatMapData = [];
+
+				$.each(myNodeList.nodes,function(k,v){
+					var map_weight = v.map_weight;
+					if(map_weight == undefined){
+						map_weight = 1;
+					}
+					var longitude = v.longitude;
+					if(longitude != undefined){
+						var latitude = v.latitude;
+						if(latitude != undefined){
+							var point = {'location': new google.maps.LatLng(latitude, longitude), 'weight': map_weight};
+							if(myIndex < 100000){
+								heatMapData.push(point);
+								myIndex=myIndex+1;
+							}
+						}
+					}
+					
+				});
+				var heatmap = new google.maps.visualization.HeatmapLayer({
+					data: heatMapData
+				});
+				var myOptions = {
+					zoom: 4,
+					center: new google.maps.LatLng(39.8,-98.5),
+					mapTypeId: google.maps.MapTypeId.HYBRID
+				};
+				map = new google.maps.Map(document.getElementById('nodeMap'), myOptions);
+				heatmap.setMap(map);
+
+				$('#nodeMap').animate({opacity:1.0},500);
+
+			});
 
 		}
 
@@ -272,6 +352,9 @@
 					success:function(data){
 						myNodeList=data;
 						updateMyNodeList();
+
+						updateMyNodeMap();
+
 						myNodeListCallBusy=false;
 					},
 					error:function(data){
@@ -281,12 +364,34 @@
 			}
 		};
 
+		function setProgressBar(newWidth){
+			$('#nodeMapProgressBar').css('width',(newWidth)+'%');
+			$('#nodeMapProgressBar').text((newWidth)+'%')
+
+		}
+				
+
 		$(document).ready(function(){
 
+			setProgressBar(10);
+			updateNamespace();
+
+			setProgressBar(20);
 			updateCurrentLocation();
 
+			setProgressBar(30);
 			getMyServerList();
 
+			setProgressBar(40);
+			var currentBar = 40;
+			var progress = setInterval(function() {
+				if (currentBar >= 99) {
+					clearInterval(progress);
+				} else {
+					currentBar += 1;
+					setProgressBar(currentBar);
+				}
+			}, 500);
 			getMyNodeList();
 
 			setInterval(function() {

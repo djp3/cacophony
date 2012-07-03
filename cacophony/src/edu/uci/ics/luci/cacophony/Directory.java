@@ -3,12 +3,16 @@ package edu.uci.ics.luci.cacophony;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.InvalidParameterException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.TreeMap;
 
 import me.prettyprint.cassandra.serializers.LongSerializer;
 import me.prettyprint.cassandra.serializers.StringSerializer;
@@ -43,20 +47,19 @@ import com.quub.webserver.WebServer;
 import com.quub.webserver.handlers.HandlerFileServer;
 import com.quub.webserver.handlers.HandlerVersion;
 
+import edu.uci.ics.luci.cacophony.directory.api.HandlerDirectoryNamespace;
 import edu.uci.ics.luci.cacophony.directory.api.HandlerDirectoryServers;
+import edu.uci.ics.luci.cacophony.directory.api.HandlerNodeAssignment;
 import edu.uci.ics.luci.cacophony.directory.api.HandlerNodeList;
 import edu.uci.ics.luci.cacophony.directory.api.HandlerShutdown;
 import edu.uci.ics.luci.cacophony.directory.api.WebServerWarmUp;
-import edu.uci.ics.luci.cacophony.directory.nodelist.CNode;
+import edu.uci.ics.luci.cacophony.directory.nodelist.MetaCNode;
 import edu.uci.ics.luci.cacophony.directory.nodelist.NodeListLoader;
 
 
 public class Directory implements Quittable{
 	
-	private static String KEYSPACE = "CacophonyKeyspaceV1_0s";
 	private static final Integer CASSANDRA_PORT=9160;
-	private static StringSerializer stringSerializer = null;
-	private static LongSerializer longSerializer = null;
 	
 	private static transient volatile Logger log = null;
 	private static Directory theOne = null;
@@ -66,6 +69,10 @@ public class Directory implements Quittable{
 		}
 		return log;
 	}
+	
+	private String KEYSPACE = "CacophonyKeyspaceV1_0s";
+	private StringSerializer stringSerializer = null;
+	private LongSerializer longSerializer = null;
 	
 	private Cluster cluster = null;
 	private Keyspace ksp = null;
@@ -80,7 +87,6 @@ public class Directory implements Quittable{
 	private Timer heartbeat;
 	
 	private boolean shuttingDown = false;
-	private boolean testing = true;
 	
 	public synchronized void setQuitting(boolean quitting) {
 		if(shuttingDown == false){
@@ -154,7 +160,7 @@ public class Directory implements Quittable{
 		return theOne;
 	}
 	
-	protected String getDirectoryNamespace() {
+	public String getDirectoryNamespace() {
 		return directoryNamespace;
 	}
 
@@ -216,6 +222,10 @@ public class Directory implements Quittable{
 			    new TimerTask(){
 			    	
 			    	JSONObject data = null;
+			    	private long ONE_SECOND = 1000;
+			    	private long ONE_MINUTE = 60 * ONE_SECOND;
+					private long ONE_HOUR = 60 * ONE_MINUTE;
+					private long ONE_DAY = 24 * ONE_HOUR;
 			    	{
 			    		data = new JSONObject();
 			    		try {
@@ -227,6 +237,7 @@ public class Directory implements Quittable{
 			    	
 					@Override
 			    	public void run(){
+						/* Update this nodes heartbeat */
 			    		ColumnFamilyUpdater<String, String> updater = directoryServerTemplate.createUpdater(local_url);
 			    		String now = Long.toString(System.currentTimeMillis());
 			    		try {
@@ -236,6 +247,30 @@ public class Directory implements Quittable{
 						}
 						updater.setString("json_data", data.toString());
 						directoryServerTemplate.update(updater);
+						
+						
+						
+						/* Clean up old heartbeats */
+						KeyIterator<String> keyIterator = new KeyIterator<String>(ksp, DIRECTORY_SERVER_CF,stringSerializer);
+						
+						for(String keyI: keyIterator){
+							String jsonData = null;
+							try {
+						    	ColumnFamilyResult<String, String> res = directoryServerTemplate.queryColumns(keyI);
+								jsonData = res.getString("json_data");
+								if(jsonData != null){
+									JSONObject jsonObject = new JSONObject(jsonData);
+									Long heartbeat  = jsonObject.getLong("heartbeat");
+									if((heartbeat == null)||(heartbeat < System.currentTimeMillis() - ONE_DAY)){
+										directoryServerTemplate.deleteRow(keyI);
+									}
+								}
+							} catch (HectorException e) {
+								getLog().error("Problem getting a Directory Server List:\n"+e);
+							} catch (JSONException e) {
+								getLog().error("Bad JSON Data in Cassandra ring:\n"+jsonData+"\n"+e);
+							}
+						}
 					}
 					}, delay, period);
 		 
@@ -289,8 +324,8 @@ public class Directory implements Quittable{
 	}
 	
 	
-	public Map<String, JSONObject> getNodeList(){
-		Map<String,JSONObject> ret = new HashMap<String,JSONObject>();
+	public List<MetaCNode> getNodeList(){
+		List<MetaCNode> ret = new ArrayList<MetaCNode>();
 		
 		KeyIterator<String> keyIterator = new KeyIterator<String>(ksp, C_NODE_LIST_CF,stringSerializer);
 		
@@ -299,8 +334,14 @@ public class Directory implements Quittable{
 			try {
 		    	ColumnFamilyResult<String, String> res = this.cacophonyNodeTemplate.queryColumns(keyI);
 				jsonData = res.getString("json_data");
-		    	JSONObject jsonObject = new JSONObject(jsonData);
-		    	ret.put(keyI, jsonObject);
+				if(jsonData != null){
+					JSONObject jsonObject = new JSONObject(jsonData);
+					if(jsonObject.has("call_count")){
+						if(jsonObject.getInt("call_count") > 0){
+							ret.add(MetaCNode.fromJSONObject(jsonObject));
+						}
+					}
+				}
 			} catch (HectorException e) {
 				getLog().error("Problem getting a c node list:\n"+e);
 			} catch (JSONException e) {
@@ -311,9 +352,9 @@ public class Directory implements Quittable{
 	}
 	
 	protected void setNodeList(NodeListLoader i) {
-		Map<String, CNode> map = i.loadNodeList();
+		Map<String, MetaCNode> map = i.loadNodeList();
 		
-		for(Entry<String, CNode> e : map.entrySet()){
+		for(Entry<String, MetaCNode> e : map.entrySet()){
 			ColumnFamilyUpdater<String, String> updater = this.cacophonyNodeTemplate.createUpdater(e.getKey());
 			updater.setString("json_data", e.getValue().toJSONObject().toString());
 			this.cacophonyNodeTemplate.update(updater);
@@ -420,9 +461,7 @@ public class Directory implements Quittable{
 		
 		Globals.getGlobals().setTesting((Boolean)getConfig(clo,g.getConfig(),"testing"));
 		
-
 		Directory directory = launchDirectory();
-		
 		
 		/* Get a DB Pool */
 		QuubDBConnectionPool odbcp = null;
@@ -440,16 +479,17 @@ public class Directory implements Quittable{
 			requestHandlerRegistry.put(null, HandlerFileServer.class); //Default response
 			requestHandlerRegistry.put("version",HandlerVersion.class);
 			requestHandlerRegistry.put("servers",HandlerDirectoryServers.class);
+			requestHandlerRegistry.put("namespace",HandlerDirectoryNamespace.class);
 			requestHandlerRegistry.put("nodes",HandlerNodeList.class);
+			requestHandlerRegistry.put("node_assignment",HandlerNodeAssignment.class);
 			requestHandlerRegistry.put("shutdown",HandlerShutdown.class);
 
 			RequestHandlerFactory requestHandlerFactory = new RequestHandlerFactory(g,requestHandlerRegistry);
 			AccessControl accessControl = new AccessControl();
 			
 			Integer port = getConfig(clo,g.getConfig(),"port");
-			Boolean testing = getConfig(clo,g.getConfig(),"testing");
 			
-			ws = new WebServer(g, requestHandlerFactory, odbcp, port, false,testing,accessControl);
+			ws = new WebServer(g, requestHandlerFactory, null/*odbcp*/, port, false,accessControl);
 		} catch (RuntimeException e) {
 			getLog().fatal("Couldn't start webserver:"+e);
 			if(ws != null){
@@ -501,9 +541,10 @@ public class Directory implements Quittable{
 	}
 
 
+	@SuppressWarnings("unchecked")
 	public static Directory launchDirectory(String directoryPropertiesLocation) {
 		/* Launch Directory Node */
-		Directory directory = new Directory();
+		Directory directory = Directory.getInstance();
 		
 		/* Get Directory properties and initialize */
 		try {

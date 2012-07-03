@@ -15,18 +15,18 @@ import com.quub.webserver.HandlerAbstract;
 import edu.uci.ics.luci.cacophony.CacophonyGlobals;
 import edu.uci.ics.luci.cacophony.Directory;
 
-public class HandlerDirectoryServers extends HandlerAbstract {
+public class HandlerDirectoryNamespace extends HandlerAbstract {
 	
 	private transient volatile Logger log = null;
 	public Logger getLog(){
-		if(log == null){
-			log = Logger.getLogger(HandlerDirectoryServers.class);
+		if(this.log == null){
+			this.log = Logger.getLogger(HandlerDirectoryNamespace.class);
 		}
-		return log;
+		return this.log;
 	}
 
 
-	public HandlerDirectoryServers() {
+	public HandlerDirectoryNamespace() {
 		super();
 	}
 	
@@ -43,16 +43,13 @@ public class HandlerDirectoryServers extends HandlerAbstract {
 	public Pair<byte[], byte[]> handle(String restFunction,Map<String, String> headers, Map<String, String> parameters, InetAddress ip, QuubDBConnectionPool odbcp){
 		Pair<byte[], byte[]> pair = null;
 		
-		
-		Map<String, JSONObject> servers = Directory.getInstance().getServers();
-		JSONObject retServers = new JSONObject(servers);
-		
 		String version = Globals.getGlobals().getVersion();
+		String namespace = Directory.getInstance().getDirectoryNamespace();
 		
 		JSONObject ret = new JSONObject();
 		try {
 			ret.put("version", version);
-			ret.put("servers", retServers);
+			ret.put("namespace", namespace);
 			ret.put("error", "false");
 		} catch (JSONException e) {
 			getLog().error("Unable to respond with version:"+e);

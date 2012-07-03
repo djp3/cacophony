@@ -17,8 +17,8 @@ import edu.uci.ics.luci.cacophony.Directory;
 
 public class HandlerNodeList extends HandlerAbstract {
 	
-	private static transient volatile Logger log = null;
-	public static Logger getLog(){
+	private transient volatile Logger log = null;
+	public Logger getLog(){
 		if(log == null){
 			log = Logger.getLogger(HandlerNodeList.class);
 		}

@@ -16,9 +16,9 @@ import com.quub.webserver.HandlerAbstract;
 
 public class HandlerShutdown extends CacophonyRequestHandlerHelper {
 	
-	private static transient volatile Logger log = null;
+	private transient volatile Logger log = null;
 	
-	public static Logger getLog(){
+	public Logger getLog(){
 		if(log == null){
 			log = Logger.getLogger(HandlerShutdown.class);
 		}

@@ -25,7 +25,8 @@ public class MySQL extends NodeListLoader{
 	}
 
 	private DBConnection connection;
-	private PreparedStatement preparedStatement;
+	private PreparedStatement listViewQueryPS;
+	private PreparedStatement mapViewQueryPS;
 	private QuubDBConnectionPool pool;
 	private boolean error;
 	
@@ -77,61 +78,128 @@ public class MySQL extends NodeListLoader{
 			getLog().error("Unable to get the \"password\"");
 			error = true;
 		}
-		String query=null;
+		String listViewQuery=null;
 		try {
-			query = options.getString("query");
+			listViewQuery = options.getString("listViewQuery");
 		} catch (JSONException e) {
 		}
-		if(query == null){
-			getLog().error("Unable to get the \"query\"");
+		if(listViewQuery == null){
+			getLog().error("Unable to get the \"listViewQuery\"");
 			error = true;
 		}
 		else{
-			if(!query.toUpperCase().contains("SELECT ")){
-				getLog().error("Query does not contain \"SELECT\"");
+			if(!listViewQuery.toUpperCase().contains("SELECT ")){
+				getLog().error("Query (listViewQuery) does not contain \"SELECT\"");
 				error = true;
 			}
-			if(!query.contains("AS ID")){
-				getLog().error("Query does not contain as selector for \"ID\"");
+			if(!listViewQuery.contains("AS ID")){
+				getLog().error("Query (listViewQuery) does not contain as selector for \"ID\"");
 				error = true;
 			}
-			if(!query.contains("AS NAME")){
-				getLog().error("Query does not contain as selector for \"NAME\"");
+			if(!listViewQuery.contains("AS NAME")){
+				getLog().error("Query (listViewQuery) does not contain as selector for \"NAME\"");
 				error = true;
 			}
-			if(!query.contains("AS CALL_COUNT")){
-				getLog().error("Query does not contain as selector for \"CALL_COUNT\"");
+			if(!listViewQuery.contains("AS CALL_COUNT")){
+				getLog().error("Query (listViewQuery) does not contain as selector for \"CALL_COUNT\"");
 				error = true;
 			}
 		}
+		
+		String mapViewQuery=null;
+		try {
+			mapViewQuery = options.getString("mapViewQuery");
+		} catch (JSONException e) {
+		}
+		if(listViewQuery == null){
+			getLog().error("Unable to get the \"mapViewQuery\"");
+			error = true;
+		}
+		else{
+			if(!mapViewQuery.toUpperCase().contains("SELECT ")){
+				getLog().error("Query (mapViewQuery) does not contain \"SELECT\"");
+				error = true;
+			}
+			if(!mapViewQuery.contains("AS ID")){
+				getLog().error("Query (mapViewQuery) does not contain as selector for \"ID\"");
+				error = true;
+			}
+			if(!mapViewQuery.contains("AS X")){
+				getLog().error("Query (mapViewQuery) does not contain as selector for \"X\"");
+				error = true;
+			}
+			if(!mapViewQuery.contains("AS Y")){
+				getLog().error("Query (mapViewQuery) does not contain as selector for \"Y\"");
+				error = true;
+			}
+			if(!mapViewQuery.contains("AS MAP_WEIGHT")){
+				getLog().error("Query (mapViewQuery) does not contain as selector for \"MAP_WEIGHT\"");
+				error = true;
+			}
+		}
+		
 		if(!error){
 			pool = new QuubDBConnectionPool(g,databaseDomain, database, username, password,1,1);
 			connection = pool.getConnection();
 			try {
-				preparedStatement = connection.prepareStatement(query);
+				listViewQueryPS = connection.prepareStatement(listViewQuery);
 			} catch (SQLException e) {
-				getLog().error("Query failed:"+query+"\n"+e);
+				getLog().error("Query failed:"+listViewQuery+"\n"+e);
+				error=true;
+			}
+			try {
+				mapViewQueryPS = connection.prepareStatement(mapViewQuery);
+			} catch (SQLException e) {
+				getLog().error("Query failed:"+mapViewQuery+"\n"+e);
 				error=true;
 			}
 		}
 	}
 
-	private Map<String,CNode> executeQuery() {
-		Map<String,CNode> ret = new TreeMap<String,CNode>();
+	private Map<String,MetaCNode> executeQuery() {
+		Map<String,MetaCNode> ret = new TreeMap<String,MetaCNode>();
 		ResultSet rs = null;
 		try{
 			if(error == false){
 				try {
-					rs = preparedStatement.executeQuery();
+					rs = listViewQueryPS.executeQuery();
 					while(rs.next()){
 						try {
-							CNode cNode = new CNode();
+							MetaCNode cNode = new MetaCNode();
 							String id = rs.getString("ID");
-							cNode.setId(id);
+							cNode.setId(id.trim());
 							String name = rs.getString("NAME");
-							cNode.setName(name);
+							cNode.setName(name.trim());
 							int callCount = rs.getInt("CALL_COUNT");
 							cNode.setCallCount(callCount);
+							ret.put(id,cNode);
+						} catch (SQLException e) {
+							getLog().error("Query failed to return good results\n"+e);
+						}
+					}
+				} catch (SQLException e1) {
+					getLog().error("Query failed to execute\n"+e1);
+				}
+				try {
+					rs = mapViewQueryPS.executeQuery();
+					while(rs.next()){
+						try {
+							MetaCNode cNode = null;
+							String id = rs.getString("ID");
+							id = id.trim();
+							if(ret.containsKey(id)){
+								cNode = ret.get(id);
+							}
+							else{
+								cNode = new MetaCNode();
+								cNode.setId(id.trim());
+							}
+							double lon  = rs.getDouble("X");
+							cNode.setLongitude(lon);
+							double lat  = rs.getDouble("Y");
+							cNode.setLatitude(lat);
+							double weight  = rs.getDouble("MAP_WEIGHT");
+							cNode.setMapWeight(weight);
 							ret.put(id,cNode);
 						} catch (SQLException e) {
 							getLog().error("Query failed to return good results\n"+e);
@@ -152,13 +220,22 @@ public class MySQL extends NodeListLoader{
 					rs = null;
 				}
 			}
-			if(preparedStatement != null){
+			if(listViewQueryPS != null){
 				try {
-					preparedStatement.close();
+					listViewQueryPS.close();
 				} catch (SQLException e) {
 				}
 				finally{
-					preparedStatement = null;
+					listViewQueryPS = null;
+				}
+			}
+			if(mapViewQueryPS != null){
+				try {
+					mapViewQueryPS.close();
+				} catch (SQLException e) {
+				}
+				finally{
+					mapViewQueryPS = null;
 				}
 			}
 			if(connection != null){
@@ -184,7 +261,7 @@ public class MySQL extends NodeListLoader{
 	}
 
 	@Override
-	public Map<String, CNode> loadNodeList() {
+	public Map<String, MetaCNode> loadNodeList() {
 		return executeQuery();
 	}
 

@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.TreeMap;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -19,8 +18,8 @@ import org.junit.Test;
 
 import com.quub.Globals;
 import com.quub.webserver.AccessControl;
-import com.quub.webserver.RequestHandlerFactory;
 import com.quub.webserver.HandlerAbstract;
+import com.quub.webserver.RequestHandlerFactory;
 import com.quub.webserver.WebServer;
 import com.quub.webserver.WebUtil;
 import com.quub.webserver.handlers.HandlerVersion;
@@ -59,14 +58,16 @@ public class HandlerShutdownTest {
 		/* Start the webserver */
 		testPort++;
 		try {
-			requestHandlerRegistry = new TreeMap<String, Class<? extends HandlerAbstract>>();
+			requestHandlerRegistry = new HashMap<String, Class<? extends HandlerAbstract>>();
+			requestHandlerRegistry.put(null,HandlerVersion.class);
 			requestHandlerRegistry.put("",HandlerVersion.class);
 			requestHandlerRegistry.put("shutdown",HandlerShutdown.class);
 			
 			CacophonyGlobals.resetGlobals();
 			CacophonyGlobals g = CacophonyGlobals.getGlobals();
+			g.setTesting(true);
 			RequestHandlerFactory factory = new RequestHandlerFactory(g, requestHandlerRegistry);
-			ws = new WebServer(g, factory, null, testPort, false, true, new AccessControl());
+			ws = new WebServer(g, factory, null, testPort, false,  new AccessControl());
 			ws.start();
 			g.addQuittables(ws);
 		} catch (RuntimeException e1) {
