@@ -1,5 +1,6 @@
 directory.jar
-launch.sh
+launch.cloud2.sh
+launch.cloud3.sh
 
 cacophony.log4j.properties
 cacophony.directory.properties

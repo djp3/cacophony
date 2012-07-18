@@ -35,24 +35,33 @@ public class HandlerNodeAssignment extends HandlerAbstract {
 	@Override
 	public Pair<byte[], byte[]> handle(String restFunction,Map<String, String> headers, Map<String, String> parameters, InetAddress ip, QuubDBConnectionPool odbcp){
 		
-		need to write test for this
-		
 		Pair<byte[], byte[]> pair = null;
 		
 		List<MetaCNode> nodeList = Directory.getInstance().getNodeList();
-		Collections.sort(nodeList,MetaCNode.MetaCNodeAssignmentComparator);
-		MetaCNode retC = nodeList.get(0);
+		Collections.sort(nodeList,MetaCNode.ByAssignmentPaucity);
 		
-		String version = Globals.getGlobals().getVersion();
+		/* Make sure we have all the necessary fields */
+		MetaCNode retC = null;
+		while((retC == null) && (nodeList.size() > 0)){
+			MetaCNode x = nodeList.remove(0);
+			if( (x.getId() != null) &&
+				(x.getConfiguration() != null)){
+				retC = x;
+			}
+		}
 		
 		JSONObject ret = new JSONObject();
-		try {
-			ret.put("version", version);
-			ret.put("node_id", retC.getId());
-			ret.put("node_configuration", retC.getConfiguration());
-			ret.put("error", "false");
-		} catch (JSONException e) {
-			getLog().error("Unable to respond with version:"+e);
+		
+		if(retC != null){
+			String version = Globals.getGlobals().getVersion();
+			try {
+				ret.put("version", version);
+				ret.put("node_id", retC.getId());
+				ret.put("node_configuration", retC.getConfiguration());
+				ret.put("error", "false");
+			} catch (JSONException e) {
+				getLog().error("Unable to respond with version:"+e);
+			}
 		}
 		
 		pair = new Pair<byte[],byte[]>(HandlerAbstract.contentTypeHeader_JSON,wrapCallback(parameters,ret.toString()).getBytes());

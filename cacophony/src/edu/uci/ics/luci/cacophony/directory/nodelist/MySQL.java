@@ -3,6 +3,8 @@ package edu.uci.ics.luci.cacophony.directory.nodelist;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -16,8 +18,8 @@ import com.quub.database.QuubDBConnectionPool;
 
 public class MySQL extends NodeListLoader{
 	
-	private static transient volatile Logger log = null;
-	public static Logger getLog(){
+	private transient volatile Logger log = null;
+	public Logger getLog(){
 		if(log == null){
 			log = Logger.getLogger(MySQL.class);
 		}
@@ -100,10 +102,6 @@ public class MySQL extends NodeListLoader{
 				getLog().error("Query (listViewQuery) does not contain as selector for \"NAME\"");
 				error = true;
 			}
-			if(!listViewQuery.contains("AS CALL_COUNT")){
-				getLog().error("Query (listViewQuery) does not contain as selector for \"CALL_COUNT\"");
-				error = true;
-			}
 		}
 		
 		String mapViewQuery=null;
@@ -156,8 +154,10 @@ public class MySQL extends NodeListLoader{
 		}
 	}
 
-	private Map<String,MetaCNode> executeQuery() {
-		Map<String,MetaCNode> ret = new TreeMap<String,MetaCNode>();
+	private List<MetaCNode> executeQuery() {
+		
+		Map<String,MetaCNode> nodes = new TreeMap<String,MetaCNode>();
+		List<MetaCNode> ret = new ArrayList<MetaCNode>();
 		ResultSet rs = null;
 		try{
 			if(error == false){
@@ -170,15 +170,24 @@ public class MySQL extends NodeListLoader{
 							cNode.setId(id.trim());
 							String name = rs.getString("NAME");
 							cNode.setName(name.trim());
-							int callCount = rs.getInt("CALL_COUNT");
-							cNode.setCallCount(callCount);
-							ret.put(id,cNode);
+							nodes.put(id,cNode);
 						} catch (SQLException e) {
 							getLog().error("Query failed to return good results\n"+e);
 						}
 					}
 				} catch (SQLException e1) {
 					getLog().error("Query failed to execute\n"+e1);
+				}
+				finally{
+					try{
+						if(rs != null){
+							rs.close();
+						}
+					} catch (SQLException e) {
+					}
+					finally{
+						rs = null;
+					}
 				}
 				try {
 					rs = mapViewQueryPS.executeQuery();
@@ -187,12 +196,12 @@ public class MySQL extends NodeListLoader{
 							MetaCNode cNode = null;
 							String id = rs.getString("ID");
 							id = id.trim();
-							if(ret.containsKey(id)){
-								cNode = ret.get(id);
+							if(nodes.containsKey(id)){
+								cNode = nodes.get(id);
 							}
 							else{
 								cNode = new MetaCNode();
-								cNode.setId(id.trim());
+								cNode.setId(id);
 							}
 							double lon  = rs.getDouble("X");
 							cNode.setLongitude(lon);
@@ -200,7 +209,9 @@ public class MySQL extends NodeListLoader{
 							cNode.setLatitude(lat);
 							double weight  = rs.getDouble("MAP_WEIGHT");
 							cNode.setMapWeight(weight);
-							ret.put(id,cNode);
+							nodes.put(id,cNode);
+							//System.out.println("X:"+lon+",Y:"+lat+", MAP_WEIGHT:"+weight);
+							//good++;
 						} catch (SQLException e) {
 							getLog().error("Query failed to return good results\n"+e);
 						}
@@ -208,18 +219,33 @@ public class MySQL extends NodeListLoader{
 				} catch (SQLException e1) {
 					getLog().error("Query failed to execute\n"+e1);
 				}
+				finally{
+					try{
+						if(rs != null){
+							rs.close();
+						}
+					} catch (SQLException e) {
+					}
+					finally{
+						rs = null;
+					}
+				}
+				
+				for(MetaCNode c:nodes.values()){
+					c.setConfiguration(super.getConfiguration(c.getId()));
+					ret.add(c);
+					/*if(c.getId() != null) good_Id++;
+					if(c.getName() != null) good_Name++;
+					if(c.getCallCount() != null) good_CallCount++;
+					if(c.getConfiguration() != null) good_Configuration++;
+					if(c.getLatitude() != null) good_Latitude++;
+					if(c.getLongitude() != null) good_Longitude++;
+					if(c.getMapWeight() != null) good_MapWeight++;*/
+				}
+				
 			}
 		}
 		finally{
-			if(rs != null){
-				try {
-					rs.close();
-				} catch (SQLException e) {
-				}
-				finally{
-					rs = null;
-				}
-			}
 			if(listViewQueryPS != null){
 				try {
 					listViewQueryPS.close();
@@ -257,11 +283,22 @@ public class MySQL extends NodeListLoader{
 			}
 		}
 		
+		/*
+		getLog().fatal("Mysql "+good+"/"+ret.size()+" total\n"+
+				"good_Id:"+ good_Id +"\n"+
+				"good_Name:"+ good_Name +"\n"+
+				"good_CallCount:"+ good_CallCount +"\n"+
+				"good_Configuration:"+ good_Configuration +"\n"+
+				"good_Latitude:"+ good_Latitude +"\n"+
+				"good_Longitude:"+ good_Longitude +"\n"+
+				"good_MapWeight:"+ good_MapWeight +"\n");
+				*/
+		
 		return(ret);
 	}
-
+	
 	@Override
-	public Map<String, MetaCNode> loadNodeList() {
+	public List<MetaCNode> loadNodeList() {
 		return executeQuery();
 	}
 

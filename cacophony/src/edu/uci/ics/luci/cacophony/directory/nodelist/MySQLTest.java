@@ -6,7 +6,7 @@ import static org.junit.Assert.fail;
 
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Map;
+import java.util.List;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -119,7 +119,7 @@ public class MySQLTest {
 			}
 			m = new MySQL();
 			m.init(jsonObject);
-			Map<String, MetaCNode> map = m.loadNodeList();
+			List<MetaCNode> map = m.loadNodeList();
 			m = null;
 			assertEquals(4,map.size());
 			

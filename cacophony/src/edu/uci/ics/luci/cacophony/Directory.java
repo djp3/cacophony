@@ -4,15 +4,12 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.TreeMap;
 
 import me.prettyprint.cassandra.serializers.LongSerializer;
 import me.prettyprint.cassandra.serializers.StringSerializer;
@@ -216,6 +213,9 @@ public class Directory implements Quittable{
 			heartbeat.cancel();
 		}
 		
+		getLog().error("Starting a heartbeat at:"+url);
+
+		
 		/*Set up the heartbeat to go every 5 minutes;*/
 		 heartbeat = new Timer(true);
 		 heartbeat.scheduleAtFixedRate(
@@ -336,9 +336,13 @@ public class Directory implements Quittable{
 				jsonData = res.getString("json_data");
 				if(jsonData != null){
 					JSONObject jsonObject = new JSONObject(jsonData);
-					if(jsonObject.has("call_count")){
-						if(jsonObject.getInt("call_count") > 0){
-							ret.add(MetaCNode.fromJSONObject(jsonObject));
+					if(jsonObject.has("latitude")){
+						if(jsonObject.has("longitude")){
+							if(jsonObject.has("map_weight")){
+								if(jsonObject.getDouble("map_weight") > 0.0){
+									ret.add(MetaCNode.fromJSONObject(jsonObject));
+								}
+							}
 						}
 					}
 				}
@@ -352,11 +356,11 @@ public class Directory implements Quittable{
 	}
 	
 	protected void setNodeList(NodeListLoader i) {
-		Map<String, MetaCNode> map = i.loadNodeList();
+		List<MetaCNode> map = i.loadNodeList();
 		
-		for(Entry<String, MetaCNode> e : map.entrySet()){
-			ColumnFamilyUpdater<String, String> updater = this.cacophonyNodeTemplate.createUpdater(e.getKey());
-			updater.setString("json_data", e.getValue().toJSONObject().toString());
+		for( MetaCNode e : map){
+			ColumnFamilyUpdater<String, String> updater = this.cacophonyNodeTemplate.createUpdater(e.getId());
+			updater.setString("json_data", e.toJSONObject().toString());
 			this.cacophonyNodeTemplate.update(updater);
 		}
 		
@@ -395,6 +399,15 @@ public class Directory implements Quittable{
 					.setLongFlag("config");
   
 			fl.setHelp("What is the name of the file with the configuation properties?");
+			jsap.registerParameter(fl);
+			
+			fl = new FlaggedOption("url.external")
+					.setStringParser(JSAP.STRING_PARSER)
+					.setRequired(false) 
+					.setShortFlag('u') 
+					.setLongFlag("url.external");
+  
+			fl.setHelp("What is the url that external web browsers can find you? (Maybe different than what the server thinks it is)");
 			jsap.registerParameter(fl);
         
 			sw = new Switch("help")
@@ -515,9 +528,11 @@ public class Directory implements Quittable{
 		}
 		
 		
-		String url = "";
+		String url = getConfig(clo,g.getConfig(),"url.external");
 		try {
-			url = InetAddress.getLocalHost().getHostAddress();
+			if((url == null) || (url.equals(""))){
+				url = InetAddress.getLocalHost().getHostAddress();
+			}
 		} catch (UnknownHostException e) {
 			url = "127.0.0.1";
 		}

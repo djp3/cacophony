@@ -29,6 +29,10 @@ import edu.uci.ics.luci.cacophony.CacophonyGlobals;
 public class HandlerShutdownTest {
 	
 	private static int testPort = 9020;
+	
+	static synchronized void incrementTestPort(){
+		testPort++;
+	}
 
 	private WebServer ws = null;
 	
@@ -56,7 +60,7 @@ public class HandlerShutdownTest {
 	public void testWebServer() {
 		
 		/* Start the webserver */
-		testPort++;
+		incrementTestPort();
 		try {
 			requestHandlerRegistry = new HashMap<String, Class<? extends HandlerAbstract>>();
 			requestHandlerRegistry.put(null,HandlerVersion.class);

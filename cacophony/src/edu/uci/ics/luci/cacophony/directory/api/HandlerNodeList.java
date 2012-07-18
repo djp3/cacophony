@@ -1,9 +1,11 @@
 package edu.uci.ics.luci.cacophony.directory.api;
 
 import java.net.InetAddress;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -14,6 +16,7 @@ import com.quub.webserver.HandlerAbstract;
 
 import edu.uci.ics.luci.cacophony.CacophonyGlobals;
 import edu.uci.ics.luci.cacophony.Directory;
+import edu.uci.ics.luci.cacophony.directory.nodelist.MetaCNode;
 
 public class HandlerNodeList extends HandlerAbstract {
 	
@@ -44,8 +47,11 @@ public class HandlerNodeList extends HandlerAbstract {
 		Pair<byte[], byte[]> pair = null;
 		
 		
-		Map<String, JSONObject> nodeList = Directory.getInstance().getNodeList();
-		JSONObject retServers = new JSONObject(nodeList);
+		List<MetaCNode> nodeList = Directory.getInstance().getNodeList();
+		JSONArray retServers = new JSONArray();
+		for(MetaCNode c:nodeList){
+			retServers.put(c.toJSONObject());
+		}
 		
 		String version = Globals.getGlobals().getVersion();
 		

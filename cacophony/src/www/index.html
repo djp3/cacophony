@@ -121,6 +121,15 @@
 			<h3>Cacophony Node List</h3>
 			</div>
 		</div>
+		<div id="nodeProgressBarContainer">
+		<div class="row-fluid">
+			<div class="span12">
+			<div class="progress progress-striped active">
+				<div id="nodeProgressBar" class="bar" style="float:left;width:0%"></div>
+			</div>
+			</div>
+		</div>
+		</div>
 		<div class="row-fluid">
 			<div class="span12">
 				<div class="tabbable"> 
@@ -135,9 +144,6 @@
 						</div>
 						<div class="tab-pane active" id="tab2">
 							<div id="nodeMap" style="height: 600px; width:100%;">
-								<div class="progress progress-striped active">
-									<div id="nodeMapProgressBar" class="bar" style="float:left;width:0%"></div>
-								</div>
 							</div>
 							
     					</div>
@@ -274,14 +280,10 @@
 				$('#nodeList').html('');
 				var myIndex=0;
 
-				var newHtml='<table id="myNodeListTable" class="tablesorter table table-striped table-bordered table-condensed"><thead><tr><th>ID</th><th>Name</th><th>Call Count</th><th>Health</th><th>Hits</th><th>Subscribed Servers</th></tr></thead><tbody>';
+				var newHtml='<table id="myNodeListTable" class="tablesorter table table-striped table-bordered table-condensed"><thead><tr><th>ID</th><th>Name</th><th>Latitude</th><th>Longitude</th><th>Health</th><th>Hits</th><th>Subscribed Servers</th></tr></thead><tbody>';
 
 				$.each(myNodeList.nodes,function(k,v){
-					var call_count = v.call_count;
-					if(call_count == undefined){
-						call_count = 0;
-					}
-					newHtml = newHtml +'<tr><td>'+k+'</td><td>'+v.name+'</td><td>'+call_count+'</td><td>Health_Stub</td><td>Hits_Stub</td><td>Sub_Stub</td></tr>';
+					newHtml = newHtml +'<tr><td>'+k+'</td><td>'+v.name+'</td><td>'+v.latitude+'</td><td>'+v.longitude+'</td><td>Health_Stub</td><td>Hits_Stub</td><td>Sub_Stub</td></tr>';
 					//checkDirectoryServer(myIndex,i);
 					myIndex=myIndex+1;
 				});
@@ -307,24 +309,24 @@
 
 				$.each(myNodeList.nodes,function(k,v){
 					var map_weight = v.map_weight;
-					if(map_weight == undefined){
-						map_weight = 1;
-					}
-					var longitude = v.longitude;
-					if(longitude != undefined){
-						var latitude = v.latitude;
-						if(latitude != undefined){
-							var point = {'location': new google.maps.LatLng(latitude, longitude), 'weight': map_weight};
-							if(myIndex < 100000){
-								heatMapData.push(point);
-								myIndex=myIndex+1;
+					if(map_weight != undefined){
+						var longitude = v.longitude;
+						if(longitude != undefined){
+							var latitude = v.latitude;
+							if(latitude != undefined){
+								var point = {'location': new google.maps.LatLng(latitude, longitude), 'weight': map_weight};
+								if(myIndex < 100000){
+									heatMapData.push(point);
+									myIndex=myIndex+1;
+								}
 							}
 						}
 					}
 					
 				});
 				var heatmap = new google.maps.visualization.HeatmapLayer({
-					data: heatMapData
+					data: heatMapData,
+					radius: 30
 				});
 				var myOptions = {
 					zoom: 4,
@@ -334,7 +336,9 @@
 				map = new google.maps.Map(document.getElementById('nodeMap'), myOptions);
 				heatmap.setMap(map);
 
-				$('#nodeMap').animate({opacity:1.0},500);
+				$('#nodeMap').animate({opacity:1.0},500,function(){
+					$('#nodeProgressBarContainer').html("");
+				});
 
 			});
 
@@ -348,7 +352,7 @@
 				$.ajax({
 					url:'/nodes',
 					dataType:'jsonp',
-					timeout : 30000,
+					timeout : 60000,
 					success:function(data){
 						myNodeList=data;
 						updateMyNodeList();
@@ -365,8 +369,8 @@
 		};
 
 		function setProgressBar(newWidth){
-			$('#nodeMapProgressBar').css('width',(newWidth)+'%');
-			$('#nodeMapProgressBar').text((newWidth)+'%')
+			$('#nodeProgressBar').css('width',(newWidth)+'%');
+			$('#nodeProgressBar').text((newWidth)+'%')
 
 		}
 				
@@ -391,7 +395,8 @@
 					currentBar += 1;
 					setProgressBar(currentBar);
 				}
-			}, 500);
+			}, 700);
+			
 			getMyNodeList();
 
 			setInterval(function() {
