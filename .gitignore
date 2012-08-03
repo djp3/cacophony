@@ -13,9 +13,7 @@ external/cassandra_tmp
 external/hector
 external/hector_examples
 cacophony/src/www/bootstrap
-cacophony/src/www/lib/d3
-cacophony/src/www/lib/jquery-metadata
-cacophony/src/www/lib/jquery.tablesorter
+cacophony/src/www/lib/orig
 cacophony/bin
 cacophony/cacophony.directory.properties
 directory.jar
