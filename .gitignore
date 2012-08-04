@@ -5,6 +5,7 @@ cacophony/.settings
 cacophony/cacophony.log4j.properties
 *.class
 *.log
+*.swp
 *.log.*
 *.DS_Store
 external/cassandra
@@ -15,6 +16,7 @@ external/hector_examples
 cacophony/src/www/bootstrap
 cacophony/src/www/lib/orig
 cacophony/bin
+cacophony/doc/research
 cacophony/cacophony.directory.properties
 directory.jar
 cacophony.directory.properties

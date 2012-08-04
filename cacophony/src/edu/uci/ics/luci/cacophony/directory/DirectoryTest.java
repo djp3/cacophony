@@ -1,4 +1,4 @@
-package edu.uci.ics.luci.cacophony;
+package edu.uci.ics.luci.cacophony.directory;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -8,12 +8,15 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLPropertiesConfiguration;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.After;
@@ -23,6 +26,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.quub.Globals;
+import com.quub.util.Pair;
 import com.quub.webserver.AccessControl;
 import com.quub.webserver.HandlerAbstract;
 import com.quub.webserver.RequestHandlerFactory;
@@ -31,6 +35,7 @@ import com.quub.webserver.WebUtil;
 import com.quub.webserver.handlers.HandlerFileServer;
 import com.quub.webserver.handlers.HandlerVersion;
 
+import edu.uci.ics.luci.cacophony.CacophonyGlobals;
 import edu.uci.ics.luci.cacophony.directory.api.HandlerDirectoryNamespace;
 import edu.uci.ics.luci.cacophony.directory.api.HandlerDirectoryServers;
 import edu.uci.ics.luci.cacophony.directory.api.HandlerNodeList;
@@ -69,18 +74,15 @@ public class DirectoryTest {
 	@Test
 	public void testStartHeartbeat() {
 		if(d==null) fail("");
-		d.startHeartbeat(0L, 500L);
+		/* Pick a guid */
+		String guid = "Server GUID from Testing";
+		
+		d.startHeartbeat(0L, 500L, guid, null);
 		try{
-			String url = null;
-			try {
-				url = InetAddress.getLocalHost().getHostAddress();
-			} catch (UnknownHostException e1) {
-				url ="127.0.0.1";
-			}
-			Long heartbeat01 = d.getHeartbeat(url);
+			Long heartbeat01 = d.getHeartbeat(guid);
 			assertTrue(heartbeat01 != null);
 			Thread.sleep(750);
-			Long heartbeat02 = d.getHeartbeat(url);
+			Long heartbeat02 = d.getHeartbeat(guid);
 			assertTrue(heartbeat02 != null);
 			assertTrue(!heartbeat01.equals(heartbeat02));
 		} catch (InterruptedException e) {
@@ -197,19 +199,32 @@ public class DirectoryTest {
 	public void testRunServersIndefinitely() {
 		startAWebServer();
 		
-		String url;
+		/* Pick a guid */
+		String guid = "Server GUID from Testing";
+		
+		/* Figure out our url */
+		String url = null;
 		try {
 			url = InetAddress.getLocalHost().getHostName();
-			url = Directory.getInstance().startHeartbeat(url+":"+testPort);
-		} catch (UnknownHostException e1) {
+		} catch (UnknownHostException e) {
 			try {
 				url = InetAddress.getLocalHost().getHostAddress();
-				url = Directory.getInstance().startHeartbeat(url+":"+testPort);
-			} catch (UnknownHostException e) {
-				url = Directory.getInstance().startHeartbeat();
+			} catch (UnknownHostException e1) {
 			}
 		}
+			
+		/* Add a real URL and a dummy URL */
+		Pair<Long, String> p = new Pair<Long,String>(0L,url+":"+testPort);
+		List<Pair<Long, String>> urls = new ArrayList<Pair<Long,String>>();
+		urls.add(p);
+		p = new Pair<Long,String>(1L,"foobar.com");
+		urls.add(p);
+			
+		/* Start reporting heartbeats */
+		Directory.getInstance().setDirectoryNamespace("testNamespace");
+		Directory.getInstance().startHeartbeat(guid,urls);
 		
+		/* Check to see response is what is expected */
 		String responseString = null;
 		try {
 			HashMap<String, String> params = new HashMap<String, String>();
@@ -228,12 +243,32 @@ public class DirectoryTest {
 		JSONObject response = null;
 		try {
 			response = new JSONObject(responseString);
+			//System.out.println(response.toString(5));
 			try {
 				assertEquals("false",response.getString("error"));
+				
 				assertEquals(Globals.getGlobals().getVersion(),response.getString("version"));
-				assertTrue(Globals.getGlobals().getVersion(),response.getString("servers").length() > 0);
-    			Long heartbeat = response.getJSONObject("servers").getJSONObject(url).getLong("heartbeat");
+				
+				assertTrue(response.getJSONObject("servers").length() > 0);
+				
+    			Long heartbeat = response.getJSONObject("servers").getJSONObject(guid).getLong("heartbeat");
 				assertTrue(System.currentTimeMillis() - heartbeat < Directory.FIVE_MINUTES);
+				
+    			String namespace = response.getJSONObject("servers").getJSONObject(guid).getString("namespace");
+    			assertEquals(Directory.getInstance().getDirectoryNamespace(),namespace);
+    			
+    			JSONArray servers = response.getJSONObject("servers").getJSONObject(guid).getJSONArray("access_routes");
+    			assertEquals(2,servers.length());
+    			for(int i =0 ; i < servers.length(); i++){
+    				if(servers.getJSONObject(i).getLong("priority_order") == 0){
+    					assertEquals(url+":"+testPort,servers.getJSONObject(i).getString("url"));
+    				}
+    				else{
+    					assertEquals("foobar.com",servers.getJSONObject(i).getString("url"));
+    				}
+    			}
+    			
+				
 			} catch (JSONException e) {
 				e.printStackTrace();
 				fail("No error code:"+e);
@@ -249,7 +284,7 @@ public class DirectoryTest {
 		//fail("Remove this to run indefinitely");
 		//while(true){
 			try {
-				Thread.sleep(30*60*1000);
+				Thread.sleep(15*60*1000);
 			} catch (InterruptedException e) {
 			}
 		//}

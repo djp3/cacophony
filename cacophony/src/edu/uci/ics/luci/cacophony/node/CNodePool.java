@@ -1,4 +1,4 @@
-package edu.uci.ics.luci.cacophony;
+package edu.uci.ics.luci.cacophony.node;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -28,8 +28,10 @@ import com.quub.webserver.WebServer;
 import com.quub.webserver.handlers.HandlerFileServer;
 import com.quub.webserver.handlers.HandlerVersion;
 
+import edu.uci.ics.luci.cacophony.CacophonyGlobals;
 import edu.uci.ics.luci.cacophony.directory.api.HandlerShutdown;
 import edu.uci.ics.luci.cacophony.directory.api.WebServerWarmUp;
+import edu.uci.ics.luci.util.FailoverFetch;
 
 public class CNodePool implements Quittable{
 	
@@ -45,7 +47,7 @@ public class CNodePool implements Quittable{
 	private String namespace = null;
 	private Long poolSize = null;
 	private List<CNode> pool = null;
-	private String directorySeed = null;
+	private List<String> directoryList = null;
 
 	private boolean shuttingDown = false;
 	
@@ -68,6 +70,7 @@ public class CNodePool implements Quittable{
 	
 	private CNodePool(){
 		Globals.getGlobals();
+		directoryList = new ArrayList<String>();
 	}
 	
 	public static synchronized CNodePool getInstance(){
@@ -113,16 +116,11 @@ public class CNodePool implements Quittable{
 	}
 
 
-	public String getDirectorySeed() {
-		return directorySeed;
+	
+	public List<String> getDirectoryList(){
+		return directoryList;
 	}
-
-
-	protected void setDirectorySeed(String directorySeed) {
-		this.directorySeed = directorySeed;
-	}
-
-
+	
 	protected static JSAPResult parseCommandLine(String[] args) throws JSAPException {
 		JSAP jsap = new JSAP();
 		JSAPResult config = null;
@@ -288,7 +286,7 @@ public class CNodePool implements Quittable{
 	}
 	
 	public static CNodePool launchCNodePool() {
-		String propertiesLocation = "cacophony.n_node_pool.properties";
+		String propertiesLocation = "cacophony.c_node_pool.properties";
 		return(launchCNodePool(propertiesLocation));
 	}
 
@@ -308,20 +306,20 @@ public class CNodePool implements Quittable{
 			cNPool.setPoolSize(poolSize);
 			
 			String directorySeed = config.getString("directory_seed");
-			cNPool.getDire(directorySeed);
+			FailoverFetch failoverFetch = new FailoverFetch(directorySeed);
 			
 			cNPool.setPool(new ArrayList<CNode>());
 			
 			for(int i = 0; i< poolSize; i++){
-				CNode c = new CNode();
-				config = getANewConfiguration();
-				c.setConfiguration(config);
-				c.init();
+				CNode c = new CNode(failoverFetch,cNPool);
+				c.getANewConfiguration();
+				c.launch();
 				cNPool.getPool().add(c);
 			}
 			
 		} catch (ConfigurationException e1) {
 			getLog().error("Problem loading configuration from:"+propertiesLocation+"\n"+e1);
+			return null;
 		}
 		return cNPool;
 	}

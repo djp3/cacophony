@@ -1,4 +1,4 @@
-package edu.uci.ics.luci.cacophony;
+package edu.uci.ics.luci.cacophony.directory;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -8,8 +8,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.TreeMap;
 
 import me.prettyprint.cassandra.serializers.LongSerializer;
 import me.prettyprint.cassandra.serializers.StringSerializer;
@@ -26,6 +29,7 @@ import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.commons.configuration.XMLPropertiesConfiguration;
 import org.apache.log4j.Logger;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -36,6 +40,7 @@ import com.martiansoftware.jsap.JSAPResult;
 import com.martiansoftware.jsap.Switch;
 import com.quub.Globals;
 import com.quub.database.QuubDBConnectionPool;
+import com.quub.util.Pair;
 import com.quub.util.Quittable;
 import com.quub.webserver.AccessControl;
 import com.quub.webserver.HandlerAbstract;
@@ -44,12 +49,15 @@ import com.quub.webserver.WebServer;
 import com.quub.webserver.handlers.HandlerFileServer;
 import com.quub.webserver.handlers.HandlerVersion;
 
+import edu.uci.ics.luci.cacophony.CacophonyGlobals;
 import edu.uci.ics.luci.cacophony.directory.api.HandlerDirectoryNamespace;
 import edu.uci.ics.luci.cacophony.directory.api.HandlerDirectoryServers;
 import edu.uci.ics.luci.cacophony.directory.api.HandlerNodeAssignment;
+import edu.uci.ics.luci.cacophony.directory.api.HandlerNodeCheckin;
 import edu.uci.ics.luci.cacophony.directory.api.HandlerNodeList;
 import edu.uci.ics.luci.cacophony.directory.api.HandlerShutdown;
 import edu.uci.ics.luci.cacophony.directory.api.WebServerWarmUp;
+import edu.uci.ics.luci.cacophony.directory.nodelist.CNode;
 import edu.uci.ics.luci.cacophony.directory.nodelist.MetaCNode;
 import edu.uci.ics.luci.cacophony.directory.nodelist.NodeListLoader;
 
@@ -77,11 +85,16 @@ public class Directory implements Quittable{
 	private String directoryNamespace = null;
 	
 	private ThriftColumnFamilyTemplate<String, String> directoryServerTemplate = null;
-	private final String DIRECTORY_SERVER_CF="directory_server";
+	private final static String DIRECTORY_SERVER_CF="directory_server";
 	private ThriftColumnFamilyTemplate<String, String> cacophonyNodeTemplate = null;
-	private final String C_NODE_LIST_CF="cnode_list";
-	public final static long FIVE_MINUTES  = 5 * 60 * 1000;
-	private Timer heartbeat;
+	private final static String C_NODE_LIST_CF="cnode_list";
+	
+	public final static long ONE_SECOND = 1000L;
+	public final static long ONE_MINUTE = 60 * ONE_SECOND;
+	public final static long FIVE_MINUTES  = 5 * ONE_MINUTE;
+	public final static long ONE_HOUR = 60 * ONE_MINUTE;
+	public final static long ONE_DAY = 24 * ONE_HOUR;
+	public Timer heartbeat;
 	
 	private boolean shuttingDown = false;
 	
@@ -144,7 +157,7 @@ public class Directory implements Quittable{
 				stringSerializer);
 		
 		cacophonyNodeTemplate = new ThriftColumnFamilyTemplate<String,String>(ksp,
-				this.C_NODE_LIST_CF,
+				C_NODE_LIST_CF,
 				stringSerializer,
 				stringSerializer);
 		
@@ -162,30 +175,42 @@ public class Directory implements Quittable{
 	}
 
 
-	protected void setDirectoryNamespace(String directoryNamespace) {
+	public void setDirectoryNamespace(String directoryNamespace) {
 		if(this.directoryNamespace == null){
 			this.directoryNamespace = directoryNamespace;
 		}
 		else{
-			getLog().error("Doublesetting directory namespace: "+this.directoryNamespace+" ->"+directoryNamespace);
+			getLog().info("Doublesetting directory namespace: "+this.directoryNamespace+" -> "+directoryNamespace);
 			this.directoryNamespace = directoryNamespace;
 		}
 	}
 
 
-	public String startHeartbeat(){
-		return(startHeartbeat(null,null,null));
+	public void startHeartbeat(){
+		startHeartbeat(null,null,null,null);
 	}
 	
-	public String startHeartbeat(Long delay, Long period){
-		return(startHeartbeat(delay,period,null));
+	public void startHeartbeat(Long delay, Long period){
+		startHeartbeat(delay,period,null,null);
 	}
 	
-	public String startHeartbeat(String url){
-		return(startHeartbeat(null,null,url));
+	public void startHeartbeat(String guid){
+		startHeartbeat(null,null,guid,null);
 	}
 	
-	public String startHeartbeat(Long delay,Long period,String url){
+	public void startHeartbeat(String guid,List<Pair<Long,String>> urls){
+		startHeartbeat(null,null,guid,urls);
+	}
+	
+	/**
+	 * 
+	 * @param delay How long to wait before first heartbeat goes out in milliseconds. Default is 0
+	 * @param period How often to send a heartbeat in milliseconds. Default is 5 minutes
+	 * @param guid Some canonical name for the directory, like "cloud2". Default is "Unknown Directory"
+	 * @param urls A list of URLs with which to reference this directory with a number indicating preference order. Lower is more preferred.
+	 *  Default is just what java thinks the host address is.
+	 */
+	public void startHeartbeat(Long delay,Long period,String guid, List<Pair<Long,String>> urls){
 		
 		if(delay == null){
 			delay = 0L;
@@ -195,59 +220,74 @@ public class Directory implements Quittable{
 			period = FIVE_MINUTES;
 		}
 		
-		if(url == null){
+		if(guid == null){
+			guid = "Unknown Directory";
+		}
+		
+		if(urls == null){
+			urls = new ArrayList<Pair<Long,String>>();
+		}
+		
+		final String localNamespace = getDirectoryNamespace();
+		if(localNamespace == null){
+			getLog().error("Set the namespace before starting the heartbeat");
+		}
+		
+		final String localGUID = guid;
+		
+		if(urls.size() == 0){
+			String url = null;
 			try {
 				url = InetAddress.getLocalHost().getHostAddress();
 			} catch (UnknownHostException e1) {
 				url ="127.0.0.1";
 			}
+			urls.add(new Pair<Long,String>(0L,url));
 		}
 		
-		final String local_url = url;
-		final String local_namespace = getDirectoryNamespace();
-		if(local_namespace == null){
-			getLog().error("Set the namespace before starting the heartbeat");
-		}
 		
+	   	final JSONObject localData = new JSONObject();
+	   	try {
+			localData.put("namespace", localNamespace);
+			JSONArray servers = new JSONArray();
+			for(Pair<Long,String> x:urls){
+				JSONObject bar = new JSONObject();
+				bar.put("priority_order",x.getFirst());
+				bar.put("url",x.getSecond());
+				servers.put(bar);
+			}
+			localData.put("access_routes", servers);
+	   	} catch (JSONException e) {
+	   		getLog().fatal("Something is wrong with JSON:"+localNamespace+"\n"+e);
+	   	}
+		
+		/* If we already started a heartbeat cancel it and restart */
 		if(heartbeat != null){
 			heartbeat.cancel();
 		}
 		
-		getLog().error("Starting a heartbeat at:"+url);
-
+		try {
+			getLog().error("Starting a Directory -> Cassandra heartbeat for: "+localData.toString(1));
+		} catch (JSONException e1) {
+		}
 		
 		/*Set up the heartbeat to go every 5 minutes;*/
 		 heartbeat = new Timer(true);
 		 heartbeat.scheduleAtFixedRate(
 			    new TimerTask(){
 			    	
-			    	JSONObject data = null;
-			    	private long ONE_SECOND = 1000;
-			    	private long ONE_MINUTE = 60 * ONE_SECOND;
-					private long ONE_HOUR = 60 * ONE_MINUTE;
-					private long ONE_DAY = 24 * ONE_HOUR;
-			    	{
-			    		data = new JSONObject();
-			    		try {
-							data.put("namespace", local_namespace);
-						} catch (JSONException e) {
-							getLog().fatal("Something is wrong with JSON:"+local_namespace+"\n"+e);
-						}
-			    	}
-			    	
 					@Override
 			    	public void run(){
 						/* Update this nodes heartbeat */
-			    		ColumnFamilyUpdater<String, String> updater = directoryServerTemplate.createUpdater(local_url);
+			    		ColumnFamilyUpdater<String, String> updater = directoryServerTemplate.createUpdater(localGUID);
 			    		String now = Long.toString(System.currentTimeMillis());
 			    		try {
-							data.put("heartbeat",now);
+							localData.put("heartbeat",now);
 						} catch (JSONException e) {
 							getLog().fatal("Something is wrong with JSON:"+now+"\n"+e);
 						}
-						updater.setString("json_data", data.toString());
+						updater.setString("json_data", localData.toString());
 						directoryServerTemplate.update(updater);
-						
 						
 						
 						/* Clean up old heartbeats */
@@ -273,9 +313,6 @@ public class Directory implements Quittable{
 						}
 					}
 					}, delay, period);
-		 
-		 return url;
-		 
 	}
 	
 	public Long getHeartbeat(String key){
@@ -324,8 +361,14 @@ public class Directory implements Quittable{
 	}
 	
 	
+	
 	public List<MetaCNode> getNodeList(){
-		List<MetaCNode> ret = new ArrayList<MetaCNode>();
+		return(getNodeList(null));
+	}
+	
+	
+	private Map<String,JSONObject> getCacheData(){
+		Map<String,JSONObject> ret = new TreeMap<String,JSONObject>();
 		
 		KeyIterator<String> keyIterator = new KeyIterator<String>(ksp, C_NODE_LIST_CF,stringSerializer);
 		
@@ -336,15 +379,7 @@ public class Directory implements Quittable{
 				jsonData = res.getString("json_data");
 				if(jsonData != null){
 					JSONObject jsonObject = new JSONObject(jsonData);
-					if(jsonObject.has("latitude")){
-						if(jsonObject.has("longitude")){
-							if(jsonObject.has("map_weight")){
-								if(jsonObject.getDouble("map_weight") > 0.0){
-									ret.add(MetaCNode.fromJSONObject(jsonObject));
-								}
-							}
-						}
-					}
+					ret.put(keyI,jsonObject);
 				}
 			} catch (HectorException e) {
 				getLog().error("Problem getting a c node list:\n"+e);
@@ -352,6 +387,28 @@ public class Directory implements Quittable{
 				getLog().error("Bad JSON Data in Cassandra ring:\n"+jsonData+"\n"+e);
 			}
 		}
+		return ret;
+		
+	}
+	
+	Long cacheTimeout = 0L;
+	Map<String,JSONObject> cache = new TreeMap<String,JSONObject>();
+	public List<MetaCNode> getNodeList(Set<String> guids){
+		if(cacheTimeout < (System.currentTimeMillis() - FIVE_MINUTES)){
+			cache.clear();
+			cache.putAll(getCacheData());
+			cacheTimeout = System.currentTimeMillis();
+		}
+		
+		List<MetaCNode> ret = new ArrayList<MetaCNode>();
+		
+		for(Entry<String, JSONObject> e:cache.entrySet()){
+			MetaCNode mc = MetaCNode.fromJSONObject(e.getValue());
+			if((guids == null) || (guids.contains(mc.getId()))){
+				ret.add(mc);
+			}
+		}
+		
 		return ret;
 	}
 	
@@ -365,6 +422,57 @@ public class Directory implements Quittable{
 		}
 		
 		getLog().info("Loaded "+map.size()+" CNodes");
+	}
+	
+	public void updateMetaCNode(String metaCNodeID, String cNodeGUID, Long heartbeat){
+		
+		if(metaCNodeID == null){
+			return;
+		}
+		if(cNodeGUID == null){
+			return;
+		}
+		
+		String jsonData = null;
+		JSONObject jsonObject = null;
+		try {
+			ColumnFamilyResult<String, String> res = this.cacophonyNodeTemplate.queryColumns(metaCNodeID);
+			jsonData = res.getString("json_data");
+			if(jsonData != null){
+				jsonObject = new JSONObject(jsonData);
+			}
+		} catch (HectorException e) {
+			getLog().error("Problem getting a c node from cassandra:"+metaCNodeID+"\n"+e);
+		} catch (JSONException e) {
+			getLog().error("Bad JSON Data in Cassandra ring:"+metaCNodeID+"\n"+jsonData+"\n"+e);
+		}
+		
+		if(jsonObject != null){
+			try {
+				MetaCNode mc = MetaCNode.fromJSONObject(jsonObject);
+				Map<String, CNode> cnodes = mc.getCNodes();
+				if(cnodes == null){
+					cnodes = new TreeMap<String,CNode>();
+				}
+				
+				CNode cnode = null;
+				
+				cnode = cnodes.get(cNodeGUID);
+				if(cnode == null){
+					cnode = new CNode();
+					cnode.setGuid(cNodeGUID);
+				}
+				cnode.setLastHeartbeat(heartbeat);
+				cnodes.put(cNodeGUID, cnode);
+				mc.setCNodes(cnodes);
+				
+				ColumnFamilyUpdater<String, String> updater = this.cacophonyNodeTemplate.createUpdater(metaCNodeID);
+				updater.setString("json_data", mc.toJSONObject().toString());
+				this.cacophonyNodeTemplate.update(updater);
+			} catch (HectorException e) {
+				getLog().error("Problem updating a c node in cassandra:"+metaCNodeID+"\n"+e);
+			}
+		}
 	}
 
 	protected static JSAPResult parseCommandLine(String[] args) throws JSAPException {
@@ -408,6 +516,15 @@ public class Directory implements Quittable{
 					.setLongFlag("url.external");
   
 			fl.setHelp("What is the url that external web browsers can find you? (Maybe different than what the server thinks it is)");
+			jsap.registerParameter(fl);
+			
+			fl = new FlaggedOption("server.guid")
+					.setStringParser(JSAP.STRING_PARSER)
+					.setRequired(false) 
+					.setShortFlag('g') 
+					.setLongFlag("server.guid");
+  
+			fl.setHelp("What is a guid to identify this server by?");
 			jsap.registerParameter(fl);
         
 			sw = new Switch("help")
@@ -495,6 +612,7 @@ public class Directory implements Quittable{
 			requestHandlerRegistry.put("namespace",HandlerDirectoryNamespace.class);
 			requestHandlerRegistry.put("nodes",HandlerNodeList.class);
 			requestHandlerRegistry.put("node_assignment",HandlerNodeAssignment.class);
+			requestHandlerRegistry.put("node_checkin",HandlerNodeCheckin.class);
 			requestHandlerRegistry.put("shutdown",HandlerShutdown.class);
 
 			RequestHandlerFactory requestHandlerFactory = new RequestHandlerFactory(g,requestHandlerRegistry);
@@ -527,18 +645,43 @@ public class Directory implements Quittable{
 			}
 		}
 		
-		
-		String url = getConfig(clo,g.getConfig(),"url.external");
+		/* Set up the directory access and heartbeats */
+		String externalURL = getConfig(clo,g.getConfig(),"url.external");
 		try {
-			if((url == null) || (url.equals(""))){
-				url = InetAddress.getLocalHost().getHostAddress();
+			if((externalURL == null) || (externalURL.equals(""))){
+				externalURL = InetAddress.getLocalHost().getHostName();
 			}
 		} catch (UnknownHostException e) {
-			url = "127.0.0.1";
+			try {
+				externalURL = InetAddress.getLocalHost().getHostAddress();
+			} catch (UnknownHostException e1) {
+				externalURL = null;
+			}
 		}
-		url = url+":"+getConfig(clo,g.getConfig(),"port");
-
-		directory.startHeartbeat(url);
+		List<Pair<Long, String>> urls = new ArrayList<Pair<Long,String>>();
+		
+		if(externalURL != null){
+			Pair<Long, String> p = new Pair<Long,String>(1L,externalURL+":"+getConfig(clo,g.getConfig(),"port"));
+			urls.add(p);
+		}
+		
+		String internalURL = getConfig(clo,g.getConfig(),"url.internal");
+		try {
+			if((internalURL == null) || (internalURL.equals(""))){
+				internalURL = InetAddress.getLocalHost().getHostName();
+			}
+		} catch (UnknownHostException e) {
+			try {
+				internalURL = InetAddress.getLocalHost().getHostAddress();
+			} catch (UnknownHostException e1) {
+				internalURL = null;
+			}
+		}
+		if((internalURL != null) && (!internalURL.equals(externalURL))){
+			Pair<Long, String> p = new Pair<Long,String>(0L,internalURL+":"+getConfig(clo,g.getConfig(),"port"));
+			urls.add(p);
+		}
+		Directory.getInstance().startHeartbeat(""+getConfig(clo,g.getConfig(),"server.guid"),urls);
 		
 		/*Set up clean shutdown hooks*/
 		g.addQuittables(ws);

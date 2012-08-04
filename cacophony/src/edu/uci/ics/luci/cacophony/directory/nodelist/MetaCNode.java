@@ -1,11 +1,10 @@
 package edu.uci.ics.luci.cacophony.directory.nodelist;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
@@ -67,8 +66,8 @@ public class MetaCNode {
 	    		return 1;
 	    	}
 	   
-	    	List<URL> cNodesA = ((MetaCNode)a).getCNodes();
-	    	List<URL> cNodesB = ((MetaCNode)b).getCNodes();
+	    	Map<String, CNode> cNodesA = ((MetaCNode)a).getCNodes();
+	    	Map<String, CNode> cNodesB = ((MetaCNode)b).getCNodes();
 	        Double size1 = null;
 	        Double size2 = null;
 	        
@@ -104,7 +103,7 @@ public class MetaCNode {
 	private Double longitude;
 	private Double mapWeight;
 	private Double priority;
-	private List<URL> cNodes = Collections.synchronizedList(new ArrayList<URL>(1));
+	private Map<String,CNode> cNodes = Collections.synchronizedMap(new TreeMap<String,CNode>());
 	private JSONObject configuration;
 	
 	public String getId() {
@@ -151,11 +150,11 @@ public class MetaCNode {
 	public void setConfiguration(JSONObject configuration) {
 		this.configuration = configuration;
 	}
-	public List<URL> getCNodes() {
+	public Map<String, CNode> getCNodes() {
 		return cNodes;
 	}
 	
-	public void setCNodes(List<URL> cNodes) {
+	public void setCNodes(Map<String, CNode> cNodes) {
 		this.cNodes = cNodes;
 	}
 	
@@ -268,9 +267,9 @@ public class MetaCNode {
 			else{
 				for(int idx = 0; idx < _cNodes.length();idx++){
 					try {
-						c.getCNodes().add(new URL(_cNodes.getString(idx)));
-					} catch (MalformedURLException e) {
-						getLog().error("Unable to make MetaCNode from JSON: "+_cNodes.toString()+"\n"+e);
+						JSONObject x = _cNodes.getJSONObject(idx);
+						CNode y = CNode.fromJSONObject(x);
+						c.getCNodes().put(y.getGuid(),y);
 					} catch (JSONException e) {
 						getLog().error("Unable to make MetaCNode from JSON: "+_cNodes.toString()+"\n"+e);
 					}
@@ -298,11 +297,11 @@ public class MetaCNode {
 			jsonObject.put("longitude", c.getLongitude());
 			jsonObject.put("latitude", c.getLatitude());
 			jsonObject.put("map_weight", c.getMapWeight());
-			List<URL> l = c.getCNodes();
+			Map<String, CNode> l = c.getCNodes();
 			if(l != null){
 				JSONArray _cNodes = new JSONArray();
-				for(URL u:l){
-					_cNodes.put(u.toString());
+				for(Entry<String, CNode> e:l.entrySet()){
+					_cNodes.put(e.getValue().toJSONObject());
 				}
 				jsonObject.put("c_nodes", _cNodes);
 			}

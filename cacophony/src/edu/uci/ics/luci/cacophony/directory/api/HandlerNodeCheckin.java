@@ -1,11 +1,10 @@
 package edu.uci.ics.luci.cacophony.directory.api;
 
 import java.net.InetAddress;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -16,14 +15,13 @@ import com.quub.webserver.HandlerAbstract;
 
 import edu.uci.ics.luci.cacophony.CacophonyGlobals;
 import edu.uci.ics.luci.cacophony.directory.Directory;
-import edu.uci.ics.luci.cacophony.directory.nodelist.MetaCNode;
 
-public class HandlerNodeAssignment extends CacophonyRequestHandlerHelper {
+public class HandlerNodeCheckin extends CacophonyRequestHandlerHelper {
 	
 	private transient volatile Logger log = null;
 	public Logger getLog(){
 		if(log == null){
-			log = Logger.getLogger(HandlerNodeAssignment.class);
+			log = Logger.getLogger(HandlerNodeCheckin.class);
 		}
 		return log;
 	}
@@ -41,28 +39,42 @@ public class HandlerNodeAssignment extends CacophonyRequestHandlerHelper {
 			return super.versionFailResponse(restFunction,parameters);
 		}
 		
-		List<MetaCNode> nodeList = Directory.getInstance().getNodeList();
-		Collections.sort(nodeList,MetaCNode.ByAssignmentPaucity);
+		String jsonDataString = parameters.get("json_data");
 		
-		/* Make sure we have all the necessary fields */
-		MetaCNode retC = null;
-		while((retC == null) && (nodeList.size() > 0)){
-			MetaCNode x = nodeList.remove(0);
-			if( (x.getId() != null) &&
-				(x.getConfiguration() != null)){
-				retC = x;
+		JSONObject ret = null;
+		
+		if(jsonDataString != null){
+			try {
+				JSONObject json = new JSONObject(jsonDataString);
+				String guid = json.getString("guid");
+				String nodeId = json.getString("node_id");
+				String namespace = json.getString("namespace");
+				JSONArray accessRoutes = json.getJSONArray("access_routes");
+				
+				Directory.getInstance().updateMetaCNode(nodeId, guid, System.currentTimeMillis());
+				
+				ret = new JSONObject();
+				String version = Globals.getGlobals().getVersion();
+				try {
+					ret.put("version", version);
+					ret.put("error", "false");
+				} catch (JSONException e) {
+					getLog().error("Unable to respond with version:"+e);
+				}
+			} catch (JSONException e) {
+				getLog().warn("Received bad checkin data:"+jsonDataString+"\n"+e);
 			}
 		}
 		
-		JSONObject ret = new JSONObject();
-		
-		if(retC != null){
+		if(ret == null){
+			ret = new JSONObject();
 			String version = Globals.getGlobals().getVersion();
 			try {
 				ret.put("version", version);
-				ret.put("node_id", retC.getId());
-				ret.put("node_configuration", retC.getConfiguration());
-				ret.put("error", "false");
+				ret.put("error", "true");
+				JSONArray errors = new JSONArray();
+				errors.put("Unable to get a valid check_in report");
+				ret.put("errors",errors);
 			} catch (JSONException e) {
 				getLog().error("Unable to respond with version:"+e);
 			}

@@ -32,7 +32,7 @@ import com.quub.webserver.handlers.HandlerFileServer;
 import com.quub.webserver.handlers.HandlerVersion;
 
 import edu.uci.ics.luci.cacophony.CacophonyGlobals;
-import edu.uci.ics.luci.cacophony.Directory;
+import edu.uci.ics.luci.cacophony.directory.Directory;
 
 public class HandlerNodeAssignmentTest {
 	

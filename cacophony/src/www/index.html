@@ -5,17 +5,49 @@
     <title>Cacophony Directory Server</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
-    <meta name="author" content="">
+    <meta name="author" content="Don Patterson">
+    <link rel="shortcut icon" href="/favicon.ico" />
+    
 
-    <!-- Le styles -->
-    <link href="/bootstrap/docs/assets/css/bootstrap.css" rel="stylesheet">
+    <link href="/lib/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/lib/css/datatables/demo_table.css" rel="stylesheet">
     <style>
-      body {
-        padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
-      }
+		body {
+			padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
+		}
+      
+		#health-chart {
+			background-color: #ffffff;
+			border: 0px solid gray;
+			font: 10px sans-serif;
+			text-shadow: none;
+		}
+		
+		#health-chart .total{
+			font-size: 18px;
+			font-weight: bold;
+		}
+		
+		#health-chart .units{
+			fill: gray;
+			font-size: 12px;
+		}
+		
+		#health-chart .label{
+			fill: #CCC;
+			font-size: 12px;
+			font-weight: bold;
+		}
+		
+		#health-chart .value{
+			font-size: 12px;
+			font-weight: bold;
+		}​
+		
+	
+	
 
     </style>
-    <link href="/bootstrap/docs/assets/css/bootstrap-responsive.css" rel="stylesheet">
 
     <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
     <!--[if lt IE 9]>
@@ -69,7 +101,7 @@
 		</div>
 		<div class="row-fluid">
 			<div class="span4 offset4">
-				<div id="piechart">
+				<div id="health-chart">
 				</div>
 			</div>
 			<div class="span4">
@@ -77,36 +109,62 @@
 				<thead>
 					<tr>
 					<th>
-						Count	
+						<h3>Category</h3>
 					</th>
 					<th>
-						Category	
+						<h3>Count</h3>
 					</th>
 					</tr>
 				</thead>
 				<tbody>
-				<tr style="background-color:#dbe6de">
+				<tr>
 					<td>
-						20	
+						<h4>Healthy</h4>	
 					</td>
 					<td>
-						Healthy	
-					</td>
-				</tr>
-				<tr style="background-color:#ecdee1">
-					<td>
-						50	
-					</td>
-					<td>
-						Problems	
+						<span class="badge badge-success" id="health-table-healthy">
+							?	
+						</span>
 					</td>
 				</tr>
-				<tr style="background-color:#e2edea">
+				<tr>
 					<td>
-						30	
+						<h4>Faltering</h4>
 					</td>
 					<td>
-						Unassigned	
+						<span class="badge badge-warning" id="health-table-faltering">
+							?	
+						</div>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<h4>Stale</h4>
+					</td>
+					<td>
+						<span class="badge badge-important" id="health-table-stale">
+							?	
+						</div>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<h4>Unknown</h4>
+					</td>
+					<td>
+						<span class="badge badge-default" id="health-table-unknown">
+							?	
+						</div>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<h4>Unassigned</h4>
+					</td>
+					<td>
+						<span class="badge badge-info" id="health-table-unassigned">
+							?	
+						</div>
 					</td>
 				</tr>
 				</tbody>
@@ -154,25 +212,14 @@
 
     </div> <!-- /container -->
 
-    <!-- Le javascript
-    ================================================== -->
+    <!-- ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
-    <script src="/bootstrap/docs/assets/js/jquery.js"></script>
-	<script src="/lib/jquery.tablesorter/jquery.tablesorter.min.js"></script> 
-	<script src="/lib/jquery-metadata/jquery.metadata.js"></script> 
-    <script src="/bootstrap/docs/assets/js/bootstrap-transition.js"></script>
-    <script src="/bootstrap/docs/assets/js/bootstrap-alert.js"></script>
-    <script src="/bootstrap/docs/assets/js/bootstrap-modal.js"></script>
-    <script src="/bootstrap/docs/assets/js/bootstrap-dropdown.js"></script>
-    <script src="/bootstrap/docs/assets/js/bootstrap-scrollspy.js"></script>
-    <script src="/bootstrap/docs/assets/js/bootstrap-tab.js"></script>
-    <script src="/bootstrap/docs/assets/js/bootstrap-tooltip.js"></script>
-    <script src="/bootstrap/docs/assets/js/bootstrap-popover.js"></script>
-    <script src="/bootstrap/docs/assets/js/bootstrap-button.js"></script>
-    <script src="/bootstrap/docs/assets/js/bootstrap-collapse.js"></script>
-    <script src="/bootstrap/docs/assets/js/bootstrap-carousel.js"></script>
-    <script src="/bootstrap/docs/assets/js/bootstrap-typeahead.js"></script>
-    <script src="/lib/d3/d3.v2.min.js"></script>
+    <script src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
+    
+    <script src="/lib/js/bootstrap.min.js"></script>
+    
+    <script src="/lib/js/jquery.dataTables.min.js"></script>
+    <script src="/lib/js/d3.v2.min.js"></script>
 
 	<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?sensor=false&libraries=visualization"></script>
 	
@@ -181,7 +228,137 @@
 		var myServerList = null;
 		var myServerListCallBusy = false;
 		var myNodeList = null;
-		var myNodeListCallBusy = false;
+		var myNodeListCallBusy = 0;
+		
+		var myNodeMonitorQueue = [];
+		var myNodeMonitorBusy = 0;
+		
+		function addNodeToNodeMonitor(myID, counter){
+			if((counter == undefined) || (counter == null)){
+				counter = { healthy:0,faltering:0,stale:0,unassigned:1,unknown:0};
+			}
+			
+			var myData = {id: myID,
+						  status: counter};
+			myNodeMonitorQueue.push(myData);
+		}
+		
+		function calculateStatus(node){
+			var counter = { healthy:0,faltering:0,stale:0,unassigned:0,unknown:0};
+			if(node.c_nodes != undefined){
+				$('#nodeRefreshData_'+escape(node.id)).html('');
+				$.each(node.c_nodes,function(k,v){
+					if(v.last_heartbeat != undefined){
+						var d = new Date();
+						if(v.last_heartbeat > (d.getTime() - 10*60*1000)){
+							$('#nodeRefreshData_'+escape(node.id)).append('<span class="badge badge-success"><i class="icon-thumbs-up icon-white" rel="tooltip" title="Healthy"></i></span>');
+							counter.healthy++;
+						}
+						else if(v.last_heartbeat > (d.getTime() - 30*60*1000)){
+							$('#nodeRefreshData_'+escape(node.id)).append('<span class="badge badge-warning"><i class="icon-hand-left icon-white" rel="tooltip" title="Faltering"></i></span>');
+							counter.faltering++;
+						}
+						else{
+							$('#nodeRefreshData_'+escape(node.id)).append('<span class="badge badge-important"><i class="icon-thumbs-down icon-white" rel="tooltip" title="Stale"></i></span>');
+							counter.stale++;
+						}
+					}
+					else{
+						$('#nodeRefreshData_'+escape(node.id)).append('<span class="badge badge-default"><i class="icon-question-sign icon-white" rel="tooltip" title="Unknown"></i></span>');
+						counter.unknown++;
+					}
+				});
+			}
+			else{
+				counter.unassigned++;
+			}
+			
+			var normalize = counter.healthy + counter.faltering + counter.stale + counter.unassigned + counter.unknown;
+			if(normalize == 0){
+				counter.unknown = 1;
+			}
+			else{
+				counter.healthy /= normalize;
+				counter.faltering /= normalize;
+				counter.stale /= normalize;
+				counter.unassigned /= normalize;
+				counter.unknown /= normalize;
+			}
+			$('#nodeHealthData_'+escape(node.id)).html('<span class="badge badge-inverse">'+(counter.healthy*1000.0 + counter.faltering*100.0 + counter.stale * 10.0 + counter.unassigned).toFixed(1)+'</span>');
+			return counter;
+		}
+								
+		
+		function runNodeMonitor(){
+			if(myNodeMonitorBusy > 0){
+				return;
+			}
+			if(myNodeMonitorQueue.length == 0 ){
+				return;
+			}
+				
+			myNodeMonitorBusy++;
+			
+			var next = myNodeMonitorQueue.shift();
+			var myGuids = [next.id];
+			var myData = {guids:JSON.stringify(myGuids)};
+			myIconChange('#nodeRefreshStatus_'+escape(next.id),'icon-remove','icon-time');
+			myIconChange('#nodeRefreshStatus_'+escape(next.id),'icon-ok','icon-time');
+			$.ajax({
+				url:'/nodes',
+				dataType:'jsonp',
+				data:myData,
+				timeout : 90000,
+				success:function(data){
+					$('#nodeRefreshData_'+escape(next.id)).html("");
+					myIconChange('#nodeRefreshStatus_'+escape(next.id),'icon-time','icon-ok');
+					myIconChange('#nodeRefreshStatus_'+escape(next.id),'icon-remove','icon-ok');
+					if(data.nodes != undefined){
+						$.each(data.nodes,function(k,v){
+							counter = calculateStatus(v);
+							next.status = counter;
+						});
+					}
+					
+					myNodeMonitorQueue.push(next);
+					myNodeMonitorBusy--;
+				},
+				error:function(){
+					myIconChange('#nodeRefreshStatus_'+escape(next.id),'icon-time','icon-remove');
+					myIconChange('#nodeRefreshStatus_'+escape(next.id),'icon-ok','icon-remove');
+					myNodeMonitorBusy--;
+				}
+			});
+		};
+		
+		function updateNodeStatusFromButton(escapedID){
+			myNodeMonitorBusy++;
+			var myID = escapedID;
+			myIconChange('#nodeRefreshStatus_'+myID,'icon-ok','icon-question-sign');
+			myIconChange('#nodeRefreshStatus_'+myID,'icon-time','icon-question-sign');
+			var myGuids = [myID];
+			var myData = {guids:JSON.stringify(myGuids)};
+			$.ajax({
+				url:'/nodes',
+				dataType:'jsonp',
+				data:myData,
+				timeout : 90000,
+				success:function(data){
+					$('#nodeRefreshData_'+myID).html("");
+					myIconChange('#nodeRefreshStatus_'+myID,'icon-question-sign','icon-ok');
+					if(data.nodes != undefined){
+						$.each(data.nodes,function(k,v){
+							calculateStatus(v);
+						});
+					}
+					myNodeMonitorBusy--;
+				},
+				error:function(){
+					myIconChange('#nodeRefreshStatus_'+myID,'icon-question-sign','icon-remove');
+					myNodeMonitorBusy--;
+				}
+			});
+		};
 
 		function myIconChange(selector,oldIcon,newIcon){
 				$(selector).animate({opacity:0.0},500,function(){
@@ -242,14 +419,18 @@
 			$('#serverList').animate({opacity:0.0},500,function(){
 				$('#serverList').html('');
 				var myIndex=0;
-				$.each(myServerList.servers,function(i){
-					$('#serverList').append('<a class="btn disabled" id="altServer'+myIndex+'" href="http://'+i+'/index.html"><i class="icon-time" id="altServer'+myIndex+'Status"></i> '+i+'</a>');
-					checkDirectoryServer(myIndex,i);
-					myIndex=myIndex+1;
+				$.each(myServerList.servers,function(k,v){
+					if(v.access_routes != undefined){
+						$.each(v.access_routes,function(kk,vv){
+							i=vv.url;
+							$('#serverList').append('<a class="btn disabled" id="altServer'+myIndex+'" href="http://'+i+'/index.html"><i class="icon-time" id="altServer'+myIndex+'Status"></i> '+i+'</a>');
+							checkDirectoryServer(myIndex,i);
+							myIndex=myIndex+1;
+						});
+					}
 				});
 				$('#serverList').animate({opacity:1.0},500);
 			});
-			//$('#serverList').append('<h1>hello</h1>'+myServerList.servers);
 		}
 
 		function getMyServerList(){
@@ -277,23 +458,64 @@
 
 		function updateMyNodeList(){
 			$('#nodeList').animate({opacity:0.0},500,function(){
-				$('#nodeList').html('');
-				var myIndex=0;
+				$('#nodeList').html('<table id="myNodeListTable"></table>');
 
-				var newHtml='<table id="myNodeListTable" class="tablesorter table table-striped table-bordered table-condensed"><thead><tr><th>ID</th><th>Name</th><th>Latitude</th><th>Longitude</th><th>Health</th><th>Hits</th><th>Subscribed Servers</th></tr></thead><tbody>';
-
+				//Build the table
+				var aaData =[];
 				$.each(myNodeList.nodes,function(k,v){
-					newHtml = newHtml +'<tr><td>'+k+'</td><td>'+v.name+'</td><td>'+v.latitude+'</td><td>'+v.longitude+'</td><td>Health_Stub</td><td>Hits_Stub</td><td>Sub_Stub</td></tr>';
-					//checkDirectoryServer(myIndex,i);
-					myIndex=myIndex+1;
+					var line = [];
+					line.push('<a class="btn" id="nodeRefresh'+escape(v.id)+'" onClick="updateNodeStatusFromButton(\''+escape(v.id)+'\')"><i class="icon-time" id="nodeRefreshStatus_'+escape(v.id)+'"></i> </a>');
+					line.push(v.id);
+					if(v.name != undefined){
+						line.push(v.name);
+					}
+					else{
+						line.push('');
+					}
+					if(v.latitude != undefined){
+						line.push(v.latitude);
+					}
+					else{
+						line.push('');
+					}
+					if(v.longitude != undefined){
+						line.push(v.longitude);
+					}
+					else{
+						line.push('');
+					}
+					line.push('<div id="nodeHealthData_'+escape(v.id)+'"></div>');
+					line.push('Hits');
+					line.push('<div id="nodeRefreshData_'+escape(v.id)+'"></div>');
+					aaData.push(line);
 				});
-				newHtml = newHtml +'</tbody></table>'; 
-				$('#nodeList').html(newHtml);
+				
+				var myTable;
 				$('#nodeList').animate({opacity:1.0},500,function(){
-				$("#myNodeListTable").tablesorter({	cssAsc:'label-inverse',
-									cssDesc:'label-info',
-									cssHeader:'label',
-									widthFixed:true});});
+					myTable = $('#myNodeListTable').dataTable({
+						"sPaginationType": "full_numbers",
+						"aaData": aaData,
+						"aoColumns":[
+							{"sTitle":"Refresh","sType":'html',"sWidth":'30px',"sClass":"tableCell"},
+							{"sTitle":"ID","sType":'string',"sWidth":'60px',"sClass":"tableCell"},
+							{"sTitle":"Name","sType":'string',"sWidth":'200px',"sClass":"tableCell"},
+							{"sTitle":"Latitude","sType":'numeric',"sWidth":'60px',"sClass":"tableCell"},
+							{"sTitle":"Longitude","sType":'numeric',"sWidth":'60px',"sClass":"tableCell"},
+							{"sTitle":"Health","sType":'html',"sWidth":'60px',"sClass":"tableCell"},
+							{"sTitle":"Hits","sType":'html',"sWidth":'60px',"sClass":"tableCell"},
+							{"sTitle":"Nodes","sType":'html',"sWidth":'100px',"sClass":"tableCell"}
+							]
+					});
+					//myTable.fnAdjustColumnSizing();
+					//Populate the status
+					$.each(myNodeList.nodes,function(k,v){
+						var counter = calculateStatus(v);
+						addNodeToNodeMonitor(v.id,counter);
+					});
+				});
+				
+				
+				
 			});
 		}
 
@@ -346,8 +568,9 @@
 
 
 		function getMyNodeList(){
-			if(!myNodeListCallBusy){
-				myNodeListCallBusy = true;
+			if(myNodeListCallBusy == 0){
+				myNodeListCallBusy++;
+				myNodeMonitorBusy++;
 
 				$.ajax({
 					url:'/nodes',
@@ -358,11 +581,13 @@
 						updateMyNodeList();
 
 						updateMyNodeMap();
-
-						myNodeListCallBusy=false;
+						
+						myNodeListCallBusy--;
+						myNodeMonitorBusy--;
 					},
 					error:function(data){
-						myNodeListCallBusy=false;
+						myNodeListCallBusy--;
+						myNodeMonitorBusy--;
 					}
 				});
 			}
@@ -373,21 +598,358 @@
 			$('#nodeProgressBar').text((newWidth)+'%')
 
 		}
+		
+		///////////////////////////////////////////////////////////
+		// FUNCTIONS //////////////////////////////////////////////
+		///////////////////////////////////////////////////////////
+
+		// Interpolate the arcs in data space.
+		function pieTween(d, i) {
+			var s0;
+			var e0;
+			
+			if(oldPieData[i]){
+				s0 = oldPieData[i].startAngle;
+				e0 = oldPieData[i].endAngle;
+			} else if (!(oldPieData[i]) && oldPieData[i-1]) {
+				s0 = oldPieData[i-1].endAngle;
+				e0 = oldPieData[i-1].endAngle;
+			} else if(!(oldPieData[i-1]) && oldPieData.length > 0){
+				s0 = oldPieData[oldPieData.length-1].endAngle;
+				e0 = oldPieData[oldPieData.length-1].endAngle;
+			} else {
+				s0 = 0;
+				e0 = 0;
+			}
+			var i = d3.interpolate({startAngle: s0, endAngle: e0}, {startAngle: d.startAngle, endAngle: d.endAngle});
+			return function(t) {
+				var b = i(t);
+				return arc(b);
+			};
+		}
+			
+
+		function removePieTween(d, i) {
+			s0 = 2 * Math.PI;
+			e0 = 2 * Math.PI;
+			var i = d3.interpolate({startAngle: d.startAngle, endAngle: d.endAngle}, {startAngle: s0, endAngle: e0});
+			return function(t) {
+				var b = i(t);
+				return arc(b);
+			};
+		}
+
+
+		function textTween(d, i) {
+			var a;
+			if(oldPieData[i]){
+				a = (oldPieData[i].startAngle + oldPieData[i].endAngle - Math.PI)/2;
+			} else if (!(oldPieData[i]) && oldPieData[i-1]) {
+				a = (oldPieData[i-1].startAngle + oldPieData[i-1].endAngle - Math.PI)/2;
+			} else if(!(oldPieData[i-1]) && oldPieData.length > 0) {
+				a = (oldPieData[oldPieData.length-1].startAngle + oldPieData[oldPieData.length-1].endAngle - Math.PI)/2;
+			} else {
+				a = 0;
+			}
+			var b = (d.startAngle + d.endAngle - Math.PI)/2;
+			
+			var fn = d3.interpolateNumber(a, b);
+			return function(t) {
+				var val = fn(t);
+				return "translate(" + Math.cos(val) * (r+textOffset) + "," + Math.sin(val) * (r+textOffset) + ")";
+			};
+		}
+		
+		
+		function updateHealthChart() {
+			myNodeMonitorBusy++;
+			var myPieDataHelper= {};
+			var myPieData= [];
+			if(myNodeMonitorQueue != undefined){
+				$.each(myNodeMonitorQueue,function(k,v){
+					$.each(v.status,function(k,v){
+						if(myPieDataHelper[k] != undefined){
+							if(myPieDataHelper[k].count != undefined){
+								myPieDataHelper[k].count += v;
+							}
+							else{
+								var foo ={ label:k, count:v}
+								myPieDataHelper[k] = foo;
+							}
+						}
+						else{
+							var foo ={ label:k, count:v}
+							myPieDataHelper[k] = foo;
+						}
+					});
+				});
+				$.each(myPieDataHelper,function(k,v){
+					myPieData.push(v);
+					$('#health-table-'+v.label).animate({opacity:0.0},500,function(){
+						$('#health-table-'+v.label).html((v.count).toFixed(1));
+						$('#health-table-'+v.label).animate({opacity:1.0},500);
+					})
+				});
+			}
+			myNodeMonitorBusy--;
+			
+			arraySize = myPieData.length;
+
+			oldPieData = filteredPieData;
+			pieData = donut(myPieData);
+
+			var totalOctets = 0;
+			filteredPieData = pieData.filter(filterData);
+			function filterData(element, index, array) {
+				element.name = myPieData[index].label;
+				element.value = myPieData[index].count;
+				totalOctets += element.value;
+				return (element.value > 0);
+			}
+
+			if(filteredPieData.length > 0 && oldPieData.length > 0){
+				//REMOVE PLACEHOLDER CIRCLE
+				arc_group.selectAll("circle").remove();
+
+				totalValue.text(function(){
+					return totalOctets.toFixed(1);
+				});
+
+				//DRAW ARC PATHS
+				paths = arc_group.selectAll("path").data(filteredPieData);
+				paths.enter().append("svg:path")
+					.attr("stroke", "white")
+					.attr("stroke-width", 0.5)
+					.attr("fill", function(d, i) { return color(d); })
+					.transition()
+					.duration(tweenDuration)
+					.attrTween("d", pieTween);
+				paths.transition()
+					.duration(tweenDuration)
+					.attrTween("d", pieTween);
+				paths.exit()
+					.transition()
+					.duration(tweenDuration)
+					.attrTween("d", removePieTween)
+					.remove();
+
+				//DRAW TICK MARK LINES FOR LABELS
+				lines = label_group.selectAll("line").data(filteredPieData);
+				lines.enter().append("svg:line")
+					.attr("x1", 0)
+					.attr("x2", 0)
+					.attr("y1", -r-3)
+					.attr("y2", -r-8)
+					.attr("stroke", "gray")
+					.attr("transform", function(d) {
+						return "rotate(" + (d.startAngle+d.endAngle)/2 * (180/Math.PI) + ")";
+					});
+				lines.transition()
+					.duration(tweenDuration)
+					.attr("transform", function(d) {
+						return "rotate(" + (d.startAngle+d.endAngle)/2 * (180/Math.PI) + ")";
+					});
+				lines.exit().remove();
+
+				//DRAW LABELS WITH PERCENTAGE VALUES
+				valueLabels = label_group.selectAll("text.value").data(filteredPieData)
+					.attr("dy", function(d){
+						if ((d.startAngle+d.endAngle)/2 > Math.PI/2 && (d.startAngle+d.endAngle)/2 < Math.PI*1.5 ) {
+							return 5;
+						} else {
+							return -7;
+						}
+					})
+					.attr("text-anchor", function(d){
+						if ( (d.startAngle+d.endAngle)/2 < Math.PI ){
+							return "beginning";
+						} else {
+							return "end";
+						}
+					})
+					.text(function(d){
+						var percentage = (d.value/totalOctets)*100;
+						return percentage.toFixed(1) + "%";
+					});
+
+				valueLabels.enter().append("svg:text")
+					.attr("class", "value")
+					.attr("transform", function(d) {
+						return "translate(" + Math.cos(((d.startAngle+d.endAngle - Math.PI)/2)) * (r+textOffset) + "," + Math.sin((d.startAngle+d.endAngle - Math.PI)/2) * (r+textOffset) + ")";
+					})
+					.attr("dy", function(d){
+						if ((d.startAngle+d.endAngle)/2 > Math.PI/2 && (d.startAngle+d.endAngle)/2 < Math.PI*1.5 ) {
+							return 5;
+						} else {
+							return -7;
+						}
+					})
+					.attr("text-anchor", function(d){
+						if ( (d.startAngle+d.endAngle)/2 < Math.PI ){
+							return "beginning";
+						} else {
+							return "end";
+						}
+					}).text(function(d){
+						var percentage = (d.value/totalOctets)*100;
+						return percentage.toFixed(1) + "%";
+					});
+
+				valueLabels.transition().duration(tweenDuration).attrTween("transform", textTween);
+
+				valueLabels.exit().remove();
+
+
+				//DRAW LABELS WITH ENTITY NAMES
+				nameLabels = label_group.selectAll("text.units").data(filteredPieData)
+					.attr("dy", function(d){
+						if ((d.startAngle+d.endAngle)/2 > Math.PI/2 && (d.startAngle+d.endAngle)/2 < Math.PI*1.5 ) {
+							return 17;
+						} else {
+							return 5;
+						}
+					})
+					.attr("text-anchor", function(d){
+						if ((d.startAngle+d.endAngle)/2 < Math.PI ) {
+							return "beginning";
+						} else {
+							return "end";
+						}
+					}).text(function(d){
+						return d.name;
+					});
+	
+				nameLabels.enter().append("svg:text")
+					.attr("class", "units")
+					.attr("transform", function(d) {
+						return "translate(" + Math.cos(((d.startAngle+d.endAngle - Math.PI)/2)) * (r+textOffset) + "," + Math.sin((d.startAngle+d.endAngle - Math.PI)/2) * (r+textOffset) + ")";
+					})
+					.attr("dy", function(d){
+						if ((d.startAngle+d.endAngle)/2 > Math.PI/2 && (d.startAngle+d.endAngle)/2 < Math.PI*1.5 ) {
+							return 17;
+						} else {
+							return 5;
+						}
+					})
+					.attr("text-anchor", function(d){
+						if ((d.startAngle+d.endAngle)/2 < Math.PI ) {
+	          				return "beginning";
+						} else {
+							return "end";
+						}
+					}).text(function(d){
+						return d.name;
+					});
+	
+				nameLabels.transition().duration(tweenDuration).attrTween("transform", textTween);
+	
+				nameLabels.exit().remove();
+			}  
+		}
+							
+					
 				
+		var w = 450;                        //width
+		var h = 300;                        //height
+		var r = 100;                        //radius
+		var ir = 45;                        //inner radius
+		var textOffset = 14;
+		var tweenDuration = 250;
+			
+		var lines, valueLabels, nameLabels;
+		var pieData = [];    
+		var oldPieData = [];
+		var filteredPieData = [];
+		
+		//D3 helper function to populate pie slice parameters from array data
+		var donut = d3.layout.pie().value(function(d){
+			return d.count;
+		});
+			
+		var color = function(status){
+					if(status.name == 'healthy') return '#468847';
+					if(status.name == 'faltering') return '#f89406';
+					if(status.name == 'stale') return '#b94a48';
+					if(status.name == 'unknown') return '#999';
+					if(status.name == 'unassigned') return '#3a87ad';
+					return('#444444');
+				};
+					
+			
+		//D3 helper function to draw arcs, populates parameter "d" in path object
+		var arc = d3.svg.arc()
+					.startAngle(function(d){ return d.startAngle; })
+					.endAngle(function(d){ return d.endAngle; })
+					.innerRadius(ir)
+					.outerRadius(r);
+					
+		var vis = d3.select("#health-chart").append("svg:svg")
+					.attr("width", w)
+					.attr("height", h);						
+						
+		//GROUP FOR ARCS/PATHS
+		var arc_group = vis.append("svg:g")
+						.attr("class", "arc")
+						.attr("transform", "translate(" + (w/2) + "," + (h/2) + ")");
+						//GROUP FOR LABELS
+							
+		var label_group = vis.append("svg:g")
+						.attr("class", "label_group")
+						.attr("transform", "translate(" + (w/2) + "," + (h/2) + ")");
+
+		//GROUP FOR CENTER TEXT  
+		var center_group = vis.append("svg:g")
+						.attr("class", "center_group")
+						.attr("transform", "translate(" + (w/2) + "," + (h/2) + ")");
+
+		//PLACEHOLDER GRAY CIRCLE
+		var paths = arc_group.append("svg:circle")
+						.attr("fill", "#EFEFEF")
+						.attr("r", r);
+						
+		///////////////////////////////////////////////////////////
+		// CENTER TEXT ////////////////////////////////////////////
+		///////////////////////////////////////////////////////////
+
+		//WHITE CIRCLE BEHIND LABELS
+		var whiteCircle = center_group.append("svg:circle")
+						.attr("fill", "white")
+						.attr("r", ir);
+
+		// "TOTAL" LABEL
+		var totalLabel = center_group.append("svg:text")
+						.attr("class", "label")
+						.attr("dy", -15)
+						.attr("text-anchor", "middle") // text-align: right
+						.text("TOTAL");
+
+		//TOTAL TRAFFIC VALUE			
+		var totalValue = center_group.append("svg:text")
+						.attr("class", "total")
+						.attr("dy", 7)
+						.attr("text-anchor", "middle") // text-align: right
+						.text("Waiting...");
+
+		//UNITS LABEL
+		var totalUnits = center_group.append("svg:text")
+						.attr("class", "units")
+						.attr("dy", 21)
+						.attr("text-anchor", "middle") // text-align: right
+							.text("IDs");
 
 		$(document).ready(function(){
 
-			setProgressBar(10);
+			setProgressBar(1);
 			updateNamespace();
 
-			setProgressBar(20);
+			setProgressBar(2);
 			updateCurrentLocation();
 
-			setProgressBar(30);
+			setProgressBar(3);
 			getMyServerList();
 
-			setProgressBar(40);
-			var currentBar = 40;
+			setProgressBar(4);
+			var currentBar = 4;
 			var progress = setInterval(function() {
 				if (currentBar >= 99) {
 					clearInterval(progress);
@@ -397,57 +959,22 @@
 				}
 			}, 700);
 			
+			
 			getMyNodeList();
 
 			setInterval(function() {
 				getMyServerList();
 			},60*1000);
-
-			var w = 200,                        //width
-			h = 200,                            //height
-			r = 100,                            //radius
-			color = d3.scale.ordinal().range(['#dbe6de','#ecdee1','#e2edea','#0000AA']);   
-
-			data = [{"label":"Healthy", "value":20}, 
-					{"label":"Problems", "value":50}, 
-					{"label":"Unassigned", "value":30}];
-    
-			var vis = d3.select("#piechart")
-						.append("svg:svg")              //create the SVG element inside the <body>
-						.data([data])                   //associate our data with the document
-						.attr("width", w)           //set the width and height of our visualization (these will be attributes of the <svg> tag
-						.attr("height", h)
-						.append("svg:g")                //make a group to hold our pie chart
-						.attr("transform", "translate(" + r + "," + r + ")")    //move the center of the pie chart from 0, 0 to radius, radius
-
-			var arc = d3.svg.arc()              //this will create <path> elements for us using arc data
-						.outerRadius(r);
-
-			var pie = d3.layout.pie()           //this will create arc data for us given a list of values
-						.value(function(d) { return d.value; });    //we must tell it out to access the value of each element in our data array
-
-			var arcs = vis.selectAll("g.slice")     //this selects all <g> elements with class slice (there aren't any yet)
-						.data(pie)                          //associate the generated pie data (an array of arcs, each having startAngle, endAngle and value properties) 
-						.enter()                            //this will create <g> elements for every "extra" data element that should be associated with a selection. The result is creating a <g> for every object in the data array
-						.append("svg:g")                //create a group to hold each slice (we will have a <path> and a <text> element associated with each slice)
-						.attr("class", "slice");    //allow us to style things in the slices (like text)
-
-			arcs.append("svg:path")
-   				.attr("fill", function(d, i) { return color(i); } ) //set the color for each slice to be chosen from the color function defined above
-				.attr("d", arc);                                    //this creates the actual SVG path using the associated data (pie) with the arc drawing function
-
-			arcs.append("svg:text")                                     //add a label to each slice
-                .attr("transform", function(d) {                    //set the label's origin to the center of the arc
-                //we have to make sure to set these before calling arc.centroid
-                d.innerRadius = 0;
-                d.outerRadius = r;
-                return "translate(" + arc.centroid(d) + ")";        //this gives us a pair of coordinates like [50, 50]
-            })
-            .attr("text-anchor", "middle")                          //center the text on it's origin
-            .text(function(d, i) { return data[i].label; });        //get the label from our original data array
-        
 			
-
+			var runNodeMonitorCount = 10;
+			setInterval(function() {
+				runNodeMonitor();
+				runNodeMonitorCount++;
+				if(runNodeMonitorCount >= 10){
+					updateHealthChart();
+					runNodeMonitorCount = 0;
+				}
+			},1000);
 			
 		});
 	</script>

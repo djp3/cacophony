@@ -13,7 +13,7 @@ import com.quub.util.Pair;
 import com.quub.webserver.HandlerAbstract;
 
 import edu.uci.ics.luci.cacophony.CacophonyGlobals;
-import edu.uci.ics.luci.cacophony.Directory;
+import edu.uci.ics.luci.cacophony.directory.Directory;
 
 public class HandlerDirectoryServers extends HandlerAbstract {
 	

@@ -5,8 +5,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -103,13 +101,12 @@ public class MetaCNodeTest {
 			JSONObject j = new JSONObject();
 			c.setConfiguration(j);
 			
-			try {
-				c.getCNodes().add(new URL("http://www.waitscout.com/URL_"+Integer.toString(r.nextInt())));
-				c.getCNodes().add(new URL("http://www.waitscout.com/URL_"+Integer.toString(r.nextInt())));
-				c.getCNodes().add(new URL("http://www.waitscout.com/URL_"+Integer.toString(r.nextInt())));
-			} catch (MalformedURLException e) {
-				fail("Shouldn't freak");
-			}
+			CNode x = CNodeTest.makeCNode();
+			c.getCNodes().put(x.getGuid(),x);
+			x = CNodeTest.makeCNode();
+			c.getCNodes().put(x.getGuid(),x);
+			x = CNodeTest.makeCNode();
+			c.getCNodes().put(x.getGuid(),x);
 			for(int k = 0; k < i; k++){
 				assertTrue(!l.get(k).equals(c));
 			}
@@ -173,27 +170,26 @@ public class MetaCNodeTest {
 		}
 		c.setConfiguration(j);
 		
-		try {
-			c.getCNodes().add(new URL("http://www.waitscout.com/URL_"+Integer.toString(r.nextInt())));
-			c.getCNodes().add(new URL("http://www.waitscout.com/URL_"+Integer.toString(r.nextInt())));
-			c.getCNodes().add(new URL("http://www.waitscout.com/URL_"+Integer.toString(r.nextInt())));
-		} catch (MalformedURLException e) {
-			fail("Shouldn't freak");
-		}
+		CNode x = CNodeTest.makeCNode();
+		c.getCNodes().put(x.getGuid(),x);
+		x = CNodeTest.makeCNode();
+		c.getCNodes().put(x.getGuid(),x);
+		x = CNodeTest.makeCNode();
+		c.getCNodes().put(x.getGuid(),x);
 		
 		j = null;
 		MetaCNode c2 = null;
 		
 		j = MetaCNode.toJSONObject(c);
 		c2 = MetaCNode.fromJSONObject(j);
-		assertEquals(c,c2);
+		assertTrue(c.equals(c2));
 		assertEquals(c.hashCode(),c2.hashCode());
 		assertEquals(c2,c);
 		assertEquals(c2.hashCode(),c.hashCode());
 			
 		j = c.toJSONObject();
 		c2 = MetaCNode.fromJSONObject(j);
-		assertEquals(c,c2);
+		assertTrue(c.equals(c2));
 		assertEquals(c.hashCode(),c2.hashCode());
 		assertEquals(c2,c);
 		assertEquals(c2.hashCode(),c.hashCode());

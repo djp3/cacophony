@@ -34,7 +34,7 @@ import com.quub.webserver.handlers.HandlerFileServer;
 import com.quub.webserver.handlers.HandlerVersion;
 
 import edu.uci.ics.luci.cacophony.CacophonyGlobals;
-import edu.uci.ics.luci.cacophony.Directory;
+import edu.uci.ics.luci.cacophony.directory.Directory;
 
 public class HandlerDirectoryServersTest {
 	
@@ -187,7 +187,9 @@ public class HandlerDirectoryServersTest {
 	@Test
 	public void testGetServers() {
 		
-		Directory.getInstance().startHeartbeat();
+		String directoryGUID = "DirectoryGUID:Test";
+		
+		Directory.getInstance().startHeartbeat(directoryGUID);
 		
 		String responseString = null;
 		try {
@@ -211,16 +213,11 @@ public class HandlerDirectoryServersTest {
 				assertEquals("false",response.getString("error"));
 				assertEquals(Globals.getGlobals().getVersion(),response.getString("version"));
 				assertTrue(Globals.getGlobals().getVersion(),response.getString("servers").length() > 0);
-				InetAddress me = InetAddress.getLocalHost();
-    			String ip = me.getHostAddress();
-    			Long heartbeat = response.getJSONObject("servers").getJSONObject(ip).getLong("heartbeat");
+    			Long heartbeat = response.getJSONObject("servers").getJSONObject(directoryGUID).getLong("heartbeat");
 				assertTrue(System.currentTimeMillis() - heartbeat < Directory.FIVE_MINUTES);
 			} catch (JSONException e) {
 				e.printStackTrace();
 				fail("No error code:"+e);
-			} catch (UnknownHostException e) {
-				e.printStackTrace();
-				fail("Problem with getting local host:"+e);
 			}
 		} catch (JSONException e) {
 			e.printStackTrace();
