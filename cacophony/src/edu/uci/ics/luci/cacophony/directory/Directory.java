@@ -366,47 +366,60 @@ public class Directory implements Quittable{
 		return(getNodeList(null));
 	}
 	
+	private void refreshDatumInCache(String id){
+		String jsonData = null;
+		try {
+	    	ColumnFamilyResult<String, String> res = this.cacophonyNodeTemplate.queryColumns(id);
+			jsonData = res.getString("json_data");
+			JSONObject jsonObject = null;
+			if(jsonData != null){
+				jsonObject = new JSONObject(jsonData);
+			}
+			/* Put the updated info in the cache */
+			cache.put(id,jsonObject);
+		} catch (HectorException e) {
+			getLog().error("Problem getting a c node list:\n"+e);
+		} catch (JSONException e) {
+			getLog().error("Bad JSON Data in Cassandra ring:\n"+jsonData+"\n"+e);
+		}
+	}	
 	
-	private Map<String,JSONObject> getCacheData(){
-		Map<String,JSONObject> ret = new TreeMap<String,JSONObject>();
-		
+	
+	
+	private void refreshAllDataInCache(){
 		KeyIterator<String> keyIterator = new KeyIterator<String>(ksp, C_NODE_LIST_CF,stringSerializer);
 		
 		for(String keyI: keyIterator){
-			String jsonData = null;
-			try {
-		    	ColumnFamilyResult<String, String> res = this.cacophonyNodeTemplate.queryColumns(keyI);
-				jsonData = res.getString("json_data");
-				if(jsonData != null){
-					JSONObject jsonObject = new JSONObject(jsonData);
-					ret.put(keyI,jsonObject);
-				}
-			} catch (HectorException e) {
-				getLog().error("Problem getting a c node list:\n"+e);
-			} catch (JSONException e) {
-				getLog().error("Bad JSON Data in Cassandra ring:\n"+jsonData+"\n"+e);
-			}
+			refreshDatumInCache(keyI);
 		}
-		return ret;
 		
 	}
 	
 	Long cacheTimeout = 0L;
 	Map<String,JSONObject> cache = new TreeMap<String,JSONObject>();
 	public List<MetaCNode> getNodeList(Set<String> guids){
-		if(cacheTimeout < (System.currentTimeMillis() - FIVE_MINUTES)){
-			cache.clear();
-			cache.putAll(getCacheData());
-			cacheTimeout = System.currentTimeMillis();
-		}
-		
 		List<MetaCNode> ret = new ArrayList<MetaCNode>();
 		
-		for(Entry<String, JSONObject> e:cache.entrySet()){
-			MetaCNode mc = MetaCNode.fromJSONObject(e.getValue());
-			if((guids == null) || (guids.contains(mc.getId()))){
+		/* If we are asking for everything then use cached copy */
+		if(guids == null){
+			if(cacheTimeout < (System.currentTimeMillis() - FIVE_MINUTES)){
+				cache.clear();
+				refreshAllDataInCache();
+				cacheTimeout = System.currentTimeMillis();
+			}
+		
+			for(Entry<String, JSONObject> e:cache.entrySet()){
+				MetaCNode mc = MetaCNode.fromJSONObject(e.getValue());
 				ret.add(mc);
 			}
+		}
+		else{
+			for(String id:guids){
+				refreshDatumInCache(id);
+				MetaCNode mc = MetaCNode.fromJSONObject(cache.get(id));
+				ret.add(mc);
+			}
+			
 		}
 		
 		return ret;
