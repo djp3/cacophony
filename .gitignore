@@ -21,4 +21,5 @@ cacophony/cacophony.directory.properties
 directory.jar
 cacophony.directory.properties
 cacophony/src/edu/uci/ics/luci/cacophony/DirectoryTest.cacophony.directory.properties
+cacophony/src/edu/uci/ics/luci/cacophony/SystemTest.cacophony.c_node_poolA.properties
 jar-in-jar-loader.zip
