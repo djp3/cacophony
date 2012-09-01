@@ -1,10 +1,11 @@
 #! /bin/bash
 
-DEST=cloud2.waitscout.com
+DEST=cloud3.waitscout.com
 
 echo "***   "
 echo "***   Building jar"
 ant -f ant_directory.xml 
+ant -f ant_node.xml 
 
 echo "***   "
 echo "***   Moving files"

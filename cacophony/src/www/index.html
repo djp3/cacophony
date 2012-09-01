@@ -246,28 +246,33 @@
 			myNodeMonitorQueue.push(myData);
 		}
 		
-		function calculateStatus(node){
-			var counter = { healthy:0,faltering:0,stale:0,unassigned:0,unknown:0};
+		
+		function calculateStatusDetails(node){
+			var counter = { healthy:0,faltering:0,stale:0,unassigned:0,unknown:0,new_html:""};
 			if(node.c_node_references != undefined){
 				$('#nodeRefreshData_'+escape(node.id)).html('');
 				$.each(node.c_node_references,function(k,v){
 					if(v.last_heartbeat != undefined){
 						var d = new Date();
 						if(v.last_heartbeat > (d.getTime() - 10*60*1000)){
-							$('#nodeRefreshData_'+escape(node.id)).append('<span class="badge badge-success"><a href="http://'+v.access_routes_for_ui[0].route+'"><i class="icon-thumbs-up icon-white" rel="tooltip" title="Healthy"></i></a></span>');
+							counter.new_html = counter.new_html + '<span class="badge badge-success"><a href="http://'+v.access_routes_for_ui[0].route+'"><i class="icon-thumbs-up icon-white" rel="tooltip" title="Healthy"></i></a></span>';
+							//$('#nodeRefreshData_'+escape(node.id)).append('<span class="badge badge-success"><a href="http://'+v.access_routes_for_ui[0].route+'"><i class="icon-thumbs-up icon-white" rel="tooltip" title="Healthy"></i></a></span>');
 							counter.healthy++;
 						}
 						else if(v.last_heartbeat > (d.getTime() - 30*60*1000)){
-							$('#nodeRefreshData_'+escape(node.id)).append('<span class="badge badge-warning"><a href="http://'+v.access_routes_for_ui[0].route+'"><i class="icon-hand-left icon-white" rel="tooltip" title="Faltering"></i></a></span>');
+							counter.new_html = counter.new_html + '<span class="badge badge-warning"><a href="http://'+v.access_routes_for_ui[0].route+'"><i class="icon-hand-left icon-white" rel="tooltip" title="Faltering"></i></a></span>';
+							//$('#nodeRefreshData_'+escape(node.id)).append('<span class="badge badge-warning"><a href="http://'+v.access_routes_for_ui[0].route+'"><i class="icon-hand-left icon-white" rel="tooltip" title="Faltering"></i></a></span>');
 							counter.faltering++;
 						}
 						else{
-							$('#nodeRefreshData_'+escape(node.id)).append('<span class="badge badge-important"><a href="http://'+v.access_routes_for_ui[0].route+'"><i class="icon-thumbs-down icon-white" rel="tooltip" title="Stale"></i></a></span>');
+							counter.new_html = counter.new_html + '<span class="badge badge-important"><a href="http://'+v.access_routes_for_ui[0].route+'"><i class="icon-thumbs-down icon-white" rel="tooltip" title="Stale"></i></a></span>';
+							//$('#nodeRefreshData_'+escape(node.id)).append('<span class="badge badge-important"><a href="http://'+v.access_routes_for_ui[0].route+'"><i class="icon-thumbs-down icon-white" rel="tooltip" title="Stale"></i></a></span>');
 							counter.stale++;
 						}
 					}
 					else{
-						$('#nodeRefreshData_'+escape(node.id)).append('<span class="badge badge-default"><a href="http://'+v.access_routes_for_ui[0].route+'"><i class="icon-question-sign icon-white" rel="tooltip" title="Unknown"></i></a></span>');
+						counter.new_html = counter.new_html + '<span class="badge badge-default"><a href="http://'+v.access_routes_for_ui[0].route+'"><i class="icon-question-sign icon-white" rel="tooltip" title="Unknown"></i></a></span>';
+						//$('#nodeRefreshData_'+escape(node.id)).append('<span class="badge badge-default"><a href="http://'+v.access_routes_for_ui[0].route+'"><i class="icon-question-sign icon-white" rel="tooltip" title="Unknown"></i></a></span>');
 						counter.unknown++;
 					}
 				});
@@ -287,7 +292,18 @@
 				counter.unassigned /= normalize;
 				counter.unknown /= normalize;
 			}
-			$('#nodeHealthData_'+escape(node.id)).replaceWith((counter.healthy*1000.0 + counter.faltering*100.0 + counter.stale * 10.0 + counter.unassigned)+'<div id="#nodeHealthData_'+escape(node.id)+'"></div>');
+			return counter;
+		}
+		
+		function calculateStatusHealth(counter){
+			return(counter.healthy*1000.0 + counter.faltering*100.0 + counter.stale * 10.0 + counter.unassigned)
+		}
+		
+		function calculateStatusDetailsAndUpdateHTML(node){
+			var counter = calculateStatusDetails(node);
+			var health = calculateStatusHealth(counter);
+			$('#nodeHealthData_'+escape(node.id)).replaceWith(health+'<div id="#nodeHealthData_'+escape(node.id)+'"></div>');
+			$('#nodeRefreshData_'+escape(node.id)).html(counter.new_html);
 			return counter;
 		}
 								
@@ -318,7 +334,8 @@
 					myIconChange('#nodeRefreshStatus_'+escape(next.id),'icon-remove','icon-ok');
 					if(data.nodes != undefined){
 						$.each(data.nodes,function(k,v){
-							counter = calculateStatus(v);
+							counter = calculateStatusDetailsAndUpdateHTML(v);
+							counter.new_html =""; //Save space
 							next.status = counter;
 						});
 					}
@@ -351,7 +368,7 @@
 					myIconChange('#nodeRefreshStatus_'+myID,'icon-question-sign','icon-ok');
 					if(data.nodes != undefined){
 						$.each(data.nodes,function(k,v){
-							calculateStatus(v);
+							calculateStatusDetailsAndUpdateHTML(v);
 						});
 					}
 					myNodeMonitorBusy--;
@@ -496,9 +513,11 @@
 					else{
 						line.push('');
 					}
-					line.push('<div id="nodeHealthData_'+escape(v.id)+'">'+v.id+'</div>');
+					var counter = calculateStatusDetails(v);
+					var health = calculateStatusHealth(counter);
+					line.push('<div id="nodeHealthData_'+escape(v.id)+'">'+health+'</div>');
 					line.push('Hits');
-					line.push('<div id="nodeRefreshData_'+escape(v.id)+'"></div>');
+					line.push('<div id="nodeRefreshData_'+escape(v.id)+'">'+counter.new_html+'</div>');
 					aaData.push(line);
 				});
 				
@@ -521,7 +540,8 @@
 					//myTable.fnAdjustColumnSizing();
 					//Populate the status
 					$.each(myNodeList.nodes,function(k,v){
-						var counter = calculateStatus(v);
+						var counter = calculateStatusDetailsAndUpdateHTML(v);
+						counter.new_html =""; //Save space
 						addNodeToNodeMonitor(v.id,counter);
 					});
 				});
@@ -742,7 +762,7 @@
 				arc_group.selectAll("circle").remove();
 
 				totalValue.text(function(){
-					return totalOctets.toFixed(1);
+					return (parseFloat(totalOctets)+0).toFixed(1);
 				});
 
 				//DRAW ARC PATHS

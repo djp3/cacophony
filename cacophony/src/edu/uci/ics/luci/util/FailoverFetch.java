@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
@@ -31,10 +33,10 @@ public class FailoverFetch {
 	
 	/* Number of times the URL has failed and the URL like "localhost:1776" */
 	Object dspLock = new Object();
-	List<Pair<Long,String>> directoryServerPool = null;
+	Map<String,Long> directoryServerPool = null;
 	
 	FailoverFetch(){
-		directoryServerPool = new ArrayList<Pair<Long,String>>();
+		directoryServerPool = new HashMap<String,Long>();
 	}
 	
 	public FailoverFetch(String seedServer,String namespace){
@@ -79,9 +81,17 @@ public class FailoverFetch {
 	    						for(int i =0 ; i < urlsForServer.length(); i++){
 	    							long p = urlsForServer.getJSONObject(i).getLong("priority_order");
 	    							String url = urlsForServer.getJSONObject(i).getString("url");
-	    							Pair<Long, String> pair = new Pair<Long, String>(p,url);
 	    							synchronized(dspLock){
-	    								directoryServerPool.add(pair);
+	    								/* Make sure each url is only in the list once with the lowest priority */
+	    								if(directoryServerPool.containsKey(url)){
+	    									Long count = directoryServerPool.get(url);
+	    									if(count > p){
+	    										directoryServerPool.put(url, p);
+	    									}
+	    								}
+	    								else{
+	    									directoryServerPool.put(url,p);
+	    								}
 	    							}
 		    					}
 		    				} catch (JSONException e) {
@@ -96,11 +106,6 @@ public class FailoverFetch {
 			}
 		} catch (JSONException e) {
 			getLog().error(e);
-		}
-		
-		synchronized(dspLock){
-			Collections.shuffle(directoryServerPool);
-			Collections.sort(directoryServerPool);
 		}
 	}
 	
@@ -132,16 +137,10 @@ public class FailoverFetch {
 	public String fetchWebPage(String path, boolean authenticate, Map<String, String> vars, int timeOutMilliSecs) throws  MalformedURLException, IOException
 	{
 		String responseString = null;
-		List<String> servers = new ArrayList<String>();
-		
-		synchronized(dspLock){
-			for(Pair<Long, String> p:directoryServerPool){
-				servers.add(p.getSecond());
-			}
-		}
+		TreeSet<Pair<Long, String>> servers = orderDirectoryServers();
 		
 		while(servers.size()>0){
-			String s = servers.remove(0);
+			String s = servers.pollFirst().getSecond();
 			try{
 				responseString = WebUtil.fetchWebPage("http://"+s+path, authenticate, vars, timeOutMilliSecs);
 				break;
@@ -157,16 +156,33 @@ public class FailoverFetch {
 
 	}
 
+	protected TreeSet<Pair<Long, String>> orderDirectoryServers() {
+		TreeSet<Pair<Long,String>> servers = new TreeSet<Pair<Long,String>>();
+		
+		/* Get a set ordered by success/priority */
+		synchronized(dspLock){
+			List<Entry<String, Long>> shuffler = new ArrayList<Entry<String,Long>>();
+			for(Entry<String, Long> e: directoryServerPool.entrySet()){
+				shuffler.add(e);
+			}
+			/* Randomly choose among equal priorities */
+			Collections.shuffle(shuffler); 
+			for(Entry<String, Long> p:shuffler){
+				servers.add(new Pair<Long,String>(p.getValue(),p.getKey()));
+			}
+		}
+		return servers;
+	}
+
 	private void incrementFailCount(String s) {
 		synchronized(dspLock){
-			for(int i = 0; i < directoryServerPool.size(); i++){
-				if(directoryServerPool.get(i).getSecond().equals(s)){
-					Pair<Long, String> p = directoryServerPool.remove(i);
-					p.setFirst(p.getFirst()+1);
-					directoryServerPool.add(i,p);
-				}
+			if(directoryServerPool.containsKey(s)){
+				Long x = directoryServerPool.get(s);
+				directoryServerPool.put(s,x+1);
 			}
-			Collections.sort(directoryServerPool);
+			else{
+				directoryServerPool.put(s,1L);
+			}
 		}
 		
 	}

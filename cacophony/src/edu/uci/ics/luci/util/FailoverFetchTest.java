@@ -10,9 +10,9 @@ import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.TreeSet;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLPropertiesConfiguration;
@@ -81,17 +81,17 @@ public class FailoverFetchTest {
 		
 		FailoverFetch f = new FailoverFetch();
 		
-		f.directoryServerPool.add(new Pair<Long,String>(0L,"localhost:1776"));
-		f.directoryServerPool.add(new Pair<Long,String>(0L,"localhost:1776"));
-		f.directoryServerPool.add(new Pair<Long,String>(1L,"localhost:1777"));
-		f.directoryServerPool.add(new Pair<Long,String>(1L,"localhost:1778"));
-		f.directoryServerPool.add(new Pair<Long,String>(2L,"localhost:1779"));
-		f.directoryServerPool.add(new Pair<Long,String>(3L,"localhost:1780"));
+		f.directoryServerPool.put("localhost:1776",0L);
+		f.directoryServerPool.put("localhost:1776",0L);
+		f.directoryServerPool.put("localhost:1777",1L);
+		f.directoryServerPool.put("localhost:1778",1L);
+		f.directoryServerPool.put("localhost:1779",2L);
+		f.directoryServerPool.put("localhost:1780",3L);
 		
 		for(int i = 0 ;i < 100; i++){
-			Collections.shuffle(f.directoryServerPool);
-			Collections.sort(f.directoryServerPool);
-			assertTrue(f.directoryServerPool.get(0).getSecond().contains("1776"));
+			TreeSet<Pair<Long, String>> servers = f.orderDirectoryServers();
+			assertTrue(servers.pollFirst().getSecond().contains("1776"));
+			assertTrue(servers.pollLast().getSecond().contains("1780"));
 		}
 	}
 	
