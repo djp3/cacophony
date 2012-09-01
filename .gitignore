@@ -28,7 +28,10 @@ cacophony/src/edu/uci/ics/luci/cacophony/SystemTest.cacophony.c_node_poolB.prope
 
 
 directory.jar
-cacophony.directory.properties
-cacophony/src/edu/uci/ics/luci/cacophony/DirectoryTest.cacophony.directory.properties
-cacophony/src/edu/uci/ics/luci/cacophony/SystemTest.cacophony.c_node_poolA.properties
+node.jar
+cnode_pool.cloud2.config.properties
+cnode_pool.cloud3.config.properties
+directory.cloud2.config.properties
+directory.cloud3.config.properties
+
 jar-in-jar-loader.zip
