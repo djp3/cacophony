@@ -17,7 +17,16 @@ cacophony/src/www/bootstrap
 cacophony/src/www/lib/orig
 cacophony/bin
 cacophony/doc/research
-cacophony/cacophony.directory.properties
+cacophony/cnode_pool.cloud2.config.properties
+cacophony/cnode_pool.cloud3.config.properties
+cacophony/directory.cloud2.config.properties
+cacophony/directory.cloud3.config.properties
+cacophony/src/edu/uci/ics/luci/cacophony/CNodeTest.cacophony.c_node_pool.properties
+cacophony/src/edu/uci/ics/luci/cacophony/DirectoryTest.cacophony.directory.properties
+cacophony/src/edu/uci/ics/luci/cacophony/SystemTest.cacophony.c_node_poolA.properties
+cacophony/src/edu/uci/ics/luci/cacophony/SystemTest.cacophony.c_node_poolB.properties
+
+
 directory.jar
 cacophony.directory.properties
 cacophony/src/edu/uci/ics/luci/cacophony/DirectoryTest.cacophony.directory.properties

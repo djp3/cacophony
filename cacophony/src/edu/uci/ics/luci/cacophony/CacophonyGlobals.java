@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.TimeZone;
 
-import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.commons.configuration.XMLPropertiesConfiguration;
 import org.apache.log4j.Logger;
 
 import com.quub.Globals;
@@ -12,11 +12,11 @@ import com.quub.util.CalendarCache;
 
 public class CacophonyGlobals extends Globals{
 	
-	private static final String VERSION = "1.0";
+	private static final String SYSTEM_VERSION = "1.1";
 	private static final String PROPERTY_FILENAME_DEFAULT = "cacophony.log4j.properties";
 	public static final String CONFIG_FILENAME_DEFAULT = "cacophony.properties";
 	public static final int DEFAULT_PORT = 2011;
-	private PropertiesConfiguration config = null;
+	private XMLPropertiesConfiguration config = null;
 	private transient volatile Logger log = null;
 		
 	static{
@@ -40,13 +40,6 @@ public class CacophonyGlobals extends Globals{
 	public static void resetGlobals(){
 		setGlobals(null);
 	}
-
-	public synchronized static CacophonyGlobals getGlobals(){
-		if(Globals.getGlobals() == null){
-			setGlobals(new CacophonyGlobals());
-		}
-		return (CacophonyGlobals) Globals.getGlobals();
-	}
 	
 	public synchronized Logger getLog(){
 		if(log == null){
@@ -55,11 +48,11 @@ public class CacophonyGlobals extends Globals{
 		return log;
 	}
 	
-	public void setConfig(PropertiesConfiguration config){
+	public void setConfig(XMLPropertiesConfiguration config){
 		this.config = config;
 	}
 	
-	public PropertiesConfiguration getConfig(){
+	public XMLPropertiesConfiguration getConfig(){
 		return (this.config);
 	}
 		
@@ -93,22 +86,16 @@ public class CacophonyGlobals extends Globals{
 				"host131.200-45-174.telecom.net.ar"));
 	}
 	
-	public String getVersion() {
-		return VERSION;
+	/** This is different than API Version.  Not sure why I need two versions **/
+	public String getSystemVersion() {
+		return SYSTEM_VERSION;
 	}
 
 
-	protected CacophonyGlobals() {
+	public CacophonyGlobals() {
 		super();
 		super.setPropertyFileName(PROPERTY_FILENAME_DEFAULT);
 		super.reloadLog4jProperties();
-		super.setHTTPServerHeader("Cacophony distributed prediction system");
 	}
-
-	@Override
-	public String getFileResourcePrefix() {
-		return("/www/");
-	}
-
 }
 

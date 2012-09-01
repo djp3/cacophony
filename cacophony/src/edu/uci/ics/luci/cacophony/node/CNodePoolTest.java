@@ -1,21 +1,17 @@
 package edu.uci.ics.luci.cacophony.node;
 
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.IOException;
 import java.net.InetAddress;
-import java.net.MalformedURLException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration.XMLPropertiesConfiguration;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -23,122 +19,91 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.quub.Globals;
+import com.quub.GlobalsTest;
 import com.quub.util.Pair;
 import com.quub.webserver.AccessControl;
 import com.quub.webserver.HandlerAbstract;
-import com.quub.webserver.RequestHandlerFactory;
+import com.quub.webserver.RequestDispatcher;
 import com.quub.webserver.WebServer;
-import com.quub.webserver.WebUtil;
 import com.quub.webserver.handlers.HandlerFileServer;
-import com.quub.webserver.handlers.HandlerVersion;
 
-import edu.uci.ics.luci.cacophony.CacophonyGlobals;
+import edu.uci.ics.luci.cacophony.api.HandlerShutdown;
+import edu.uci.ics.luci.cacophony.api.HandlerVersion;
+import edu.uci.ics.luci.cacophony.api.directory.HandlerDirectoryNamespace;
+import edu.uci.ics.luci.cacophony.api.directory.HandlerDirectoryServers;
+import edu.uci.ics.luci.cacophony.api.directory.HandlerNodeAssignment;
+import edu.uci.ics.luci.cacophony.api.directory.HandlerNodeCheckin;
+import edu.uci.ics.luci.cacophony.api.directory.HandlerNodeList;
 import edu.uci.ics.luci.cacophony.directory.Directory;
-import edu.uci.ics.luci.cacophony.directory.api.HandlerDirectoryNamespace;
-import edu.uci.ics.luci.cacophony.directory.api.HandlerDirectoryServers;
-import edu.uci.ics.luci.cacophony.directory.api.HandlerNodeAssignment;
-import edu.uci.ics.luci.cacophony.directory.api.HandlerNodeCheckin;
-import edu.uci.ics.luci.cacophony.directory.api.HandlerNodeList;
-import edu.uci.ics.luci.cacophony.directory.api.HandlerShutdown;
 
 public class CNodePoolTest {
 
-	private static int testPort = 9020;
+	private static int testPort = 9021;
+	private static synchronized int testPortPlusPlus(){
+		int x = testPort;
+		testPort++;
+		return(x);
+	}
+
 
 	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
+	public static void setUpClass() throws Exception {
+		Globals.setGlobals(new GlobalsTest());
 	}
 
 	@AfterClass
-	public static void tearDownAfterClass() throws Exception {
+	public static void tearDownClass() throws Exception {
+		Globals.getGlobals().setQuitting(true);
+		Globals.setGlobals(null);
 	}
 
-	private WebServer ws = null;
-	Map<String, Class<? extends HandlerAbstract>> requestHandlerRegistry;
-	private Directory d;
+	private int workingPort;
 
 	@Before
 	public void setUp() throws Exception {
-		d = Directory.getInstance();
+	
 	}
 
 	@After
 	public void tearDown() throws Exception {
-		if(d != null){
-			d.setQuitting(true);
-		}
 	}
 	
 	
-	private void startAWebServer() {
-		testPort++;
+	private WebServer startAWebServer(int port,Directory d) {
+		WebServer ws = null;
 		try {
-			requestHandlerRegistry = new HashMap<String, Class<? extends HandlerAbstract>>();
-			requestHandlerRegistry.put("",HandlerVersion.class);
-			requestHandlerRegistry.put("version",HandlerVersion.class);
-			requestHandlerRegistry.put("servers",HandlerDirectoryServers.class);
-			requestHandlerRegistry.put("nodes",HandlerNodeList.class);
-			requestHandlerRegistry.put("node_assignment",HandlerNodeAssignment.class);
-			requestHandlerRegistry.put("node_checkin",HandlerNodeCheckin.class);
-			requestHandlerRegistry.put("namespace",HandlerDirectoryNamespace.class);
-			requestHandlerRegistry.put("shutdown",HandlerShutdown.class);
-			requestHandlerRegistry.put(null,HandlerFileServer.class);
+			HashMap<String, HandlerAbstract> requestHandlerRegistry = new HashMap<String,HandlerAbstract>();
+			HandlerAbstract handler =  new HandlerVersion();
+			requestHandlerRegistry.put("",handler);
+			requestHandlerRegistry.put("version",handler);
+			requestHandlerRegistry.put("shutdown",new HandlerShutdown());
+			requestHandlerRegistry.put("servers",new HandlerDirectoryServers(d));
+			requestHandlerRegistry.put("nodes",new HandlerNodeList(d));
+			requestHandlerRegistry.put("node_assignment",new HandlerNodeAssignment(d));
+			requestHandlerRegistry.put("node_checkin",new HandlerNodeCheckin(d));
+			requestHandlerRegistry.put("namespace",new HandlerDirectoryNamespace(d));
+			requestHandlerRegistry.put(null, new HandlerFileServer(com.quub.Globals.class,"/www_test/"));
 			
-			CacophonyGlobals.resetGlobals();
-			CacophonyGlobals g = CacophonyGlobals.getGlobals();
-			g.setTesting(true);
-			RequestHandlerFactory factory = new RequestHandlerFactory(g, requestHandlerRegistry);
-			ws = new WebServer(g, factory, null, testPort, false, new AccessControl());
+			RequestDispatcher requestDispatcher = new RequestDispatcher(requestHandlerRegistry);
+			ws = new WebServer(requestDispatcher, port, false, new AccessControl());
 			ws.start();
-			g.addQuittables(ws);
+			Globals.getGlobals().addQuittables(ws);
 		} catch (RuntimeException e) {
 			fail("Couldn't start webserver"+e);
 		}
-	}
-
-	private void stopAWebServer() {
-		
-		String responseString = null;
-		
-		try{
-			HashMap<String, String> params = new HashMap<String, String>();
-			params.put("seriously", "true");
-			params.put("version", Globals.getGlobals().getVersion());
-
-			responseString = WebUtil.fetchWebPage("http://localhost:" + testPort + "/shutdown", false, params, 30 * 1000);
-		} catch (MalformedURLException e) {
-			fail("Bad URL"+e);
-		} catch (IOException e) {
-			fail("IO Exception"+e);
-		}
-		
-		JSONObject response = null;
-		try {
-			response = new JSONObject(responseString);
-			try {
-				assertEquals("false",response.getString("error"));
-			} catch (JSONException e) {
-				e.printStackTrace();
-				fail("No error code");
-			}
-		} catch (JSONException e) {
-			e.printStackTrace();
-			fail("Bad JSON Response");
-		}
-		
-		while(ws.getWebServer().isAlive()){
-			try {
-				ws.getWebServer().join();
-			} catch (InterruptedException e) {
-			}
-		}
+		return(ws);
 	}
 	
-	private void startADirectory(){
+	private Directory startADirectory(){
+		Directory d = new Directory();
 		
 		/* Load up the data */
-		String configFileName="src/edu/uci/ics/luci/cacophony/DirectoryTest.cacophony.directory.properties";
-		Directory.launchDirectory(configFileName);
+		try {
+			String configFileName="src/edu/uci/ics/luci/cacophony/DirectoryTest.cacophony.directory.properties";
+			d.initializeDirectory(new XMLPropertiesConfiguration(configFileName));
+		} catch (ConfigurationException e1) {
+			fail("");
+		}
 		
 		/* Pick a Directory GUID*/
 		String directoryGUID = "DirectoryGUID:"+System.currentTimeMillis();
@@ -161,25 +126,41 @@ public class CNodePoolTest {
 			
 		/* Start reporting heartbeats */
 		String namespace = "test.waitscout.com";
-		Directory.getInstance().setDirectoryNamespace(namespace);
-		Directory.getInstance().startHeartbeat(directoryGUID,urls);
+		d.setDirectoryNamespace(namespace);
+		d.startHeartbeat(directoryGUID,urls);
+		
+		Globals.getGlobals().addQuittables(d);
+		return(d);
 	}
 	
-	private void stopADirectory(){
-		Directory.getInstance().setQuitting(true);
-	}
 	
 	@Test
 	public void testCNodePoolCreation() {
-		startAWebServer();
-		startADirectory();
+		workingPort = testPortPlusPlus();
+		Directory d = startADirectory();
+		startAWebServer(workingPort,d);
 		
+		List<Pair<Long,String>> baseUrls = new ArrayList<Pair<Long,String>>();
+		String url = null;
+		try {
+			url = InetAddress.getLocalHost().getHostAddress();
+		} catch (UnknownHostException e1) {
+			url ="127.0.0.1";
+		}
+		baseUrls.add(new Pair<Long,String>(0L,url+":"+testPort));
 		
-		CNodePool cNPool = CNodePool.launchCNodePool("src/edu/uci/ics/luci/cacophony/CNodeTest.cacophony.c_node_pool.properties");
+		String configFileName = "src/edu/uci/ics/luci/cacophony/CNodeTest.cacophony.c_node_pool.properties";
+		XMLPropertiesConfiguration config = null;
+		try {
+			config = new XMLPropertiesConfiguration(configFileName);
+		} catch (ConfigurationException e2) {
+			fail("Unable to use requested configuration file:"+configFileName);
+		}
+		
+		CNodePool cNPool = new CNodePool().launchCNodePool(config,baseUrls);
 		assertTrue(cNPool != null);
-		
-		stopADirectory();
-		stopAWebServer();
+		//new PopUpWindow("Click To Stop Test:"+this.getClass().getCanonicalName());
+		Globals.getGlobals().addQuittables(cNPool);
 	}
 
 }

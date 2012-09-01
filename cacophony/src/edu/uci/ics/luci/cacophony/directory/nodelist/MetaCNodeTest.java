@@ -47,23 +47,25 @@ public class MetaCNodeTest {
 		List<MetaCNode> l = new ArrayList<MetaCNode>(100);
 		
 		for(int i = 0 ; i < 99; i++){
-			MetaCNode c = new MetaCNode();
-			c.setId(Integer.toString(r.nextInt()));
-			c.setName("Name_"+Integer.toString(r.nextInt()));
-			c.setLatitude((r.nextDouble()*180.0)-90.0);
-			c.setLongitude((r.nextDouble()*360.0)-180.0);
-			c.setMapWeight(r.nextDouble());
-			c.setPriority(Math.ceil(r.nextDouble()*10.0));
-			l.add(c);
+			MetaCNode mc = new MetaCNode();
+			mc.setCreationTime(System.currentTimeMillis());
+			mc.setGuid(Integer.toString(r.nextInt()));
+			mc.setName("Name_"+Integer.toString(r.nextInt()));
+			mc.setLatitude((r.nextDouble()*180.0)-90.0);
+			mc.setLongitude((r.nextDouble()*360.0)-180.0);
+			mc.setMapWeight(r.nextDouble());
+			mc.setPriority(Math.ceil(r.nextDouble()*10.0));
+			l.add(mc);
 		}
-		MetaCNode c = new MetaCNode();
-		c.setId(Integer.toString(r.nextInt()));
-		c.setName(winner);
-		c.setLatitude((r.nextDouble()*180.0)-90.0);
-		c.setLongitude((r.nextDouble()*360.0)-180.0);
-		c.setMapWeight(r.nextDouble());
-		c.setPriority(12.0);
-		l.add(c);
+		MetaCNode mc = new MetaCNode();
+		mc.setCreationTime(System.currentTimeMillis());
+		mc.setGuid(Integer.toString(r.nextInt()));
+		mc.setName(winner);
+		mc.setLatitude((r.nextDouble()*180.0)-90.0);
+		mc.setLongitude((r.nextDouble()*360.0)-180.0);
+		mc.setMapWeight(r.nextDouble());
+		mc.setPriority(12.0);
+		l.add(mc);
 		
 		Comparator<MetaCNode> comp = MetaCNode.ByPriority;
 		for(int i=0; i < 100; i++){
@@ -91,49 +93,52 @@ public class MetaCNodeTest {
 		List<MetaCNode> l = new ArrayList<MetaCNode>(100);
 		
 		for(int i = 0 ; i < 98; i++){
-			MetaCNode c = new MetaCNode();
-			c.setId(Integer.toString(r.nextInt()));
-			c.setName("Name_"+Integer.toString(r.nextInt()));
-			c.setLatitude((r.nextDouble()*180.0)-90.0);
-			c.setLongitude((r.nextDouble()*360.0)-180.0);
-			c.setMapWeight(r.nextDouble());
-			c.setPriority(Math.ceil(r.nextDouble()*10.0));
+			MetaCNode mc = new MetaCNode();
+			mc.setCreationTime(System.currentTimeMillis());
+			mc.setGuid(Integer.toString(r.nextInt()));
+			mc.setName("Name_"+Integer.toString(r.nextInt()));
+			mc.setLatitude((r.nextDouble()*180.0)-90.0);
+			mc.setLongitude((r.nextDouble()*360.0)-180.0);
+			mc.setMapWeight(r.nextDouble());
+			mc.setPriority(Math.ceil(r.nextDouble()*10.0));
 			JSONObject j = new JSONObject();
-			c.setConfiguration(j);
+			mc.setConfiguration(j);
 			
-			CNode x = CNodeTest.makeCNode();
-			c.getCNodes().put(x.getGuid(),x);
-			x = CNodeTest.makeCNode();
-			c.getCNodes().put(x.getGuid(),x);
-			x = CNodeTest.makeCNode();
-			c.getCNodes().put(x.getGuid(),x);
+			CNodeReference cr = CNodeReferenceTest.makeCNodeReference();
+			mc.getCNodeReferences().put(cr.getCNodeGuid(),cr);
+			cr = CNodeReferenceTest.makeCNodeReference();
+			mc.getCNodeReferences().put(cr.getCNodeGuid(),cr);
+			cr = CNodeReferenceTest.makeCNodeReference();
+			mc.getCNodeReferences().put(cr.getCNodeGuid(),cr);
 			for(int k = 0; k < i; k++){
-				assertTrue(!l.get(k).equals(c));
+				assertTrue(!l.get(k).equals(mc));
 			}
-			l.add(c);
+			l.add(mc);
 		}
 		
-		MetaCNode c = new MetaCNode();
-		c.setId(Integer.toString(r.nextInt()));
-		c.setName(winner);
-		c.setLatitude((r.nextDouble()*180.0)-90.0);
-		c.setLongitude((r.nextDouble()*360.0)-180.0);
-		c.setMapWeight(r.nextDouble());
-		c.setPriority(12.0);
+		MetaCNode mc = new MetaCNode();
+		mc.setCreationTime(System.currentTimeMillis());
+		mc.setGuid(Integer.toString(r.nextInt()));
+		mc.setName(winner);
+		mc.setLatitude((r.nextDouble()*180.0)-90.0);
+		mc.setLongitude((r.nextDouble()*360.0)-180.0);
+		mc.setMapWeight(r.nextDouble());
+		mc.setPriority(12.0);
 		JSONObject j = new JSONObject();
-		c.setConfiguration(j);
-		l.add(c);
+		mc.setConfiguration(j);
+		l.add(mc);
 		
-		c = new MetaCNode();
-		c.setId(Integer.toString(r.nextInt()));
-		c.setName("Not "+winner);
-		c.setLatitude((r.nextDouble()*180.0)-90.0);
-		c.setLongitude((r.nextDouble()*360.0)-180.0);
-		c.setMapWeight(r.nextDouble());
-		c.setPriority(11.0);
+		mc = new MetaCNode();
+		mc.setCreationTime(System.currentTimeMillis());
+		mc.setGuid(Integer.toString(r.nextInt()));
+		mc.setName("Not "+winner);
+		mc.setLatitude((r.nextDouble()*180.0)-90.0);
+		mc.setLongitude((r.nextDouble()*360.0)-180.0);
+		mc.setMapWeight(r.nextDouble());
+		mc.setPriority(11.0);
 		j = new JSONObject();
-		c.setConfiguration(j);
-		l.add(c);
+		mc.setConfiguration(j);
+		l.add(mc);
 		
 		Comparator<MetaCNode> comp = MetaCNode.ByAssignmentPaucity;
 		for(int i=0; i < 100; i++){
@@ -154,13 +159,14 @@ public class MetaCNodeTest {
 	@Test
 	public void testJSONConversion(){
 		
-		MetaCNode c = new MetaCNode();
-		c.setId(Integer.toString(r.nextInt()));
-		c.setName("Name_"+Integer.toString(r.nextInt()));
-		c.setLatitude((r.nextDouble()*180.0)-90.0);
-		c.setLongitude((r.nextDouble()*360.0)-180.0);
-		c.setMapWeight(r.nextDouble());
-		c.setPriority(Math.ceil(r.nextDouble()*10.0));
+		MetaCNode mc = new MetaCNode();
+		mc.setCreationTime(System.currentTimeMillis());
+		mc.setGuid(Integer.toString(r.nextInt()));
+		mc.setName("Name_"+Integer.toString(r.nextInt()));
+		mc.setLatitude((r.nextDouble()*180.0)-90.0);
+		mc.setLongitude((r.nextDouble()*360.0)-180.0);
+		mc.setMapWeight(r.nextDouble());
+		mc.setPriority(Math.ceil(r.nextDouble()*10.0));
 		JSONObject j = new JSONObject();
 		try {
 			j.put("Hello", "World");
@@ -168,129 +174,132 @@ public class MetaCNodeTest {
 		} catch (JSONException e1) {
 			fail("");
 		}
-		c.setConfiguration(j);
+		mc.setConfiguration(j);
 		
-		CNode x = CNodeTest.makeCNode();
-		c.getCNodes().put(x.getGuid(),x);
-		x = CNodeTest.makeCNode();
-		c.getCNodes().put(x.getGuid(),x);
-		x = CNodeTest.makeCNode();
-		c.getCNodes().put(x.getGuid(),x);
+		CNodeReference cr = CNodeReferenceTest.makeCNodeReference();
+		mc.getCNodeReferences().put(cr.getCNodeGuid(),cr);
+		cr = CNodeReferenceTest.makeCNodeReference();
+		mc.getCNodeReferences().put(cr.getCNodeGuid(),cr);
+		cr = CNodeReferenceTest.makeCNodeReference();
+		mc.getCNodeReferences().put(cr.getCNodeGuid(),cr);
 		
 		j = null;
 		MetaCNode c2 = null;
 		
-		j = MetaCNode.toJSONObject(c);
+		j = MetaCNode.toJSONObject(mc);
 		c2 = MetaCNode.fromJSONObject(j);
-		assertTrue(c.equals(c2));
-		assertEquals(c.hashCode(),c2.hashCode());
-		assertEquals(c2,c);
-		assertEquals(c2.hashCode(),c.hashCode());
+		assertTrue(mc.equals(c2));
+		assertEquals(mc.hashCode(),c2.hashCode());
+		assertEquals(c2,mc);
+		assertEquals(c2.hashCode(),mc.hashCode());
 			
-		j = c.toJSONObject();
+		j = mc.toJSONObject();
 		c2 = MetaCNode.fromJSONObject(j);
-		assertTrue(c.equals(c2));
-		assertEquals(c.hashCode(),c2.hashCode());
-		assertEquals(c2,c);
-		assertEquals(c2.hashCode(),c.hashCode());
+		assertTrue(mc.equals(c2));
+		assertEquals(mc.hashCode(),c2.hashCode());
+		assertEquals(c2,mc);
+		assertEquals(c2.hashCode(),mc.hashCode());
 		
 		/* Test some default configs */
-		assertEquals(c,c);
-		assertEquals(c.hashCode(),c.hashCode());
+		assertEquals(mc,mc);
+		assertEquals(mc.hashCode(),mc.hashCode());
 		
 		assertEquals(c2,c2);
 		assertEquals(c2.hashCode(),c2.hashCode());
 		
-		assertTrue(!c.equals(Integer.valueOf(1)));
+		assertTrue(!mc.equals(Integer.valueOf(1)));
 		
 		/* Go through nulls */
-		c.setConfiguration(null);
-		assertTrue(!c.equals(c2));
+		mc.setConfiguration(null);
+		assertTrue(!mc.equals(c2));
 		c2.setConfiguration(null);
-		assertEquals(c,c2);
-		assertEquals(c.hashCode(),c2.hashCode());
-		j = c.toJSONObject();
-		j.remove("configuration");
+		assertEquals(mc,c2);
+		assertEquals(mc.hashCode(),c2.hashCode());
+		j = mc.toJSONObject();
 		c2 = MetaCNode.fromJSONObject(j);
-		assertEquals(c,c2);
-		assertEquals(c.hashCode(),c2.hashCode());
+		assertEquals(mc,c2);
+		assertEquals(mc.hashCode(),c2.hashCode());
 		
-		c.setCNodes(null);
-		assertTrue(!c.equals(c2));
-		c2.setCNodes(null);
-		assertEquals(c,c2);
-		assertEquals(c.hashCode(),c2.hashCode());
-		j = c.toJSONObject();
-		j.remove("c_nodes");
+		mc.setCNodeReferences(null);
+		assertTrue(!mc.equals(c2));
+		c2.setCNodeReferences(null);
+		assertEquals(mc,c2);
+		assertEquals(mc.hashCode(),c2.hashCode());
+		j = mc.toJSONObject();
 		c2 = MetaCNode.fromJSONObject(j);
-		assertEquals(c,c2);
-		assertEquals(c.hashCode(),c2.hashCode());
+		assertEquals(mc,c2);
+		assertEquals(mc.hashCode(),c2.hashCode());
 		
-		c.setPriority(null);
-		assertTrue(!c.equals(c2));
+		mc.setPriority(null);
+		assertTrue(!mc.equals(c2));
 		c2.setPriority(null);
-		assertEquals(c,c2);
-		assertEquals(c.hashCode(),c2.hashCode());
-		j = c.toJSONObject();
-		j.remove("priority");
+		assertEquals(mc,c2);
+		assertEquals(mc.hashCode(),c2.hashCode());
+		j = mc.toJSONObject();
 		c2 = MetaCNode.fromJSONObject(j);
-		assertEquals(c,c2);
-		assertEquals(c.hashCode(),c2.hashCode());
+		assertEquals(mc,c2);
+		assertEquals(mc.hashCode(),c2.hashCode());
 		
-		c.setMapWeight(null);
-		assertTrue(!c.equals(c2));
+		mc.setMapWeight(null);
+		assertTrue(!mc.equals(c2));
 		c2.setMapWeight(null);
-		assertEquals(c,c2);
-		assertEquals(c.hashCode(),c2.hashCode());
-		j = c.toJSONObject();
-		j.remove("map_weight");
+		assertEquals(mc,c2);
+		assertEquals(mc.hashCode(),c2.hashCode());
+		j = mc.toJSONObject();
 		c2 = MetaCNode.fromJSONObject(j);
-		assertEquals(c,c2);
-		assertEquals(c.hashCode(),c2.hashCode());
+		assertEquals(mc,c2);
+		assertEquals(mc.hashCode(),c2.hashCode());
 		
-		c.setLatitude(null);
-		assertTrue(!c.equals(c2));
+		mc.setLatitude(null);
+		assertTrue(!mc.equals(c2));
 		c2.setLatitude(null);
-		assertEquals(c,c2);
-		assertEquals(c.hashCode(),c2.hashCode());
-		j = c.toJSONObject();
-		j.remove("latitude");
+		assertEquals(mc,c2);
+		assertEquals(mc.hashCode(),c2.hashCode());
+		j = mc.toJSONObject();
 		c2 = MetaCNode.fromJSONObject(j);
-		assertEquals(c,c2);
-		assertEquals(c.hashCode(),c2.hashCode());
+		assertEquals(mc,c2);
+		assertEquals(mc.hashCode(),c2.hashCode());
 		
-		c.setLongitude(null);
-		assertTrue(!c.equals(c2));
+		mc.setLongitude(null);
+		assertTrue(!mc.equals(c2));
 		c2.setLongitude(null);
-		assertEquals(c,c2);
-		assertEquals(c.hashCode(),c2.hashCode());
-		j = c.toJSONObject();
-		j.remove("longitude");
+		assertEquals(mc,c2);
+		assertEquals(mc.hashCode(),c2.hashCode());
+		j = mc.toJSONObject();
 		c2 = MetaCNode.fromJSONObject(j);
-		assertEquals(c,c2);
-		assertEquals(c.hashCode(),c2.hashCode());
+		assertEquals(mc,c2);
+		assertEquals(mc.hashCode(),c2.hashCode());
 		
-		c.setName(null);
-		assertTrue(!c.equals(c2));
+		mc.setName(null);
+		assertTrue(!mc.equals(c2));
 		c2.setName(null);
-		assertEquals(c,c2);
-		assertEquals(c.hashCode(),c2.hashCode());
-		j = c.toJSONObject();
-		j.remove("name");
+		assertEquals(mc,c2);
+		assertEquals(mc.hashCode(),c2.hashCode());
+		j = mc.toJSONObject();
 		c2 = MetaCNode.fromJSONObject(j);
-		assertEquals(c,c2);
-		assertEquals(c.hashCode(),c2.hashCode());
+		assertEquals(mc,c2);
+		assertEquals(mc.hashCode(),c2.hashCode());
 		
-		c.setId(null);
-		assertTrue(!c.equals(c2));
-		c2.setId(null);
-		assertEquals(c,c2);
-		assertEquals(c.hashCode(),c2.hashCode());
-		j = c.toJSONObject();
-		j.remove("id");
+		mc.setGuid(null);
+		assertTrue(!mc.equals(c2));
+		c2.setGuid(null);
+		assertEquals(mc,c2);
+		assertEquals(mc.hashCode(),c2.hashCode());
+		j = mc.toJSONObject();
 		c2 = MetaCNode.fromJSONObject(j);
-		assertEquals(c,c2);
-		assertEquals(c.hashCode(),c2.hashCode());
+		assertEquals(mc,c2);
+		assertEquals(mc.hashCode(),c2.hashCode());
+		
+		/* Creation Time shouldn't affect equality */
+		mc.setCreationTime(null);
+		assertTrue(mc.equals(c2));
+		c2.setCreationTime(null);
+		assertEquals(mc,c2);
+		assertEquals(mc.hashCode(),c2.hashCode());
+		j = mc.toJSONObject();
+		c2 = MetaCNode.fromJSONObject(j);
+		assertEquals(mc,c2);
+		assertEquals(mc.hashCode(),c2.hashCode());		
 		
 		c2 = MetaCNode.fromJSONObject(MetaCNode.toJSONObject(null));
 		assertEquals((MetaCNode)null,c2);

@@ -100,11 +100,12 @@
 			</div>
 		</div>
 		<div class="row-fluid">
-			<div class="span4 offset4">
+			<div class="span5 offset3">
 				<div id="health-chart">
 				</div>
 			</div>
 			<div class="span4">
+			<div style="padding-top:30px">
 			<table class="table table-bordered">
 				<thead>
 					<tr>
@@ -170,6 +171,7 @@
 				</tbody>
 			</table>
 			</div>
+			</div>
 		</div>
 	</div>
 
@@ -225,6 +227,7 @@
 	
 	
 	<script>
+		var myNamespace = null;
 		var myServerList = null;
 		var myServerListCallBusy = false;
 		var myNodeList = null;
@@ -245,26 +248,26 @@
 		
 		function calculateStatus(node){
 			var counter = { healthy:0,faltering:0,stale:0,unassigned:0,unknown:0};
-			if(node.c_nodes != undefined){
+			if(node.c_node_references != undefined){
 				$('#nodeRefreshData_'+escape(node.id)).html('');
-				$.each(node.c_nodes,function(k,v){
+				$.each(node.c_node_references,function(k,v){
 					if(v.last_heartbeat != undefined){
 						var d = new Date();
 						if(v.last_heartbeat > (d.getTime() - 10*60*1000)){
-							$('#nodeRefreshData_'+escape(node.id)).append('<span class="badge badge-success"><i class="icon-thumbs-up icon-white" rel="tooltip" title="Healthy"></i></span>');
+							$('#nodeRefreshData_'+escape(node.id)).append('<span class="badge badge-success"><a href="http://'+v.access_routes_for_ui[0].route+'"><i class="icon-thumbs-up icon-white" rel="tooltip" title="Healthy"></i></a></span>');
 							counter.healthy++;
 						}
 						else if(v.last_heartbeat > (d.getTime() - 30*60*1000)){
-							$('#nodeRefreshData_'+escape(node.id)).append('<span class="badge badge-warning"><i class="icon-hand-left icon-white" rel="tooltip" title="Faltering"></i></span>');
+							$('#nodeRefreshData_'+escape(node.id)).append('<span class="badge badge-warning"><a href="http://'+v.access_routes_for_ui[0].route+'"><i class="icon-hand-left icon-white" rel="tooltip" title="Faltering"></i></a></span>');
 							counter.faltering++;
 						}
 						else{
-							$('#nodeRefreshData_'+escape(node.id)).append('<span class="badge badge-important"><i class="icon-thumbs-down icon-white" rel="tooltip" title="Stale"></i></span>');
+							$('#nodeRefreshData_'+escape(node.id)).append('<span class="badge badge-important"><a href="http://'+v.access_routes_for_ui[0].route+'"><i class="icon-thumbs-down icon-white" rel="tooltip" title="Stale"></i></a></span>');
 							counter.stale++;
 						}
 					}
 					else{
-						$('#nodeRefreshData_'+escape(node.id)).append('<span class="badge badge-default"><i class="icon-question-sign icon-white" rel="tooltip" title="Unknown"></i></span>');
+						$('#nodeRefreshData_'+escape(node.id)).append('<span class="badge badge-default"><a href="http://'+v.access_routes_for_ui[0].route+'"><i class="icon-question-sign icon-white" rel="tooltip" title="Unknown"></i></a></span>');
 						counter.unknown++;
 					}
 				});
@@ -284,7 +287,7 @@
 				counter.unassigned /= normalize;
 				counter.unknown /= normalize;
 			}
-			$('#nodeHealthData_'+escape(node.id)).html('<span class="badge badge-inverse">'+(counter.healthy*1000.0 + counter.faltering*100.0 + counter.stale * 10.0 + counter.unassigned).toFixed(1)+'</span>');
+			$('#nodeHealthData_'+escape(node.id)).replaceWith((counter.healthy*1000.0 + counter.faltering*100.0 + counter.stale * 10.0 + counter.unassigned)+'<div id="#nodeHealthData_'+escape(node.id)+'"></div>');
 			return counter;
 		}
 								
@@ -301,7 +304,7 @@
 			
 			var next = myNodeMonitorQueue.shift();
 			var myGuids = [next.id];
-			var myData = {guids:JSON.stringify(myGuids)};
+			var myData = {version:"1.1",namespace:myNamespace,guids:JSON.stringify(myGuids)};
 			myIconChange('#nodeRefreshStatus_'+escape(next.id),'icon-remove','icon-time');
 			myIconChange('#nodeRefreshStatus_'+escape(next.id),'icon-ok','icon-time');
 			$.ajax({
@@ -337,7 +340,7 @@
 			myIconChange('#nodeRefreshStatus_'+myID,'icon-ok','icon-question-sign');
 			myIconChange('#nodeRefreshStatus_'+myID,'icon-time','icon-question-sign');
 			var myGuids = [myID];
-			var myData = {guids:JSON.stringify(myGuids)};
+			var myData = {version:"1.1",namespace:myNamespace,guids:JSON.stringify(myGuids)};
 			$.ajax({
 				url:'/nodes',
 				dataType:'jsonp',
@@ -372,10 +375,12 @@
 			$.ajax({
 				url:'/namespace',
 				dataType:'jsonp',
+				data:{version:"1.1"},
 				timeout : 15000,
 				success:function(data){
 					myIconChange('#namespaceStatus','icon-time','icon-ok');
 					$('#namespace').html(data.namespace);
+					myNamespace = data.namespace;
 				},
 				error:function(){
 					myIconChange('#namespaceStatus','icon-time','icon-remove');
@@ -404,10 +409,16 @@
 			$.ajax({
 				url:'http://'+ip+'/version',
 				dataType:'jsonp',
+				data:{version:"1.1",namespace:myNamespace},
 				timeout : 15000,
 				success:function(data){
-					myIconChange('#altServer'+i+'Status','icon-time','icon-ok');
-					$('#altServer'+i).removeClass('disabled');
+					if(data.version != undefined){
+						myIconChange('#altServer'+i+'Status','icon-time','icon-ok');
+						$('#altServer'+i).removeClass('disabled');
+					}
+					else{
+						myIconChange('#altServer'+i+'Status','icon-time','icon-remove');
+					}
 				},
 				error:function(){
 					myIconChange('#altServer'+i+'Status','icon-time','icon-remove');
@@ -440,6 +451,7 @@
 				$.ajax({
 					url:'/servers',
 					dataType:'jsonp',
+					data:{version:"1.1",namespace:myNamespace},
 					timeout : 10000,
 					success:function(data){
 						if(JSON.stringify(data) != JSON.stringify(myServerList)){
@@ -484,7 +496,7 @@
 					else{
 						line.push('');
 					}
-					line.push('<div id="nodeHealthData_'+escape(v.id)+'"></div>');
+					line.push('<div id="nodeHealthData_'+escape(v.id)+'">'+v.id+'</div>');
 					line.push('Hits');
 					line.push('<div id="nodeRefreshData_'+escape(v.id)+'"></div>');
 					aaData.push(line);
@@ -496,14 +508,14 @@
 						"sPaginationType": "full_numbers",
 						"aaData": aaData,
 						"aoColumns":[
-							{"sTitle":"Refresh","sType":'html',"sWidth":'30px',"sClass":"tableCell"},
-							{"sTitle":"ID","sType":'string',"sWidth":'60px',"sClass":"tableCell"},
-							{"sTitle":"Name","sType":'string',"sWidth":'200px',"sClass":"tableCell"},
-							{"sTitle":"Latitude","sType":'numeric',"sWidth":'60px',"sClass":"tableCell"},
-							{"sTitle":"Longitude","sType":'numeric',"sWidth":'60px',"sClass":"tableCell"},
-							{"sTitle":"Health","sType":'html',"sWidth":'60px',"sClass":"tableCell"},
-							{"sTitle":"Hits","sType":'html',"sWidth":'60px',"sClass":"tableCell"},
-							{"sTitle":"Nodes","sType":'html',"sWidth":'100px',"sClass":"tableCell"}
+							{"sTitle":"Refresh","sType":"html","sWidth":'30px',"sClass":"tableCell"},
+							{"sTitle":"ID","sType":"numeric","sWidth":'60px',"sClass":"tableCell"},
+							{"sTitle":"Name","sType":"string","sWidth":'200px',"sClass":"tableCell"},
+							{"sTitle":"Latitude","sType":"numeric","sWidth":'60px',"sClass":"tableCell"},
+							{"sTitle":"Longitude","sType":"numeric","sWidth":'60px',"sClass":"tableCell"},
+							{"sTitle":"Health","sSortDataType":"dom-text","sType":'html',"sWidth":'60px',"sClass":"tableCell"},
+							{"sTitle":"Hits","sType":"html","sWidth":'60px',"sClass":"tableCell"},
+							{"sTitle":"Nodes","sType":"html","sWidth":'100px',"sClass":"tableCell"}
 							]
 					});
 					//myTable.fnAdjustColumnSizing();
@@ -575,6 +587,7 @@
 				$.ajax({
 					url:'/nodes',
 					dataType:'jsonp',
+					data:{version:"1.1",namespace:myNamespace},
 					timeout : 60000,
 					success:function(data){
 						myNodeList=data;
@@ -684,6 +697,23 @@
 					});
 				});
 				$.each(myPieDataHelper,function(k,v){
+					/*
+					if(v.label == 'healthy'){
+						v.count = 12010+Math.floor(Math.random()*100);
+					}
+					if(v.label == 'faltering'){
+						v.count = 503+Math.floor(Math.random()*200);
+					}
+					if(v.label == 'stale'){
+						v.count = 272+Math.floor(Math.random()*200);
+					}
+					if(v.label == 'unknown'){
+						v.count = 334+Math.floor(Math.random()*200);
+					}
+					if(v.label == 'unassigned'){
+						v.count = 20+Math.floor(Math.random()*10);
+					}
+					*/
 					myPieData.push(v);
 					$('#health-table-'+v.label).animate({opacity:0.0},500,function(){
 						$('#health-table-'+v.label).html((v.count).toFixed(1));
@@ -849,7 +879,7 @@
 							
 					
 				
-		var w = 450;                        //width
+		var w = 300;                        //width
 		var h = 300;                        //height
 		var r = 100;                        //radius
 		var ir = 45;                        //inner radius
@@ -939,40 +969,62 @@
 
 		$(document).ready(function(){
 
+			// Get namespace
 			setProgressBar(1);
 			updateNamespace();
 
+			// Update current browser url info
 			setProgressBar(2);
 			updateCurrentLocation();
 
+			// Start the generic progress bar
 			setProgressBar(3);
-			getMyServerList();
-
-			setProgressBar(4);
-			var currentBar = 4;
+			var currentBar = 3;
 			var progress = setInterval(function() {
 				if (currentBar >= 99) {
 					clearInterval(progress);
+					progress = null;
 				} else {
-					currentBar += 1;
-					setProgressBar(currentBar);
+					if(myNamespace != null){
+						currentBar += 1;
+						setProgressBar(currentBar);
+					}
 				}
 			}, 700);
 			
-			
-			getMyNodeList();
-
+			// Set up a recurring task to get alternative servers
+			var getMyServerListI = setInterval(function() {
+				if(myNamespace != null){
+					getMyServerList();
+					clearInterval(getMyServerListI);
+					getMyServerListI = null;
+				 }
+			},1000);
 			setInterval(function() {
-				getMyServerList();
+				if(myNamespace != null){
+					getMyServerList();
+				}
 			},60*1000);
 			
+			
+			// Get the list of CNodes one time.  This should eventually be fixed to be real-time 
+			var getNodeListI = setInterval(function() {
+				if(myNamespace != null){
+					getMyNodeList();
+					clearInterval(getNodeListI);
+					getNodeListI = null;
+				}
+			},100);
+				
 			var runNodeMonitorCount = 10;
 			setInterval(function() {
-				runNodeMonitor();
-				runNodeMonitorCount++;
-				if(runNodeMonitorCount >= 10){
-					updateHealthChart();
-					runNodeMonitorCount = 0;
+				if(myNamespace != null){
+					runNodeMonitor();
+					runNodeMonitorCount++;
+					if(runNodeMonitorCount >= 10){
+						updateHealthChart();
+						runNodeMonitorCount = 0;
+					}
 				}
 			},1000);
 			

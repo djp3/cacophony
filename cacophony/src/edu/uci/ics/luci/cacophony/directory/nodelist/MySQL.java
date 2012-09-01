@@ -137,7 +137,7 @@ public class MySQL extends NodeListLoader{
 		}
 		
 		if(!error){
-			pool = new QuubDBConnectionPool(g,databaseDomain, database, username, password,1,1);
+			pool = new QuubDBConnectionPool(databaseDomain, database, username, password,1,1);
 			connection = pool.getConnection();
 			try {
 				listViewQueryPS = connection.prepareStatement(listViewQuery);
@@ -165,12 +165,14 @@ public class MySQL extends NodeListLoader{
 					rs = listViewQueryPS.executeQuery();
 					while(rs.next()){
 						try {
-							MetaCNode cNode = new MetaCNode();
+							MetaCNode metaCNode = new MetaCNode();
+							metaCNode.setCreationTime(System.currentTimeMillis());
 							String id = rs.getString("ID");
-							cNode.setId(id.trim());
+							metaCNode.setGuid(id.trim());
 							String name = rs.getString("NAME");
-							cNode.setName(name.trim());
-							nodes.put(id,cNode);
+							metaCNode.setName(name.trim());
+							
+							nodes.put(id,metaCNode);
 						} catch (SQLException e) {
 							getLog().error("Query failed to return good results\n"+e);
 						}
@@ -193,23 +195,24 @@ public class MySQL extends NodeListLoader{
 					rs = mapViewQueryPS.executeQuery();
 					while(rs.next()){
 						try {
-							MetaCNode cNode = null;
+							MetaCNode metaCNode = null;
 							String id = rs.getString("ID");
 							id = id.trim();
 							if(nodes.containsKey(id)){
-								cNode = nodes.get(id);
+								metaCNode = nodes.get(id);
 							}
 							else{
-								cNode = new MetaCNode();
-								cNode.setId(id);
+								metaCNode = new MetaCNode();
+								metaCNode.setCreationTime(System.currentTimeMillis());
+								metaCNode.setGuid(id);
 							}
 							double lon  = rs.getDouble("X");
-							cNode.setLongitude(lon);
+							metaCNode.setLongitude(lon);
 							double lat  = rs.getDouble("Y");
-							cNode.setLatitude(lat);
+							metaCNode.setLatitude(lat);
 							double weight  = rs.getDouble("MAP_WEIGHT");
-							cNode.setMapWeight(weight);
-							nodes.put(id,cNode);
+							metaCNode.setMapWeight(weight);
+							nodes.put(id,metaCNode);
 							//System.out.println("X:"+lon+",Y:"+lat+", MAP_WEIGHT:"+weight);
 							//good++;
 						} catch (SQLException e) {
@@ -232,7 +235,7 @@ public class MySQL extends NodeListLoader{
 				}
 				
 				for(MetaCNode c:nodes.values()){
-					c.setConfiguration(super.getConfiguration(c.getId()));
+					c.setConfiguration(super.getConfiguration(c.getGuid()));
 					ret.add(c);
 					/*if(c.getId() != null) good_Id++;
 					if(c.getName() != null) good_Name++;
@@ -282,17 +285,6 @@ public class MySQL extends NodeListLoader{
 				}
 			}
 		}
-		
-		/*
-		getLog().fatal("Mysql "+good+"/"+ret.size()+" total\n"+
-				"good_Id:"+ good_Id +"\n"+
-				"good_Name:"+ good_Name +"\n"+
-				"good_CallCount:"+ good_CallCount +"\n"+
-				"good_Configuration:"+ good_Configuration +"\n"+
-				"good_Latitude:"+ good_Latitude +"\n"+
-				"good_Longitude:"+ good_Longitude +"\n"+
-				"good_MapWeight:"+ good_MapWeight +"\n");
-				*/
 		
 		return(ret);
 	}

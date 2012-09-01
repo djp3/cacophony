@@ -14,11 +14,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.quub.Globals;
 import com.quub.util.Pair;
 import com.quub.webserver.WebUtil;
 
-import edu.uci.ics.luci.cacophony.directory.Directory;
+import edu.uci.ics.luci.cacophony.CacophonyRequestHandlerHelper;
 
 public class FailoverFetch {
 	
@@ -38,19 +37,20 @@ public class FailoverFetch {
 		directoryServerPool = new ArrayList<Pair<Long,String>>();
 	}
 	
-	public FailoverFetch(String seedServer){
+	public FailoverFetch(String seedServer,String namespace){
 		this();
-		fetchDirectoryList(seedServer);
+		fetchDirectoryList(seedServer,namespace);
 	}
 	
 	
 	
-	public void fetchDirectoryList(String directorySeed) {
+	public void fetchDirectoryList(String directorySeed,String namespace) {
 		String responseString = null;
 		
 		try{
 			HashMap<String, String> params = new HashMap<String, String>();
-			params.put("version", Globals.getGlobals().getVersion());
+			params.put("version", CacophonyRequestHandlerHelper.getAPIVersion());
+			params.put("namespace",namespace); 
 
 			responseString = WebUtil.fetchWebPage("http://"+directorySeed+"/servers", false, params, 30 * 1000);
 		} catch (MalformedURLException e) {
@@ -67,38 +67,29 @@ public class FailoverFetch {
 					getLog().fatal("Couldn't get directory list:"+responseString);
 				}
 				else{
-					if(!Globals.getGlobals().getVersion().equals(response.getString("version"))){
-						getLog().fatal("Wrong version on directory list:"+responseString);
+					if(response.getJSONObject("servers").length() == 0){
+						getLog().fatal("No servers in directory directory list:"+responseString);
 					}
 					else{
-						if(response.getJSONObject("servers").length() == 0){
-							getLog().fatal("No servers in directory directory list:"+responseString);
-						}
-						else{
-			    			JSONObject servers = response.getJSONObject("servers");
-			    			for(Iterator<String> k = servers.keys();k.hasNext();){
-			    				try{
-			    					JSONObject server = servers.getJSONObject((String) k.next());
-			    					String namespace = server.getString("namespace");
-			    					String targetNamespace = Directory.getInstance().getDirectoryNamespace();
-			    					if(targetNamespace.equals(namespace)){
-			    						JSONArray urlsForServer = server.getJSONArray("access_routes");
-			    						for(int i =0 ; i < urlsForServer.length(); i++){
-			    							long p = urlsForServer.getJSONObject(i).getLong("priority_order");
-			    							String url = urlsForServer.getJSONObject(i).getString("url");
-			    							Pair<Long, String> pair = new Pair<Long, String>(p,url);
-			    							synchronized(dspLock){
-			    								directoryServerPool.add(pair);
-			    							}
-			    						}
-			    					}
-			    				} catch (JSONException e) {
-			    					getLog().debug("Something is missing from directory server JSON\n"+e);
-			    				}
-			    			}
-		    				
+		    			JSONObject servers = response.getJSONObject("servers");
+		    			for(Iterator<?> k = servers.keys();k.hasNext();){
+		    				try{
+		    					JSONObject server = servers.getJSONObject((String) k.next());
+	    						JSONArray urlsForServer = server.getJSONArray("access_routes");
+	    						for(int i =0 ; i < urlsForServer.length(); i++){
+	    							long p = urlsForServer.getJSONObject(i).getLong("priority_order");
+	    							String url = urlsForServer.getJSONObject(i).getString("url");
+	    							Pair<Long, String> pair = new Pair<Long, String>(p,url);
+	    							synchronized(dspLock){
+	    								directoryServerPool.add(pair);
+	    							}
+		    					}
+		    				} catch (JSONException e) {
+		    					getLog().debug("Something is missing from directory server JSON\n"+e);
+		    				}
 		    			}
-					}
+	    				
+	    			}
 				}
 			} catch (JSONException e) {
 				getLog().error(e);

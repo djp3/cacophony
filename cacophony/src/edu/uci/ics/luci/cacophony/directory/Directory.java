@@ -4,11 +4,11 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -39,25 +39,24 @@ import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import com.martiansoftware.jsap.Switch;
 import com.quub.Globals;
-import com.quub.database.QuubDBConnectionPool;
 import com.quub.util.Pair;
 import com.quub.util.Quittable;
 import com.quub.webserver.AccessControl;
 import com.quub.webserver.HandlerAbstract;
-import com.quub.webserver.RequestHandlerFactory;
+import com.quub.webserver.RequestDispatcher;
 import com.quub.webserver.WebServer;
 import com.quub.webserver.handlers.HandlerFileServer;
-import com.quub.webserver.handlers.HandlerVersion;
 
 import edu.uci.ics.luci.cacophony.CacophonyGlobals;
-import edu.uci.ics.luci.cacophony.directory.api.HandlerDirectoryNamespace;
-import edu.uci.ics.luci.cacophony.directory.api.HandlerDirectoryServers;
-import edu.uci.ics.luci.cacophony.directory.api.HandlerNodeAssignment;
-import edu.uci.ics.luci.cacophony.directory.api.HandlerNodeCheckin;
-import edu.uci.ics.luci.cacophony.directory.api.HandlerNodeList;
-import edu.uci.ics.luci.cacophony.directory.api.HandlerShutdown;
-import edu.uci.ics.luci.cacophony.directory.api.WebServerWarmUp;
-import edu.uci.ics.luci.cacophony.directory.nodelist.CNode;
+import edu.uci.ics.luci.cacophony.api.HandlerShutdown;
+import edu.uci.ics.luci.cacophony.api.HandlerVersion;
+import edu.uci.ics.luci.cacophony.api.directory.HandlerDirectoryNamespace;
+import edu.uci.ics.luci.cacophony.api.directory.HandlerDirectoryServers;
+import edu.uci.ics.luci.cacophony.api.directory.HandlerNodeAssignment;
+import edu.uci.ics.luci.cacophony.api.directory.HandlerNodeCheckin;
+import edu.uci.ics.luci.cacophony.api.directory.HandlerNodeList;
+import edu.uci.ics.luci.cacophony.api.directory.WebServerWarmUp;
+import edu.uci.ics.luci.cacophony.directory.nodelist.CNodeReference;
 import edu.uci.ics.luci.cacophony.directory.nodelist.MetaCNode;
 import edu.uci.ics.luci.cacophony.directory.nodelist.NodeListLoader;
 
@@ -67,7 +66,6 @@ public class Directory implements Quittable{
 	private static final Integer CASSANDRA_PORT=9160;
 	
 	private static transient volatile Logger log = null;
-	private static Directory theOne = null;
 	public static Logger getLog(){
 		if(log == null){
 			log = Logger.getLogger(WebServer.class);
@@ -95,6 +93,7 @@ public class Directory implements Quittable{
 	public final static long ONE_HOUR = 60 * ONE_MINUTE;
 	public final static long ONE_DAY = 24 * ONE_HOUR;
 	public Timer heartbeat;
+	public Timer metaCNodeListCleaner;
 	
 	private boolean shuttingDown = false;
 	
@@ -116,7 +115,7 @@ public class Directory implements Quittable{
 
 	
 	
-	private Directory(){
+	public Directory(){
 		Globals g = Globals.getGlobals();
 		
 		String url = null;
@@ -161,13 +160,6 @@ public class Directory implements Quittable{
 				stringSerializer,
 				stringSerializer);
 		
-	}
-	
-	public static synchronized Directory getInstance(){
-		if(theOne == null){
-			theOne = new Directory();
-		}
-		return theOne;
 	}
 	
 	public String getDirectoryNamespace() {
@@ -267,7 +259,7 @@ public class Directory implements Quittable{
 		}
 		
 		try {
-			getLog().error("Starting a Directory -> Cassandra heartbeat for: "+localData.toString(1));
+			getLog().info("Starting a Directory -> Cassandra heartbeat for: "+localData.toString(1));
 		} catch (JSONException e1) {
 		}
 		
@@ -337,6 +329,95 @@ public class Directory implements Quittable{
 		return ret;
 	}
 	
+	
+	public void startMetaCNodeListCleaner(){
+		startMetaCNodeListCleaner(null,null);
+	}
+	
+	
+	public void startMetaCNodeListCleaner(Long delay,Long period){
+		
+		if(delay == null){
+			delay = 0L;
+		}
+		
+		if(period == null){
+			period = ONE_DAY;
+		}
+		
+		/* If we already started a cleaner cancel it and restart */
+		if(metaCNodeListCleaner != null){
+			metaCNodeListCleaner.cancel();
+		}
+		
+		getLog().info("Starting a MetaCNodeList Cleaner");
+		
+		 metaCNodeListCleaner = new Timer(true);
+		 metaCNodeListCleaner.scheduleAtFixedRate(
+			    new TimerTask(){
+			    	
+					@Override
+			    	public void run(){
+						
+						synchronized(cacheLock){
+							
+							refreshAllDataInCache();
+							Collection<MetaCNode> mcs = new ArrayList<MetaCNode>();
+							mcs.addAll(cache.values());
+							
+							for(MetaCNode mc:mcs){
+							
+								boolean deleteMC = true;
+							
+								List<CNodeReference> deleteCNR = new ArrayList<CNodeReference>();
+								if(mc.getCNodeReferences() != null){
+									for(CNodeReference cnr:mc.getCNodeReferences().values()){
+										if(cnr != null){
+											if(cnr.getLastHeartbeat() != null){
+												/* If one of the cnodes has checked in in the last 24 hours then keep
+												 * the meta node around
+												 */
+												if(cnr.getLastHeartbeat() > (System.currentTimeMillis()- ONE_DAY)){
+													deleteMC = false;
+												}
+												else{
+													deleteCNR.add(cnr);
+												}
+											}
+											else{
+												deleteCNR.add(cnr);
+											}
+										}
+									}
+								}
+							
+								/* Delete the cnodes with no heartbeat from the local copy */
+								for(CNodeReference cnr:deleteCNR){
+									mc.getCNodeReferences().remove(cnr.getCNodeGuid());
+								}
+							
+								/* If there were no recent CNode checkins and the MetaNode was created more than
+								 * one day ago, then delete it from the backing store, otherwise consider updating it.
+								 */
+								if( (deleteMC && (mc.getCreationTime() == null)) ||
+									(deleteMC && (mc.getCreationTime() < (System.currentTimeMillis() - ONE_DAY)))){
+									removeDatumThroughCache(mc.getGuid());
+								}
+								else{
+									/* If there was a change then update the row */
+									if(deleteCNR.size() != 0){
+										writeDatumThroughCache(mc.getGuid(),mc);
+									}
+								}
+							}
+						}
+					}
+					}, delay, period);
+	}
+	
+	
+	
+	
 	public Map<String, JSONObject> getServers(){
 		Map<String,JSONObject> ret = new HashMap<String,JSONObject>();
 		
@@ -366,6 +447,35 @@ public class Directory implements Quittable{
 		return(getNodeList(null));
 	}
 	
+	
+	private void removeDatumThroughCache(String metaCNodeID) {
+
+		synchronized(cacheLock){
+			/* Remove it in from the backing store */
+			cacophonyNodeTemplate.deleteRow(metaCNodeID);
+			
+			/* Remove it in from the cache */
+			cache.remove(metaCNodeID);
+		}
+		
+	}
+	
+	private void writeDatumThroughCache(String metaCNodeID, MetaCNode mc) {
+
+		synchronized(cacheLock){
+			/* Put it in the backing store */
+			ColumnFamilyUpdater<String, String> updater = this.cacophonyNodeTemplate.createUpdater(metaCNodeID);
+			updater.setString("json_data", mc.toJSONObject().toString());
+			this.cacophonyNodeTemplate.update(updater);
+			
+			/* Put it in the cache */
+			cache.put(metaCNodeID, mc);
+		}
+		
+	}
+
+
+
 	private void refreshDatumInCache(String id){
 		String jsonData = null;
 		try {
@@ -376,7 +486,9 @@ public class Directory implements Quittable{
 				jsonObject = new JSONObject(jsonData);
 			}
 			/* Put the updated info in the cache */
-			cache.put(id,jsonObject);
+			synchronized(cacheLock){
+				cache.put(id,MetaCNode.fromJSONObject(jsonObject));
+			}
 		} catch (HectorException e) {
 			getLog().error("Problem getting a c node list:\n"+e);
 		} catch (JSONException e) {
@@ -396,30 +508,28 @@ public class Directory implements Quittable{
 	}
 	
 	Long cacheTimeout = 0L;
-	Map<String,JSONObject> cache = new TreeMap<String,JSONObject>();
+	Map<String,MetaCNode> cache = new TreeMap<String,MetaCNode>();
+	Object cacheLock = new Object();
 	public List<MetaCNode> getNodeList(Set<String> guids){
 		List<MetaCNode> ret = new ArrayList<MetaCNode>();
 		
+		synchronized(cacheLock){
 		/* If we are asking for everything then use cached copy */
-		if(guids == null){
-			if(cacheTimeout < (System.currentTimeMillis() - FIVE_MINUTES)){
-				cache.clear();
-				refreshAllDataInCache();
-				cacheTimeout = System.currentTimeMillis();
-			}
+			if(guids == null){
+				if(cacheTimeout < (System.currentTimeMillis() - FIVE_MINUTES)){
+					cache.clear();
+					refreshAllDataInCache();
+					cacheTimeout = System.currentTimeMillis();
+				}
 		
-			for(Entry<String, JSONObject> e:cache.entrySet()){
-				MetaCNode mc = MetaCNode.fromJSONObject(e.getValue());
-				ret.add(mc);
+				ret.addAll(cache.values());
 			}
-		}
-		else{
-			for(String id:guids){
-				refreshDatumInCache(id);
-				MetaCNode mc = MetaCNode.fromJSONObject(cache.get(id));
-				ret.add(mc);
+			else{
+				for(String id:guids){
+					refreshDatumInCache(id);
+					ret.add(cache.get(id));
+				}
 			}
-			
 		}
 		
 		return ret;
@@ -429,7 +539,8 @@ public class Directory implements Quittable{
 		List<MetaCNode> map = i.loadNodeList();
 		
 		for( MetaCNode e : map){
-			ColumnFamilyUpdater<String, String> updater = this.cacophonyNodeTemplate.createUpdater(e.getId());
+			ColumnFamilyUpdater<String, String> updater = this.cacophonyNodeTemplate.createUpdater(e.getGuid());
+			
 			updater.setString("json_data", e.toJSONObject().toString());
 			this.cacophonyNodeTemplate.update(updater);
 		}
@@ -437,53 +548,41 @@ public class Directory implements Quittable{
 		getLog().info("Loaded "+map.size()+" CNodes");
 	}
 	
+	
 	public void updateMetaCNode(String metaCNodeID, String cNodeGUID, Long heartbeat){
+		CNodeReference cnr = new CNodeReference();
+		cnr.setMetaCNodeGuid(metaCNodeID);
+		cnr.setCNodeGuid(cNodeGUID);
+		cnr.setLastHeartbeat(heartbeat);
+		updateMetaCNode(cnr);
+	}
 		
-		if(metaCNodeID == null){
+	public void updateMetaCNode(CNodeReference cnr){
+		
+		if(cnr.getMetaCNodeGuid() == null){
 			return;
 		}
-		if(cNodeGUID == null){
+		if(cnr.getCNodeGuid() == null){
 			return;
 		}
 		
-		String jsonData = null;
-		JSONObject jsonObject = null;
-		try {
-			ColumnFamilyResult<String, String> res = this.cacophonyNodeTemplate.queryColumns(metaCNodeID);
-			jsonData = res.getString("json_data");
-			if(jsonData != null){
-				jsonObject = new JSONObject(jsonData);
-			}
-		} catch (HectorException e) {
-			getLog().error("Problem getting a c node from cassandra:"+metaCNodeID+"\n"+e);
-		} catch (JSONException e) {
-			getLog().error("Bad JSON Data in Cassandra ring:"+metaCNodeID+"\n"+jsonData+"\n"+e);
-		}
+		synchronized(cacheLock){
+			refreshDatumInCache(cnr.getMetaCNodeGuid());
+			MetaCNode mc = cache.get(cnr.getMetaCNodeGuid());
 		
-		if(jsonObject != null){
 			try {
-				MetaCNode mc = MetaCNode.fromJSONObject(jsonObject);
-				Map<String, CNode> cnodes = mc.getCNodes();
-				if(cnodes == null){
-					cnodes = new TreeMap<String,CNode>();
+				Map<String, CNodeReference> cnrs = mc.getCNodeReferences();
+				if(cnrs == null){
+					cnrs = new TreeMap<String,CNodeReference>();
 				}
 				
-				CNode cnode = null;
+				CNodeReference cr = new CNodeReference(cnr);
+				cnrs.put(cnr.getCNodeGuid(), cr);
+				mc.setCNodeReferences(cnrs);
 				
-				cnode = cnodes.get(cNodeGUID);
-				if(cnode == null){
-					cnode = new CNode();
-					cnode.setGuid(cNodeGUID);
-				}
-				cnode.setLastHeartbeat(heartbeat);
-				cnodes.put(cNodeGUID, cnode);
-				mc.setCNodes(cnodes);
-				
-				ColumnFamilyUpdater<String, String> updater = this.cacophonyNodeTemplate.createUpdater(metaCNodeID);
-				updater.setString("json_data", mc.toJSONObject().toString());
-				this.cacophonyNodeTemplate.update(updater);
+				writeDatumThroughCache(cnr.getMetaCNodeGuid(), mc);
 			} catch (HectorException e) {
-				getLog().error("Problem updating a c node in cassandra:"+metaCNodeID+"\n"+e);
+				getLog().error("Problem updating a c node in cassandra:"+cnr.getMetaCNodeGuid()+"\n"+e);
 			}
 		}
 	}
@@ -579,6 +678,79 @@ public class Directory implements Quittable{
 		return config;
 	}
 	
+	public void initializeDirectory() {
+		final String defaultFileName = "cacophony.directory.properties";
+		XMLPropertiesConfiguration config = null;
+		try {
+			config = new XMLPropertiesConfiguration(defaultFileName);
+			initializeDirectory(config);
+		} catch (ConfigurationException e) {
+			getLog().error("Unable to initialize directory with "+defaultFileName);
+		}
+	}
+
+
+
+	@SuppressWarnings("unchecked")
+	public void initializeDirectory(XMLPropertiesConfiguration config) {
+		if(config == null){
+			getLog().warn("Called with null config, using default");
+			initializeDirectory();
+			return;
+		}
+		
+		/* Launch Directory Node */
+		String namespace = config.getString("namespace");
+		setDirectoryNamespace(namespace);
+		
+		String nodeListLoader = config.getString("nodelist.loader.class");
+		Class<? extends NodeListLoader> c = null;
+		try {
+			 c = (Class<? extends NodeListLoader>) Class.forName(nodeListLoader);
+		} catch(ClassCastException e){
+			getLog().error("Class does not extend NodeListLoader "+nodeListLoader);
+		} catch (ClassNotFoundException e) {
+			getLog().error("Unable to locate class to load nodes with "+nodeListLoader+"\n"+e);
+		}
+		
+		if( c != null){
+			String nodeListLoaderOptions = config.getString("nodelist.loader.class.options");
+			try {
+				JSONObject nllOptions = new JSONObject(nodeListLoaderOptions);
+				NodeListLoader i = null;;
+				try {
+					i = c.newInstance();
+					i.init(nllOptions);
+					setNodeList(i);
+				} catch (InstantiationException e) {
+					getLog().error("Unable to instantiate class to load nodes with "+nodeListLoader+"\n"+e);
+				} catch (IllegalAccessException e) {
+					getLog().error("Unable to instantiate class to load nodes with "+nodeListLoader+"\n"+e);
+				}
+			} catch (JSONException e) {
+				getLog().error("Property file does not contain valid json\n"+nodeListLoaderOptions+"\n"+e);
+			}
+			finally{}
+		}
+	}
+
+
+
+	@SuppressWarnings("unchecked")
+	private static <T> T getConfig(JSAPResult clo, PropertiesConfiguration config, String string) {
+		T ret = null;
+		if(config.containsKey(string)){
+			ret = (T) config.getProperty(string);
+		}
+		T _ret = (T) clo.getObject(string);
+		if(_ret != null){
+			ret = _ret;
+		}
+		return (ret);
+	}
+
+
+
 	public static void main(String[] args) {
 		
 		/*Set the thread name for error reporting */
@@ -593,10 +765,12 @@ public class Directory implements Quittable{
 		}  
 		
 		/* Get Globals and local properties */
-		CacophonyGlobals g = CacophonyGlobals.getGlobals();
+		CacophonyGlobals g = new CacophonyGlobals();
+		Globals.setGlobals(g);
+		
+		XMLPropertiesConfiguration config = null;
 		try {
-			PropertiesConfiguration config;
-			config = new PropertiesConfiguration(clo.getString("config"));
+			config = new XMLPropertiesConfiguration(clo.getString("config"));
 			g.setConfig(config);
 		} catch (ConfigurationException e1) {
 			getLog().error("Problem loading configuration from:"+clo.getString("config")+"\n"+e1);
@@ -604,74 +778,29 @@ public class Directory implements Quittable{
 		
 		Globals.getGlobals().setTesting((Boolean)getConfig(clo,g.getConfig(),"testing"));
 		
-		Directory directory = launchDirectory();
+		String guid = (String)getConfig(clo,g.getConfig(),"server.guid");
 		
-		/* Get a DB Pool */
-		QuubDBConnectionPool odbcp = null;
-		if(clo.getBoolean("testing")){
-			//odbcp = new QuubDBConnectionPool(getGlobals(), config.getString("DatabaseURL"),"swayrdb_test","swayrb767","283cb93dc3",null,null);
-		}
-		else{
-			//odbcp = new QuubDBConnectionPool(getGlobals(), config.getString("DatabaseURL"),"swayrdb","swayrb767","283cb93dc3",5,1);
-		}
+		Directory directory = new Directory();
+		Globals.getGlobals().addQuittables(directory);
 		
-		/* Create the webserver to catch rest action*/
-		WebServer ws = null;
-		try{
-			Map<String, Class<? extends HandlerAbstract>> requestHandlerRegistry = new HashMap<String, Class<? extends HandlerAbstract>>();
-			requestHandlerRegistry.put(null, HandlerFileServer.class); //Default response
-			requestHandlerRegistry.put("version",HandlerVersion.class);
-			requestHandlerRegistry.put("servers",HandlerDirectoryServers.class);
-			requestHandlerRegistry.put("namespace",HandlerDirectoryNamespace.class);
-			requestHandlerRegistry.put("nodes",HandlerNodeList.class);
-			requestHandlerRegistry.put("node_assignment",HandlerNodeAssignment.class);
-			requestHandlerRegistry.put("node_checkin",HandlerNodeCheckin.class);
-			requestHandlerRegistry.put("shutdown",HandlerShutdown.class);
-
-			RequestHandlerFactory requestHandlerFactory = new RequestHandlerFactory(g,requestHandlerRegistry);
-			AccessControl accessControl = new AccessControl();
-			
-			Integer port = getConfig(clo,g.getConfig(),"port");
-			
-			ws = new WebServer(g, requestHandlerFactory, null/*odbcp*/, port, false,accessControl);
-		} catch (RuntimeException e) {
-			getLog().fatal("Couldn't start webserver:"+e);
-			if(ws != null){
-				ws.setQuitting(true);
-			}
-			g.setQuitting(true);
-		}
+		directory.initializeDirectory(config);
 		
-		/* Warm up web server */
-		try {
-			if(ws != null){
-				ws.start();
-				Thread.sleep(1000);
-			}
-		} catch (InterruptedException e) {
-		}
-		
-		if(ws != null){
-			WebServerWarmUp.go(clo, ws, "http://localhost");
-			if(ws.getQuitting()){
-				g.setQuitting(true);
-			}
-		}
-		
-		/* Set up the directory access and heartbeats */
-		String externalURL = getConfig(clo,g.getConfig(),"url.external");
-		try {
-			if((externalURL == null) || (externalURL.equals(""))){
-				externalURL = InetAddress.getLocalHost().getHostName();
-			}
-		} catch (UnknownHostException e) {
-			try {
-				externalURL = InetAddress.getLocalHost().getHostAddress();
-			} catch (UnknownHostException e1) {
-				externalURL = null;
-			}
-		}
+		/* Set up the urls to access the directory from */
 		List<Pair<Long, String>> urls = new ArrayList<Pair<Long,String>>();
+		
+		/* Get the url for external access to the directory */
+		String externalURL = getConfig(clo,g.getConfig(),"url.external");
+		if((externalURL == null) || (externalURL.equals(""))){
+			try {
+				externalURL = InetAddress.getLocalHost().getHostName();
+			} catch (UnknownHostException e) {
+				try {
+					externalURL = InetAddress.getLocalHost().getHostAddress();
+				} catch (UnknownHostException e1) {
+					externalURL = null;
+				}
+			}
+		}
 		
 		if(externalURL != null){
 			Pair<Long, String> p = new Pair<Long,String>(1L,externalURL+":"+getConfig(clo,g.getConfig(),"port"));
@@ -694,88 +823,55 @@ public class Directory implements Quittable{
 			Pair<Long, String> p = new Pair<Long,String>(0L,internalURL+":"+getConfig(clo,g.getConfig(),"port"));
 			urls.add(p);
 		}
-		Directory.getInstance().startHeartbeat(""+getConfig(clo,g.getConfig(),"server.guid"),urls);
 		
-		/*Set up clean shutdown hooks*/
-		g.addQuittables(ws);
-		g.addQuittables(directory);
-		g.addQuittables(odbcp);
+		/*Start the heart beats */
+		directory.startHeartbeat(guid,urls);
+		
+		/*Start the housecleaning*/
+		directory.startMetaCNodeListCleaner();
+		
+		/* Set up webserver to access the directory */
+		
+		WebServer ws = null;
+		try {
+			HashMap<String, HandlerAbstract> requestHandlerRegistry = new HashMap<String,HandlerAbstract>();
+			
+			requestHandlerRegistry.put(null, new HandlerFileServer(edu.uci.ics.luci.cacophony.CacophonyGlobals.class,"/www/"));
+			
+			HandlerAbstract handler =  new HandlerVersion();
+			requestHandlerRegistry.put("",handler);
+			requestHandlerRegistry.put("version",handler);
+			
+			requestHandlerRegistry.put("servers",new HandlerDirectoryServers(directory));
+			requestHandlerRegistry.put("namespace",new HandlerDirectoryNamespace(directory));
+			requestHandlerRegistry.put("nodes",new HandlerNodeList(directory));
+			requestHandlerRegistry.put("node_assignment",new HandlerNodeAssignment(directory));
+			requestHandlerRegistry.put("node_checkin",new HandlerNodeCheckin(directory));
+			
+			requestHandlerRegistry.put("shutdown",new HandlerShutdown());
+			
+			RequestDispatcher requestDispatcher = new RequestDispatcher(requestHandlerRegistry);
+			ws = new WebServer(requestDispatcher, Integer.valueOf((String) getConfig(clo,g.getConfig(),"port")), false, new AccessControl());
+			ws.start();
+			Globals.getGlobals().addQuittables(ws);
+		} catch (RuntimeException e) {
+			getLog().error("We couldn't get a webserver up and running!\n"+e);
+			if(ws != null){
+				ws.setQuitting(true);
+			}
+			g.setQuitting(true);
+		}
+		
+		if(ws != null){
+			WebServerWarmUp.go(ws, Integer.valueOf((String) getConfig(clo,g.getConfig(),"port")),"http://localhost");
+			if(ws.getQuitting()){
+				getLog().info("Warm-up failed, shutting down");
+				g.setQuitting(true);
+			}
+		}
 		
 		getLog().info("\nDone in "+Directory.class.getCanonicalName()+" main()\n");
 		
-	}
-
-	
-	public static Directory launchDirectory() {
-		String directoryPropertiesLocation = "cacophony.directory.properties";
-		return(launchDirectory(directoryPropertiesLocation));
-	}
-
-
-	@SuppressWarnings("unchecked")
-	public static Directory launchDirectory(String directoryPropertiesLocation) {
-		/* Launch Directory Node */
-		Directory directory = Directory.getInstance();
-		
-		/* Get Directory properties and initialize */
-		try {
-			XMLPropertiesConfiguration config;
-			config = new XMLPropertiesConfiguration(directoryPropertiesLocation);
-			
-			String namespace = config.getString("namespace");
-			directory.setDirectoryNamespace(namespace);
-			
-			String nodeListLoader = config.getString("nodelist.loader.class");
-			Class<? extends NodeListLoader> c = null;
-			try {
-				 c = (Class<? extends NodeListLoader>) Class.forName(nodeListLoader);
-			} catch(ClassCastException e){
-				getLog().error("Class does not extend NodeListLoader "+nodeListLoader);
-			} catch (ClassNotFoundException e) {
-				getLog().error("Unable to locate class to load nodes with "+nodeListLoader+"\n"+e);
-			}
-			
-			if( c != null){
-				String nodeListLoaderOptions = config.getString("nodelist.loader.class.options");
-				try {
-					JSONObject nllOptions = new JSONObject(nodeListLoaderOptions);
-					NodeListLoader i = null;;
-					try {
-						i = c.newInstance();
-						i.init(nllOptions);
-						directory.setNodeList(i);
-					} catch (InstantiationException e) {
-						getLog().error("Unable to instantiate class to load nodes with "+nodeListLoader+"\n"+e);
-					} catch (IllegalAccessException e) {
-						getLog().error("Unable to instantiate class to load nodes with "+nodeListLoader+"\n"+e);
-					}
-				} catch (JSONException e) {
-					getLog().error("Property file does not contain valid json\n"+nodeListLoaderOptions+"\n"+e);
-				}
-				finally{}
-			}
-		} catch (ConfigurationException e1) {
-			getLog().error("Problem loading configuration from:"+directoryPropertiesLocation+"\n"+e1);
-		}
-		return directory;
-	}
-
-
-
-
-
-
-	@SuppressWarnings("unchecked")
-	private static <T> T getConfig(JSAPResult clo, PropertiesConfiguration config, String string) {
-		T ret = null;
-		if(config.containsKey(string)){
-			ret = (T) config.getProperty(string);
-		}
-		T _ret = (T) clo.getObject(string);
-		if(_ret != null){
-			ret = _ret;
-		}
-		return (ret);
 	}
 
 }

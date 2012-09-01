@@ -66,8 +66,8 @@ public class MetaCNode {
 	    		return 1;
 	    	}
 	   
-	    	Map<String, CNode> cNodesA = ((MetaCNode)a).getCNodes();
-	    	Map<String, CNode> cNodesB = ((MetaCNode)b).getCNodes();
+	    	Map<String, CNodeReference> cNodesA = ((MetaCNode)a).getCNodeReferences();
+	    	Map<String, CNodeReference> cNodesB = ((MetaCNode)b).getCNodeReferences();
 	        Double size1 = null;
 	        Double size2 = null;
 	        
@@ -97,120 +97,22 @@ public class MetaCNode {
 	};
 
 
-	private String id;
-	private String name;
-	private Double latitude;
-	private Double longitude;
-	private Double mapWeight;
-	private Double priority;
-	private Map<String,CNode> cNodes = Collections.synchronizedMap(new TreeMap<String,CNode>());
-	private JSONObject configuration;
-	
-	public String getId() {
-		return id;
-	}
-	public void setId(String id) {
-		this.id = id;
-	}
-	public String getName() {
-		return name;
-	}
-	public void setName(String name) {
-		this.name = name;
-	}
-	
-	public void setLatitude(Double latitude) {
-		this.latitude = latitude;
-	}
-	public Double getLatitude() {
-		return latitude;
-	}
-	public void setLongitude(Double longitude) {
-		this.longitude = longitude;
-	}
-	public Double getLongitude() {
-		return longitude;
-	}
-	public Double getMapWeight() {
-		return mapWeight;
-	}
-	public void setMapWeight(Double mapWeight) {
-		this.mapWeight = mapWeight;
-	}
-	
-	public Double getPriority() {
-		return priority;
-	}
-	public void setPriority(Double priority) {
-		this.priority = priority;
-	}
-	public JSONObject getConfiguration() {
-		return configuration;
-	}
-	public void setConfiguration(JSONObject configuration) {
-		this.configuration = configuration;
-	}
-	public Map<String, CNode> getCNodes() {
-		return cNodes;
-	}
-	
-	public void setCNodes(Map<String, CNode> cNodes) {
-		this.cNodes = cNodes;
-	}
-	
-	public boolean equals(Object _that){
-		if(this == _that) return true;
-		if( !(_that instanceof MetaCNode) ) return false;
-		
-		MetaCNode that = (MetaCNode) _that;
-		
-		boolean ret = true;
-		
-		ret &= !((this.getId() == null) ^ (that.getId() == null));
-		ret &= !((this.getName() == null) ^ (that.getName() == null));
-		ret &= !((this.getLatitude() == null) ^ (that.getLatitude() == null));
-		ret &= !((this.getLongitude() == null) ^ (that.getLongitude() == null));
-		ret &= !((this.getMapWeight() == null) ^ (that.getMapWeight() == null));
-		ret &= !((this.getPriority() == null) ^ (that.getPriority() == null));
-		ret &= !((this.getCNodes() == null) ^ (that.getCNodes() == null));
-		ret &= !((this.getConfiguration() == null) ^ (that.getConfiguration() == null));
-		
-		ret &= (this.getId() == null) || this.getId().equals(that.getId());
-		ret &= (this.getName() == null) || this.getName().equals(that.getName());
-		ret &= (this.getLatitude() == null) || this.getLatitude().equals(that.getLatitude());
-		ret &= (this.getLongitude() == null) || this.getLongitude().equals(that.getLongitude());
-		ret &= (this.getMapWeight() == null) || this.getMapWeight().equals(that.getMapWeight());
-		ret &= (this.getPriority() == null) || this.getPriority().equals(that.getPriority());
-		ret &= (this.getCNodes() == null) || this.getCNodes().equals(that.getCNodes());
-		ret &= (this.getConfiguration() == null) || this.getConfiguration().equals(that.getConfiguration());
-		
-		return ret;
-	}
-	
-	public int hashCode(){
-		int result = HashCodeUtil.SEED;
-
-		result = HashCodeUtil.hash(result,this.getId());
-		result = HashCodeUtil.hash(result,this.getName());
-		result = HashCodeUtil.hash(result,this.getLatitude());
-		result = HashCodeUtil.hash(result,this.getLongitude());
-		result = HashCodeUtil.hash(result,this.getMapWeight());
-		result = HashCodeUtil.hash(result,this.getPriority());
-		result = HashCodeUtil.hash(result,this.getCNodes());
-		result = HashCodeUtil.hash(result,this.getConfiguration());
-		
-		return(result);
-	}
-	
 	public static MetaCNode fromJSONObject(JSONObject j){
 		
 		MetaCNode c = null;
 		if(j != null){
 			c = new MetaCNode();
+			
+			Long creationTime;
+			try {
+				creationTime = j.getLong("creation_time");
+				c.setCreationTime(creationTime);
+			} catch (JSONException e1) {
+			}
 			String id;
 			try {
 				id = j.getString("id");
-				c.setId(id);
+				c.setGuid(id);
 			} catch (JSONException e1) {
 			}
 			
@@ -256,22 +158,24 @@ public class MetaCNode {
 			} catch (JSONException e1) {
 			}
 			
-			JSONArray _cNodes = null;
+			JSONArray _cNodeReferences= null;
 			try {
-				_cNodes = j.getJSONArray("c_nodes");
+				_cNodeReferences = j.getJSONArray("c_node_references");
 			} catch (JSONException e1) {
 			}
-			if(_cNodes == null){
-				c.setCNodes(null);
+			if(_cNodeReferences == null){
+				c.setCNodeReferences(null);
 			}
 			else{
-				for(int idx = 0; idx < _cNodes.length();idx++){
+				for(int idx = 0; idx < _cNodeReferences.length();idx++){
 					try {
-						JSONObject x = _cNodes.getJSONObject(idx);
-						CNode y = CNode.fromJSONObject(x);
-						c.getCNodes().put(y.getGuid(),y);
+						JSONObject x = _cNodeReferences.getJSONObject(idx);
+						CNodeReference y = CNodeReference.fromJSONObject(x);
+						if(y.getCNodeGuid() != null){
+							c.getCNodeReferences().put(y.getCNodeGuid(),y);
+						}
 					} catch (JSONException e) {
-						getLog().error("Unable to make MetaCNode from JSON: "+_cNodes.toString()+"\n"+e);
+						getLog().error("Unable to make MetaCNode from JSON: "+_cNodeReferences.toString()+"\n"+e);
 					}
 				}
 			}
@@ -279,36 +183,173 @@ public class MetaCNode {
 		
 		return c;
 	}
+	public static JSONObject toJSONObject(MetaCNode c) {
+		JSONObject jsonObject = null;
+		if(c != null){
+			jsonObject = new JSONObject();
+			try {
+				if(c.getCreationTime() != null){
+					jsonObject.put("creation_time", c.getCreationTime());
+				}
+				if(c.getGuid() != null){
+					jsonObject.put("id", c.getGuid());
+				}
+				if(c.getName() != null){
+					jsonObject.put("name", c.getName());
+				}
+				if(c.getPriority() != null){
+					jsonObject.put("priority", c.getPriority());
+				}
+				if(c.getConfiguration() != null){
+					jsonObject.put("configuration", c.getConfiguration());
+				}
+				if(c.getLongitude() != null){
+					jsonObject.put("longitude", c.getLongitude());
+				}
+				if(c.getLatitude() != null){
+					jsonObject.put("latitude", c.getLatitude());
+				}
+				if(c.getMapWeight() != null){
+					jsonObject.put("map_weight", c.getMapWeight());
+				}
+				if(c.getCNodeReferences() != null){
+					Map<String, CNodeReference> l = c.getCNodeReferences();
+					if(l != null){
+						JSONArray _cNodeReferences = new JSONArray();
+						for(Entry<String, CNodeReference> e:l.entrySet()){
+							_cNodeReferences.put(e.getValue().toJSONObject());
+						}
+						jsonObject.put("c_node_references", _cNodeReferences);
+					}
+				}
+			} catch (JSONException e) {
+				getLog().error("Unable to make JSONObject: id = "+c.getGuid()+", name = "+c.getName()+"\n"+e);
+			}
+		}
+		return jsonObject;
+	}
+
+	/** For monitoring when the metaCNode was created, not used for equality **/
+	private Long creationTime;
+	private String guid;
+	private String name;
+	private Double latitude;
+	private Double longitude;
+	private Double mapWeight;
+	private Double priority;
+	private Map<String,CNodeReference> cNodeReferences = Collections.synchronizedMap(new TreeMap<String,CNodeReference>());
+	private JSONObject configuration;
+	
+	public MetaCNode(){
+		super();
+	}
+	
+	public Long getCreationTime() {
+		return creationTime;
+	}
+	public void setCreationTime(Long creationTime) {
+		this.creationTime = creationTime;
+	}
+	
+	public String getGuid() {
+		return guid;
+	}
+	public void setGuid(String guid) {
+		this.guid = guid;
+	}
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
+	
+	public void setLatitude(Double latitude) {
+		this.latitude = latitude;
+	}
+	public Double getLatitude() {
+		return latitude;
+	}
+	public void setLongitude(Double longitude) {
+		this.longitude = longitude;
+	}
+	public Double getLongitude() {
+		return longitude;
+	}
+	public Double getMapWeight() {
+		return mapWeight;
+	}
+	public void setMapWeight(Double mapWeight) {
+		this.mapWeight = mapWeight;
+	}
+	
+	public Double getPriority() {
+		return priority;
+	}
+	public void setPriority(Double priority) {
+		this.priority = priority;
+	}
+	public JSONObject getConfiguration() {
+		return configuration;
+	}
+	public void setConfiguration(JSONObject configuration) {
+		this.configuration = configuration;
+	}
+	public Map<String, CNodeReference> getCNodeReferences() {
+		return cNodeReferences;
+	}
+	
+	public void setCNodeReferences(Map<String, CNodeReference> cNodes) {
+		this.cNodeReferences = cNodes;
+	}
+	
+	public boolean equals(Object _that){
+		if(this == _that) return true;
+		if( !(_that instanceof MetaCNode) ) return false;
+		
+		MetaCNode that = (MetaCNode) _that;
+		
+		boolean ret = true;
+		
+		ret &= !((this.getGuid() == null) ^ (that.getGuid() == null));
+		ret &= !((this.getName() == null) ^ (that.getName() == null));
+		ret &= !((this.getLatitude() == null) ^ (that.getLatitude() == null));
+		ret &= !((this.getLongitude() == null) ^ (that.getLongitude() == null));
+		ret &= !((this.getMapWeight() == null) ^ (that.getMapWeight() == null));
+		ret &= !((this.getPriority() == null) ^ (that.getPriority() == null));
+		ret &= !((this.getCNodeReferences() == null) ^ (that.getCNodeReferences() == null));
+		ret &= !((this.getConfiguration() == null) ^ (that.getConfiguration() == null));
+		
+		ret &= (this.getGuid() == null) || this.getGuid().equals(that.getGuid());
+		ret &= (this.getName() == null) || this.getName().equals(that.getName());
+		ret &= (this.getLatitude() == null) || this.getLatitude().equals(that.getLatitude());
+		ret &= (this.getLongitude() == null) || this.getLongitude().equals(that.getLongitude());
+		ret &= (this.getMapWeight() == null) || this.getMapWeight().equals(that.getMapWeight());
+		ret &= (this.getPriority() == null) || this.getPriority().equals(that.getPriority());
+		ret &= (this.getCNodeReferences() == null) || this.getCNodeReferences().equals(that.getCNodeReferences());
+		ret &= (this.getConfiguration() == null) || this.getConfiguration().equals(that.getConfiguration());
+		
+		return ret;
+	}
+	
+	public int hashCode(){
+		int result = HashCodeUtil.SEED;
+
+		result = HashCodeUtil.hash(result,this.getGuid());
+		result = HashCodeUtil.hash(result,this.getName());
+		result = HashCodeUtil.hash(result,this.getLatitude());
+		result = HashCodeUtil.hash(result,this.getLongitude());
+		result = HashCodeUtil.hash(result,this.getMapWeight());
+		result = HashCodeUtil.hash(result,this.getPriority());
+		result = HashCodeUtil.hash(result,this.getCNodeReferences());
+		result = HashCodeUtil.hash(result,this.getConfiguration());
+		
+		return(result);
+	}
+	
 	
 	public JSONObject toJSONObject() {
 		return MetaCNode.toJSONObject(this);
-	}
-	
-	public static JSONObject toJSONObject(MetaCNode c) {
-		if(c == null){
-			return null;
-		}
-		JSONObject jsonObject = new JSONObject();
-		try {
-			jsonObject.put("id", c.getId());
-			jsonObject.put("name", c.getName());
-			jsonObject.put("priority", c.getPriority());
-			jsonObject.put("configuration", c.getConfiguration());
-			jsonObject.put("longitude", c.getLongitude());
-			jsonObject.put("latitude", c.getLatitude());
-			jsonObject.put("map_weight", c.getMapWeight());
-			Map<String, CNode> l = c.getCNodes();
-			if(l != null){
-				JSONArray _cNodes = new JSONArray();
-				for(Entry<String, CNode> e:l.entrySet()){
-					_cNodes.put(e.getValue().toJSONObject());
-				}
-				jsonObject.put("c_nodes", _cNodes);
-			}
-		} catch (JSONException e) {
-			getLog().error("Unable to make JSONObject: id = "+c.getId()+", name = "+c.getName()+"\n"+e);
-		}
-		return jsonObject;
 	}
 
 }

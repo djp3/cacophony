@@ -26,58 +26,67 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.quub.Globals;
+import com.quub.GlobalsTest;
 import com.quub.util.Pair;
 import com.quub.webserver.AccessControl;
 import com.quub.webserver.HandlerAbstract;
-import com.quub.webserver.RequestHandlerFactory;
+import com.quub.webserver.RequestDispatcher;
 import com.quub.webserver.WebServer;
 import com.quub.webserver.WebUtil;
 import com.quub.webserver.handlers.HandlerFileServer;
-import com.quub.webserver.handlers.HandlerVersion;
 
-import edu.uci.ics.luci.cacophony.CacophonyGlobals;
-import edu.uci.ics.luci.cacophony.directory.api.HandlerDirectoryNamespace;
-import edu.uci.ics.luci.cacophony.directory.api.HandlerDirectoryServers;
-import edu.uci.ics.luci.cacophony.directory.api.HandlerNodeList;
-import edu.uci.ics.luci.cacophony.directory.api.HandlerShutdown;
+import edu.uci.ics.luci.cacophony.CacophonyRequestHandlerHelper;
+import edu.uci.ics.luci.cacophony.api.HandlerShutdown;
+import edu.uci.ics.luci.cacophony.api.HandlerVersion;
+import edu.uci.ics.luci.cacophony.api.directory.HandlerDirectoryNamespace;
+import edu.uci.ics.luci.cacophony.api.directory.HandlerDirectoryServers;
+import edu.uci.ics.luci.cacophony.api.directory.HandlerNodeList;
 
 public class DirectoryTest {
 	
 	private static int testPort = 9020;
-	private WebServer ws = null;
-	Map<String, Class<? extends HandlerAbstract>> requestHandlerRegistry;
+	private static synchronized int testPortPlusPlus(){
+		int x = testPort;
+		testPort++;
+		return(x);
+	}
+	
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
+		Globals.setGlobals(new GlobalsTest());
 	}
 
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
+		Globals.getGlobals().setQuitting(true);
+		Globals.setGlobals(null);
 	}
-
-
-
-	private Directory d;
+	
+	private WebServer ws = null;
+	HashMap<String, HandlerAbstract> requestHandlerRegistry;
+	private int workingPort;
 
 	@Before
 	public void setUp() throws Exception {
-		d = Directory.getInstance();
 	}
 
 	@After
 	public void tearDown() throws Exception {
-		if(d != null){
-			d.setQuitting(true);
-		}
+	
 	}
 
 	@Test
 	public void testStartHeartbeat() {
-		if(d==null) fail("");
+		
+		Directory d = new Directory();
+		Globals.getGlobals().addQuittables(d);
+		
 		/* Pick a guid */
 		String guid = "Server GUID from Testing";
 		
 		d.startHeartbeat(0L, 500L, guid, null);
+		d.startMetaCNodeListCleaner();
 		try{
 			Long heartbeat01 = d.getHeartbeat(guid);
 			assertTrue(heartbeat01 != null);
@@ -94,8 +103,12 @@ public class DirectoryTest {
 	
 	@Test
 	public void testGetServers() {
-		if(d==null) fail("");
+		
+		Directory d = new Directory();
+		Globals.getGlobals().addQuittables(d);
+		
 		d.startHeartbeat(0L, 500L);
+		d.startMetaCNodeListCleaner();
 		try{
 			String me = InetAddress.getLocalHost().getHostAddress();
 			Map<String, JSONObject> list = d.getServers();
@@ -119,7 +132,7 @@ public class DirectoryTest {
 	public void testOpenProperties() {
 	
 		/* Get Directory properties */
-		String directoryPropertiesLocation = "cacophony.directory.properties";
+		String directoryPropertiesLocation = "directory.cloud2.config.properties";
 		try {
 			XMLPropertiesConfiguration config;
 			config = new XMLPropertiesConfiguration(directoryPropertiesLocation);
@@ -129,75 +142,45 @@ public class DirectoryTest {
 		}
 	}
 	
-
-
-	private void startAWebServer() {
-		testPort++;
+	private void startAWebServer(int port,Directory d) {
 		try {
-			requestHandlerRegistry = new HashMap<String, Class<? extends HandlerAbstract>>();
-			requestHandlerRegistry.put("",HandlerVersion.class);
-			requestHandlerRegistry.put("version",HandlerVersion.class);
-			requestHandlerRegistry.put("servers",HandlerDirectoryServers.class);
-			requestHandlerRegistry.put("nodes",HandlerNodeList.class);
-			requestHandlerRegistry.put("namespace",HandlerDirectoryNamespace.class);
-			requestHandlerRegistry.put("shutdown",HandlerShutdown.class);
-			requestHandlerRegistry.put(null,HandlerFileServer.class);
+			requestHandlerRegistry = new HashMap<String,HandlerAbstract>();
+			HandlerAbstract handler =  new HandlerVersion();
+			requestHandlerRegistry.put("",handler);
+			requestHandlerRegistry.put("version",handler);
+			requestHandlerRegistry.put("shutdown",new HandlerShutdown());
+			requestHandlerRegistry.put("servers",new HandlerDirectoryServers(d));
+			requestHandlerRegistry.put("nodes",new HandlerNodeList(d));
+			requestHandlerRegistry.put("namespace",new HandlerDirectoryNamespace(d));
+			requestHandlerRegistry.put(null, new HandlerFileServer(com.quub.Globals.class,"/www_test/"));
 			
-			CacophonyGlobals.resetGlobals();
-			CacophonyGlobals g = CacophonyGlobals.getGlobals();
-			g.setTesting(true);
-			RequestHandlerFactory factory = new RequestHandlerFactory(g, requestHandlerRegistry);
-			ws = new WebServer(g, factory, null, testPort, false, new AccessControl());
+			RequestDispatcher requestDispatcher = new RequestDispatcher(requestHandlerRegistry);
+			ws = new WebServer(requestDispatcher, port, false, new AccessControl());
 			ws.start();
-			g.addQuittables(ws);
+			Globals.getGlobals().addQuittables(ws);
 		} catch (RuntimeException e) {
 			fail("Couldn't start webserver"+e);
 		}
 	}
 
-	private void stopAWebServer() {
-		
-		String responseString = null;
-		
-		try{
-			HashMap<String, String> params = new HashMap<String, String>();
-			params.put("seriously", "true");
-			params.put("version", Globals.getGlobals().getVersion());
 
-			responseString = WebUtil.fetchWebPage("http://localhost:" + testPort + "/shutdown", false, params, 30 * 1000);
-		} catch (MalformedURLException e) {
-			fail("Bad URL"+e);
-		} catch (IOException e) {
-			fail("IO Exception"+e);
-		}
-		
-		JSONObject response = null;
-		try {
-			response = new JSONObject(responseString);
-			try {
-				assertEquals("false",response.getString("error"));
-			} catch (JSONException e) {
-				e.printStackTrace();
-				fail("No error code");
-			}
-		} catch (JSONException e) {
-			e.printStackTrace();
-			fail("Bad JSON Response");
-		}
-		
-		while(ws.getWebServer().isAlive()){
-			try {
-				ws.getWebServer().join();
-			} catch (InterruptedException e) {
-			}
-		}
-	}
-	
 	
 
 	@Test
 	public void testRunServersIndefinitely() {
-		startAWebServer();
+		
+		Directory d = new Directory();
+		Globals.getGlobals().addQuittables(d);
+		
+		try {
+			String configFileName="src/edu/uci/ics/luci/cacophony/DirectoryTest.cacophony.directory.properties";
+			d.initializeDirectory(new XMLPropertiesConfiguration(configFileName));
+		} catch (ConfigurationException e1) {
+			fail("");
+		}
+		
+		workingPort =testPortPlusPlus();
+		startAWebServer(workingPort,d);
 		
 		/* Pick a guid */
 		String guid = "Server GUID from Testing";
@@ -214,22 +197,26 @@ public class DirectoryTest {
 		}
 			
 		/* Add a real URL and a dummy URL */
-		Pair<Long, String> p = new Pair<Long,String>(0L,url+":"+testPort);
+		Pair<Long, String> p = new Pair<Long,String>(0L,url+":"+workingPort);
 		List<Pair<Long, String>> urls = new ArrayList<Pair<Long,String>>();
 		urls.add(p);
 		p = new Pair<Long,String>(1L,"foobar.com");
 		urls.add(p);
 			
+		String myNamespace = "test.namespace";
 		/* Start reporting heartbeats */
-		Directory.getInstance().setDirectoryNamespace("testNamespace");
-		Directory.getInstance().startHeartbeat(guid,urls);
+		d.setDirectoryNamespace(myNamespace);
+		d.startHeartbeat(guid,urls);
+		d.startMetaCNodeListCleaner();
 		
 		/* Check to see response is what is expected */
 		String responseString = null;
 		try {
 			HashMap<String, String> params = new HashMap<String, String>();
+			params.put("version",CacophonyRequestHandlerHelper.getAPIVersion());
+			params.put("namespace",myNamespace);
 
-			responseString = WebUtil.fetchWebPage("http://localhost:" + testPort + "/servers", false, params, 30 * 1000);
+			responseString = WebUtil.fetchWebPage("http://localhost:" + workingPort + "/servers", false, params, 30 * 1000);
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 			fail("Bad URL");
@@ -247,21 +234,19 @@ public class DirectoryTest {
 			try {
 				assertEquals("false",response.getString("error"));
 				
-				assertEquals(Globals.getGlobals().getVersion(),response.getString("version"));
-				
 				assertTrue(response.getJSONObject("servers").length() > 0);
 				
     			Long heartbeat = response.getJSONObject("servers").getJSONObject(guid).getLong("heartbeat");
 				assertTrue(System.currentTimeMillis() - heartbeat < Directory.FIVE_MINUTES);
 				
     			String namespace = response.getJSONObject("servers").getJSONObject(guid).getString("namespace");
-    			assertEquals(Directory.getInstance().getDirectoryNamespace(),namespace);
+    			assertEquals(d.getDirectoryNamespace(),namespace);
     			
     			JSONArray servers = response.getJSONObject("servers").getJSONObject(guid).getJSONArray("access_routes");
     			assertEquals(2,servers.length());
     			for(int i =0 ; i < servers.length(); i++){
     				if(servers.getJSONObject(i).getLong("priority_order") == 0){
-    					assertEquals(url+":"+testPort,servers.getJSONObject(i).getString("url"));
+    					assertEquals(url+":"+workingPort,servers.getJSONObject(i).getString("url"));
     				}
     				else{
     					assertEquals("foobar.com",servers.getJSONObject(i).getString("url"));
@@ -278,21 +263,9 @@ public class DirectoryTest {
 			fail("Bad JSON Response");
 		}
 		
-		String configFileName="src/edu/uci/ics/luci/cacophony/DirectoryTest.cacophony.directory.properties";
-		Directory d = Directory.launchDirectory(configFileName);
 		
 		//fail("Remove this to run indefinitely");
-		//while(true){
-			try {
-				Thread.sleep(15*60*1000);
-			} catch (InterruptedException e) {
-			}
-		//}
-		
-		d.setQuitting(true);
-		stopAWebServer();
-	
-
+		//new PopUpWindow("Close this window to shut down the webserver: "+this.getClass().getCanonicalName());
 	}
 
 

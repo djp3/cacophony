@@ -1,14 +1,23 @@
 directory.jar
-launch.cloud2.sh
-launch.cloud3.sh
+cnode_pool.jar
+launch.directory.cloud2.sh
+launch.directory.cloud3.sh
+launch.cnode_pool.cloud2.sh
+launch.cnode_pool.cloud3.sh
 
 cacophony.log4j.properties
-cacophony.directory.properties
+directory.cloud2.config.properties
+directory.cloud3.config.properties
+cnode_pool.cloud2.config.properties
+cnode_pool.cloud3.config.properties
 quub.log4j.properties
 access_control_list.properties
 
-cacophony/cacophony.properties
-cacophony/cacophony.directory.properties
+cacophony/directory.cloud2.config.properties
+cacophony/directory.cloud3.config.properties
+cacophony/cnode_pool.cloud2.config.properties
+cacophony/cnode_pool.cloud3.config.properties
+
 cacophony/quub.log4j.properties
 cacophony/cacophony.log4j.properties
 cacophony/access_control_list.properties

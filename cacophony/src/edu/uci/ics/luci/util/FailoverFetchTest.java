@@ -13,8 +13,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
+import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration.XMLPropertiesConfiguration;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -25,50 +26,54 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.quub.Globals;
+import com.quub.GlobalsTest;
 import com.quub.util.Pair;
 import com.quub.webserver.AccessControl;
 import com.quub.webserver.HandlerAbstract;
-import com.quub.webserver.RequestHandlerFactory;
+import com.quub.webserver.RequestDispatcher;
 import com.quub.webserver.WebServer;
-import com.quub.webserver.WebUtil;
 import com.quub.webserver.handlers.HandlerFileServer;
-import com.quub.webserver.handlers.HandlerVersion;
 
-import edu.uci.ics.luci.cacophony.CacophonyGlobals;
+import edu.uci.ics.luci.cacophony.CacophonyRequestHandlerHelper;
+import edu.uci.ics.luci.cacophony.api.HandlerShutdown;
+import edu.uci.ics.luci.cacophony.api.HandlerVersion;
+import edu.uci.ics.luci.cacophony.api.directory.HandlerDirectoryNamespace;
+import edu.uci.ics.luci.cacophony.api.directory.HandlerDirectoryServers;
+import edu.uci.ics.luci.cacophony.api.directory.HandlerNodeAssignment;
+import edu.uci.ics.luci.cacophony.api.directory.HandlerNodeCheckin;
+import edu.uci.ics.luci.cacophony.api.directory.HandlerNodeList;
 import edu.uci.ics.luci.cacophony.directory.Directory;
-import edu.uci.ics.luci.cacophony.directory.api.HandlerDirectoryNamespace;
-import edu.uci.ics.luci.cacophony.directory.api.HandlerDirectoryServers;
-import edu.uci.ics.luci.cacophony.directory.api.HandlerNodeAssignment;
-import edu.uci.ics.luci.cacophony.directory.api.HandlerNodeList;
-import edu.uci.ics.luci.cacophony.directory.api.HandlerShutdown;
 
 public class FailoverFetchTest {
 	
 
 	private static int testPort = 9020;
+	private static synchronized int testPortPlusPlus(){
+		int x = testPort;
+		testPort++;
+		return(x);
+	}
+
 
 	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
+	public static void setUpClass() throws Exception {
+		Globals.setGlobals(new GlobalsTest());
 	}
 
 	@AfterClass
-	public static void tearDownAfterClass() throws Exception {
+	public static void tearDownClass() throws Exception {
+		Globals.getGlobals().setQuitting(true);
+		Globals.setGlobals(null);
 	}
 
-	private WebServer ws = null;
-	Map<String, Class<? extends HandlerAbstract>> requestHandlerRegistry;
-	private edu.uci.ics.luci.cacophony.directory.Directory d;
+	private int workingPort;
 
 	@Before
 	public void setUp() throws Exception {
-		d = Directory.getInstance();
 	}
 
 	@After
 	public void tearDown() throws Exception {
-		if(d != null){
-			d.setQuitting(true);
-		}
 	}
 	
 	@Test
@@ -90,89 +95,77 @@ public class FailoverFetchTest {
 		}
 	}
 	
-
-	
-
-	private void startAWebServer() {
-		testPort++;
+	private WebServer startAWebServer(int port,Directory d) {
+		WebServer ws = null;
 		try {
-			requestHandlerRegistry = new HashMap<String, Class<? extends HandlerAbstract>>();
-			requestHandlerRegistry.put("",HandlerVersion.class);
-			requestHandlerRegistry.put("version",HandlerVersion.class);
-			requestHandlerRegistry.put("servers",HandlerDirectoryServers.class);
-			requestHandlerRegistry.put("nodes",HandlerNodeList.class);
-			requestHandlerRegistry.put("node_assignment",HandlerNodeAssignment.class);
-			requestHandlerRegistry.put("namespace",HandlerDirectoryNamespace.class);
-			requestHandlerRegistry.put("shutdown",HandlerShutdown.class);
-			requestHandlerRegistry.put(null,HandlerFileServer.class);
+			HashMap<String, HandlerAbstract> requestHandlerRegistry = new HashMap<String,HandlerAbstract>();
+			HandlerAbstract handler =  new HandlerVersion();
+			requestHandlerRegistry.put("",handler);
+			requestHandlerRegistry.put("version",handler);
+			requestHandlerRegistry.put("shutdown",new HandlerShutdown());
+			requestHandlerRegistry.put("servers",new HandlerDirectoryServers(d));
+			requestHandlerRegistry.put("nodes",new HandlerNodeList(d));
+			requestHandlerRegistry.put("node_assignment",new HandlerNodeAssignment(d));
+			requestHandlerRegistry.put("node_checkin",new HandlerNodeCheckin(d));
+			requestHandlerRegistry.put("namespace",new HandlerDirectoryNamespace(d));
+			requestHandlerRegistry.put(null, new HandlerFileServer(edu.uci.ics.luci.cacophony.CacophonyGlobals.class,"/wwwNode/"));
 			
-			CacophonyGlobals.resetGlobals();
-			CacophonyGlobals g = CacophonyGlobals.getGlobals();
-			g.setTesting(true);
-			RequestHandlerFactory factory = new RequestHandlerFactory(g, requestHandlerRegistry);
-			ws = new WebServer(g, factory, null, testPort, false, new AccessControl());
+			RequestDispatcher requestDispatcher = new RequestDispatcher(requestHandlerRegistry);
+			ws = new WebServer(requestDispatcher, port, false, new AccessControl());
 			ws.start();
-			g.addQuittables(ws);
+			Globals.getGlobals().addQuittables(ws);
 		} catch (RuntimeException e) {
 			fail("Couldn't start webserver"+e);
 		}
+		return(ws);
 	}
 
-	private void stopAWebServer() {
+	private Directory startADirectory(){
 		
-		String responseString = null;
-		
-		try{
-			HashMap<String, String> params = new HashMap<String, String>();
-			params.put("seriously", "true");
-			params.put("version", Globals.getGlobals().getVersion());
-
-			responseString = WebUtil.fetchWebPage("http://localhost:" + testPort + "/shutdown", false, params, 30 * 1000);
-		} catch (MalformedURLException e) {
-			fail("Bad URL"+e);
-		} catch (IOException e) {
-			fail("IO Exception"+e);
-		}
-		
-		JSONObject response = null;
-		try {
-			response = new JSONObject(responseString);
-			try {
-				assertEquals("false",response.getString("error"));
-			} catch (JSONException e) {
-				e.printStackTrace();
-				fail("No error code");
-			}
-		} catch (JSONException e) {
-			e.printStackTrace();
-			fail("Bad JSON Response");
-		}
-		
-		while(ws.getWebServer().isAlive()){
-			try {
-				ws.getWebServer().join();
-			} catch (InterruptedException e) {
-			}
-		}
-	}
-	
-	private void startADirectory(){
+		Directory d = new Directory();
+		Globals.getGlobals().addQuittables(d);
 		
 		/* Load up the data */
-		String configFileName="src/edu/uci/ics/luci/cacophony/DirectoryTest.cacophony.directory.properties";
-		Directory.launchDirectory(configFileName);
+		try {
+			String configFileName="src/edu/uci/ics/luci/cacophony/DirectoryTest.cacophony.directory.properties";
+			d.initializeDirectory(new XMLPropertiesConfiguration(configFileName));
+		} catch (ConfigurationException e1) {
+			fail("");
+		}
+
 		
+		/* Pick a Directory GUID*/
+		String directoryGUID = "DirectoryGUID:"+System.currentTimeMillis();
 		
+		/* Figure out our url */
+		String url = null;
+		try {
+			url = InetAddress.getLocalHost().getHostName();
+		} catch (UnknownHostException e) {
+			try {
+				url = InetAddress.getLocalHost().getHostAddress();
+			} catch (UnknownHostException e1) {
+			}
+		}
+			
+		/* Add a this URL*/
+		Pair<Long, String> p = new Pair<Long,String>(0L,url+":"+workingPort);
+		List<Pair<Long, String>> urls = new ArrayList<Pair<Long,String>>();
+		urls.add(p);
+			
+		/* Start reporting heartbeats */
+		String namespace = "test.waitscout.com";
+		d.setDirectoryNamespace(namespace);
+		d.startHeartbeat(directoryGUID,urls);
+		return(d);
 	}
 	
-	private void stopADirectory(){
-		Directory.getInstance().setQuitting(true);
-	}
 	
 	@Test
 	public void testFetchDirectoryList() {
-		startAWebServer();
-		startADirectory();
+		workingPort = testPortPlusPlus();
+		Directory d = startADirectory();
+		startAWebServer(workingPort,d);
 		
 		/* Pick a guid */
 		String guid = "Test "+this.getClass().getCanonicalName();
@@ -189,41 +182,44 @@ public class FailoverFetchTest {
 		}
 			
 		/* Add a bad URL*/
-		Pair<Long, String> p = new Pair<Long,String>(0L,url+":"+(testPort+1));
+		Pair<Long, String> p = new Pair<Long,String>(0L,url+":"+(workingPort+1));
 		List<Pair<Long, String>> urls = new ArrayList<Pair<Long,String>>();
 		urls.add(p);
 		
 		/* Add real URL multiple times */
-		 p = new Pair<Long,String>(0L,url+":"+testPort);
+		 p = new Pair<Long,String>(0L,url+":"+workingPort);
 		urls.add(p);
-		p = new Pair<Long,String>(1L,url+":"+testPort);
+		p = new Pair<Long,String>(1L,url+":"+workingPort);
 		urls.add(p);
-		p = new Pair<Long,String>(2L,url+":"+testPort);
+		p = new Pair<Long,String>(2L,url+":"+workingPort);
 		urls.add(p);
-		p = new Pair<Long,String>(3L,url+":"+testPort);
+		p = new Pair<Long,String>(3L,url+":"+workingPort);
 		urls.add(p);
 			
 		/* Start reporting heartbeats */
 		String namespace = "testNamespace@"+System.currentTimeMillis();
-		Directory.getInstance().setDirectoryNamespace(namespace);
-		Directory.getInstance().startHeartbeat(guid,urls);
+		d.setDirectoryNamespace(namespace);
+		d.startHeartbeat(guid,urls);
 		
-		FailoverFetch f = new FailoverFetch("localhost:"+testPort);
-		assertEquals(5,f.directoryServerPool.size());
+		FailoverFetch f = new FailoverFetch("localhost:"+workingPort,namespace);
+		assertTrue(f.directoryServerPool.size() >= 5);
 		
 		/* Now test to see if the code returns a web page */
 		String responseString;
 		try {
-			responseString = f.fetchWebPage("/servers", false, null, 30 * 1000);
+			HashMap<String, String> params = new HashMap<String, String>();
+			
+			params.put("version", CacophonyRequestHandlerHelper.getAPIVersion());
+			params.put("namespace", namespace);
+
+			responseString = f.fetchWebPage("/servers", false, params, 30 * 1000);
 		
 			JSONObject response = null;
 			try {
 				response = new JSONObject(responseString);
-				System.out.println(response.toString(5));
+				//System.out.println(response.toString(5));
 				try {
 					assertEquals("false",response.getString("error"));
-				
-					assertEquals(Globals.getGlobals().getVersion(),response.getString("version"));
 				
 					assertTrue(response.getJSONObject("servers").length() > 0);
 				
@@ -231,7 +227,7 @@ public class FailoverFetchTest {
 					assertTrue(System.currentTimeMillis() - heartbeat < Directory.FIVE_MINUTES);
 				
 					namespace = response.getJSONObject("servers").getJSONObject(guid).getString("namespace");
-					assertEquals(Directory.getInstance().getDirectoryNamespace(),namespace);
+					assertEquals(d.getDirectoryNamespace(),namespace);
     			
 					JSONArray servers = response.getJSONObject("servers").getJSONObject(guid).getJSONArray("access_routes");
 					assertEquals(5,servers.length());
@@ -254,9 +250,6 @@ public class FailoverFetchTest {
 			e1.printStackTrace();
 			fail("IO Exception"+e1);
 		}
-		
-		stopADirectory();
-		stopAWebServer();
 	}
 
 }

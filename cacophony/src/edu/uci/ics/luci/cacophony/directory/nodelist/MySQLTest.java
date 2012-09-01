@@ -17,6 +17,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.quub.Globals;
+import com.quub.GlobalsTest;
 import com.quub.database.DBConnection;
 import com.quub.database.QuubDBConnectionPool;
 
@@ -24,6 +25,7 @@ public class MySQLTest {
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
+		Globals.setGlobals(new GlobalsTest());
 	}
 
 	@AfterClass
@@ -33,23 +35,10 @@ public class MySQLTest {
 	private QuubDBConnectionPool odbcp = null;
 	private MySQL m = null;
 
-	private static class TestGlobals extends Globals{
-		@Override
-		public String getVersion() {
-			return "1.0";
-		}
-
-		@Override
-		public String getFileResourcePrefix() {
-			return "/www/";
-		}};
-
 	@Before
 	public void setUp() throws Exception {
 		try{
-			TestGlobals t = new TestGlobals();
-			Globals.setGlobals(t);
-			odbcp = new QuubDBConnectionPool(t, t.getDatabaseDomain(), "testDatabase", "testuser", "testuserPassword",null,0);
+			odbcp = new QuubDBConnectionPool(Globals.getGlobals().getDatabaseDomain(), "testDatabase", "testuser", "testuserPassword",null,0);
 		}
 		catch(Exception e){
 			fail("Couldn't make a pool\n"+e);
