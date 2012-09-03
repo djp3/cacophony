@@ -13,3 +13,4 @@ public class GitRevision {
 EOF
 
 git stash pop -q
+git log -n 1 --pretty=tformat:%s%n%n%b | git commit --file - --amend --no-verify ./cacophony/src/edu/uci/ics/luci/cacophony/GitRevision.java 
