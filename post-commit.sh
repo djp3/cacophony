@@ -13,3 +13,4 @@ public class GitRevision {
 EOF
 
 git stash pop -q
+
