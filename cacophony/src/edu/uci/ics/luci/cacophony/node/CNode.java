@@ -36,7 +36,7 @@ import weka.filters.Filter;
 import com.quub.util.Pair;
 import com.quub.util.Quittable;
 
-import edu.uci.ics.luci.cacophony.CacophonyRequestHandlerHelper;
+import edu.uci.ics.luci.cacophony.api.CacophonyRequestHandlerHelper;
 import edu.uci.ics.luci.cacophony.directory.nodelist.CNodeReference;
 import edu.uci.ics.luci.util.FailoverFetch;
 

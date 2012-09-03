@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>Cacophony Directory Server</title>
+    <title>Cacophony Directory View</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="Don Patterson">
@@ -227,6 +227,7 @@
 	
 	
 	<script>
+		var myAPIVersion = "1.2";
 		var myNamespace = null;
 		var myServerList = null;
 		var myServerListCallBusy = false;
@@ -254,12 +255,12 @@
 				$.each(node.c_node_references,function(k,v){
 					if(v.last_heartbeat != undefined){
 						var d = new Date();
-						if(v.last_heartbeat > (d.getTime() - 10*60*1000)){
+						if(v.last_heartbeat > (d.getTime() - 1*60*60*1000)){
 							counter.new_html = counter.new_html + '<span class="badge badge-success"><a href="http://'+v.access_routes_for_ui[0].route+'"><i class="icon-thumbs-up icon-white" rel="tooltip" title="Healthy"></i></a></span>';
 							//$('#nodeRefreshData_'+escape(node.id)).append('<span class="badge badge-success"><a href="http://'+v.access_routes_for_ui[0].route+'"><i class="icon-thumbs-up icon-white" rel="tooltip" title="Healthy"></i></a></span>');
 							counter.healthy++;
 						}
-						else if(v.last_heartbeat > (d.getTime() - 30*60*1000)){
+						else if(v.last_heartbeat > (d.getTime() - 4*60*60*1000)){
 							counter.new_html = counter.new_html + '<span class="badge badge-warning"><a href="http://'+v.access_routes_for_ui[0].route+'"><i class="icon-hand-left icon-white" rel="tooltip" title="Faltering"></i></a></span>';
 							//$('#nodeRefreshData_'+escape(node.id)).append('<span class="badge badge-warning"><a href="http://'+v.access_routes_for_ui[0].route+'"><i class="icon-hand-left icon-white" rel="tooltip" title="Faltering"></i></a></span>');
 							counter.faltering++;
@@ -320,7 +321,7 @@
 			
 			var next = myNodeMonitorQueue.shift();
 			var myGuids = [next.id];
-			var myData = {version:"1.1",namespace:myNamespace,guids:JSON.stringify(myGuids)};
+			var myData = {version:myAPIVersion,namespace:myNamespace,guids:JSON.stringify(myGuids)};
 			myIconChange('#nodeRefreshStatus_'+escape(next.id),'icon-remove','icon-time');
 			myIconChange('#nodeRefreshStatus_'+escape(next.id),'icon-ok','icon-time');
 			$.ajax({
@@ -357,7 +358,7 @@
 			myIconChange('#nodeRefreshStatus_'+myID,'icon-ok','icon-question-sign');
 			myIconChange('#nodeRefreshStatus_'+myID,'icon-time','icon-question-sign');
 			var myGuids = [myID];
-			var myData = {version:"1.1",namespace:myNamespace,guids:JSON.stringify(myGuids)};
+			var myData = {version:myAPIVersion,namespace:myNamespace,guids:JSON.stringify(myGuids)};
 			$.ajax({
 				url:'/nodes',
 				dataType:'jsonp',
@@ -392,7 +393,7 @@
 			$.ajax({
 				url:'/namespace',
 				dataType:'jsonp',
-				data:{version:"1.1"},
+				data:{version:myAPIVersion},
 				timeout : 15000,
 				success:function(data){
 					myIconChange('#namespaceStatus','icon-time','icon-ok');
@@ -426,7 +427,7 @@
 			$.ajax({
 				url:'http://'+ip+'/version',
 				dataType:'jsonp',
-				data:{version:"1.1",namespace:myNamespace},
+				data:{version:myAPIVersion,namespace:myNamespace},
 				timeout : 15000,
 				success:function(data){
 					if(data.version != undefined){
@@ -468,7 +469,7 @@
 				$.ajax({
 					url:'/servers',
 					dataType:'jsonp',
-					data:{version:"1.1",namespace:myNamespace},
+					data:{version:myAPIVersion,namespace:myNamespace},
 					timeout : 10000,
 					success:function(data){
 						if(JSON.stringify(data) != JSON.stringify(myServerList)){
@@ -607,7 +608,7 @@
 				$.ajax({
 					url:'/nodes',
 					dataType:'jsonp',
-					data:{version:"1.1",namespace:myNamespace},
+					data:{version:myAPIVersion,namespace:myNamespace},
 					timeout : 60000,
 					success:function(data){
 						myNodeList=data;

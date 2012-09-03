@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>Cacophony Directory Server</title>
+    <title>Cacophony Node View</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="Don Patterson">
@@ -153,6 +153,7 @@ body {
 
 	
 	<script>
+		var myAPIVersion = "1.2";
 		var myServerList = null;
 		var myServerListCallBusy = false;
 		
@@ -168,7 +169,7 @@ body {
 			$.ajax({
 				url:'/namespace',
 				dataType:'jsonp',
-				data:{version:"1.1"},
+				data:{version:myAPIVersion},
 				timeout : 15000,
 				success:function(data){
 					myIconChange('#namespaceStatus','icon-time','icon-ok');
@@ -201,7 +202,7 @@ body {
 			$.ajax({
 				url:'http://'+ip+'/version',
 				dataType:'jsonp',
-				data:{version:"1.1"},
+				data:{version:myAPIVersion},
 				timeout : 15000,
 				success:function(data){
 					myIconChange('#altServer'+i+'Status','icon-time','icon-ok');
@@ -238,7 +239,7 @@ body {
 				$.ajax({
 					url:'/servers',
 					dataType:'jsonp',
-					data:{version:"1.1"},
+					data:{version:myAPIVersion},
 					timeout : 10000,
 					success:function(data){
 						if(JSON.stringify(data) != JSON.stringify(myServerList)){
@@ -272,7 +273,7 @@ body {
 			$.ajax({
 				url:'/predict',
 				dataType:'jsonp',
-				data:{version:"1.1",node:myNode},
+				data:{version:myAPIVersion,node:myNode},
 				timeout : 60000,
 				success:function(data){
 					setProgressBar(100);

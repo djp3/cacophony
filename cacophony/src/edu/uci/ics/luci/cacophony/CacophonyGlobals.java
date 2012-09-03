@@ -12,13 +12,6 @@ import com.quub.util.CalendarCache;
 
 public class CacophonyGlobals extends Globals{
 	
-	private static final String SYSTEM_VERSION = "1.1";
-	private static final String PROPERTY_FILENAME_DEFAULT = "cacophony.log4j.properties";
-	public static final String CONFIG_FILENAME_DEFAULT = "cacophony.properties";
-	public static final int DEFAULT_PORT = 2011;
-	private XMLPropertiesConfiguration config = null;
-	private transient volatile Logger log = null;
-		
 	static{
 		/* Test that we are using GMT as the default */
 		if(!TimeZone.getDefault().equals(CalendarCache.TZ_GMT)){
@@ -31,6 +24,14 @@ public class CacophonyGlobals extends Globals{
 			throw new IllegalArgumentException("The character set is not UTF-8:"+c);
 		}
 	}
+	
+	private static final String PROPERTY_FILENAME_DEFAULT = "cacophony.log4j.properties";
+	public static final String CONFIG_FILENAME_DEFAULT = "cacophony.properties";
+	public static final int DEFAULT_PORT = 2011;
+	
+	private XMLPropertiesConfiguration config = null;
+	private transient volatile Logger log = null;
+		
 	
 	
 	/**
@@ -88,7 +89,7 @@ public class CacophonyGlobals extends Globals{
 	
 	/** This is different than API Version.  Not sure why I need two versions **/
 	public String getSystemVersion() {
-		return SYSTEM_VERSION;
+		return GitRevision.SYSTEM_REVISION;
 	}
 
 

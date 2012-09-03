@@ -12,7 +12,7 @@ import com.quub.webserver.WebServer;
 import com.quub.webserver.WebUtil;
 
 import edu.uci.ics.luci.cacophony.CacophonyGlobals;
-import edu.uci.ics.luci.cacophony.CacophonyRequestHandlerHelper;
+import edu.uci.ics.luci.cacophony.api.CacophonyRequestHandlerHelper;
 
 public class WebServerWarmUp {
 	

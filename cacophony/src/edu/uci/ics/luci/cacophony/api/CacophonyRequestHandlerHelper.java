@@ -1,4 +1,4 @@
-package edu.uci.ics.luci.cacophony;
+package edu.uci.ics.luci.cacophony.api;
 
 import java.util.Map;
 import java.util.Random;
@@ -21,7 +21,7 @@ public abstract class CacophonyRequestHandlerHelper extends HandlerAbstract{
 	public static final long ONE_YEAR = 365 * ONE_DAY;
 	public static final long SIX_MONTHS = ONE_YEAR / 2;
 	protected static final long DEFAULT_EXPIRATION = SIX_MONTHS;
-	private static final String API_VERSION = "1.1";
+	private static final String API_VERSION = "1.2";
 	protected static transient volatile Random random = new Random();
 
 	/**

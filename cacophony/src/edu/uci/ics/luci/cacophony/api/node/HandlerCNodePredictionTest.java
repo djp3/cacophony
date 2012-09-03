@@ -33,7 +33,7 @@ import com.quub.webserver.WebServer;
 import com.quub.webserver.WebUtil;
 import com.quub.webserver.handlers.HandlerFileServer;
 
-import edu.uci.ics.luci.cacophony.CacophonyRequestHandlerHelper;
+import edu.uci.ics.luci.cacophony.api.CacophonyRequestHandlerHelper;
 import edu.uci.ics.luci.cacophony.api.HandlerShutdown;
 import edu.uci.ics.luci.cacophony.api.HandlerVersion;
 import edu.uci.ics.luci.cacophony.api.directory.HandlerDirectoryNamespace;

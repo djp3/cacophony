@@ -2,7 +2,7 @@ package edu.uci.ics.luci.cacophony.api.directory;
 
 import java.util.Map;
 
-import edu.uci.ics.luci.cacophony.CacophonyRequestHandlerHelper;
+import edu.uci.ics.luci.cacophony.api.CacophonyRequestHandlerHelper;
 import edu.uci.ics.luci.cacophony.directory.Directory;
 
 public abstract class DirectoryRequestHandlerHelper extends CacophonyRequestHandlerHelper {

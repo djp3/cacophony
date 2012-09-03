@@ -11,7 +11,6 @@ import com.quub.util.Pair;
 import com.quub.webserver.HandlerAbstract;
 import com.quub.webserver.RequestDispatcher.HTTPRequest;
 
-import edu.uci.ics.luci.cacophony.CacophonyRequestHandlerHelper;
 
 public class HandlerVersion extends CacophonyRequestHandlerHelper{
 	
