@@ -1,5 +1,5 @@
 package edu.uci.ics.luci.cacophony;
 
 public class GitRevision {
-	public static final String SYSTEM_REVISION = "79106eace78271f9b1a49cee1f14856acf4d75f6";
+	public static final String SYSTEM_REVISION = "fbeb278912db82f095e6165bb16cda5e814b47ad";
 }
