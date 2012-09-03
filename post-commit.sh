@@ -12,7 +12,4 @@ public class GitRevision {
 }
 EOF
 
-#git log -n 1 --pretty=tformat:%s%n%n%b | git commit --file - --no-post-rewrite ./cacophony/src/edu/uci/ics/luci/cacophony/GitRevision.java 
-git commit -m "Adding git revision to java" --no-post-rewrite ./cacophony/src/edu/uci/ics/luci/cacophony/GitRevision.java 
-
 git stash pop -q
