@@ -285,6 +285,9 @@ public class SystemTest {
 			response = new JSONObject(responseString);
 			//System.out.println(response.toString(5));
 			try {
+				if(response.getString("error").equals("true")){
+					fail(response.getString("errors"));
+				}
 				assertEquals("false",response.getString("error"));
 			
 				assertTrue(response.getJSONObject("servers").length() > 0);

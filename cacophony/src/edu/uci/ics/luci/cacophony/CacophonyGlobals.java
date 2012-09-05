@@ -16,8 +16,7 @@ public class CacophonyGlobals extends Globals{
 	private static final String PROPERTY_FILENAME_DEFAULT = "cacophony.log4j.properties";
 	public static final String CONFIG_FILENAME_DEFAULT = "cacophony.properties";
 	public static final int DEFAULT_PORT = 2011;
-	private XMLPropertiesConfiguration config = null;
-	private transient volatile Logger log = null;
+	private static transient volatile Logger log = null;
 		
 	static{
 		/* Test that we are using GMT as the default */
@@ -30,8 +29,18 @@ public class CacophonyGlobals extends Globals{
 		if(!c.equals("UTF-8")){
 			throw new IllegalArgumentException("The character set is not UTF-8:"+c);
 		}
+		
+		
 	}
 	
+	public static synchronized Logger getLog(){
+		if(log == null){
+			log = Logger.getLogger(CacophonyGlobals.class);
+		}
+		return log;
+	}
+	
+	private XMLPropertiesConfiguration config = null;
 	
 	/**
 	 * This is only need so far for testing in which the _globals sticks around from previous tests and is not reinitialized
@@ -41,12 +50,6 @@ public class CacophonyGlobals extends Globals{
 		setGlobals(null);
 	}
 	
-	public synchronized Logger getLog(){
-		if(log == null){
-			log = Logger.getLogger(CacophonyGlobals.class);
-		}
-		return log;
-	}
 	
 	public void setConfig(XMLPropertiesConfiguration config){
 		this.config = config;
@@ -90,6 +93,8 @@ public class CacophonyGlobals extends Globals{
 	public String getSystemVersion() {
 		return SYSTEM_VERSION;
 	}
+	
+	
 
 
 	public CacophonyGlobals() {

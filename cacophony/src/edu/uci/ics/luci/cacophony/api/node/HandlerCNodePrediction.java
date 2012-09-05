@@ -51,16 +51,31 @@ public class HandlerCNodePrediction extends NodeRequestHandlerHelper {
 		JSONObject ret = new JSONObject();
 		JSONArray errors = new JSONArray();
 		
+		Map<String,TreeSet<Pair<Long,Double>>> prediction = null;
+		
 		String nodeToPredict = parameters.get("node");
 		if(nodeToPredict != null){
-			/* Day of the week -> <time since 4am, wait time>*/
-			Map<String,TreeSet<Pair<Integer,Double>>> prediction = cNode.predict(nodeToPredict);
+			
+			String _timesToPredict = parameters.get("times");
+			if(_timesToPredict != null){
+				try {
+					JSONArray timesToPredict = new JSONArray(_timesToPredict);
+					prediction = cNode.predict(nodeToPredict,timesToPredict);
+				} catch (JSONException e) {
+					getLog().error("Unable to parse JSON for times:"+_timesToPredict);
+					errors.put("Unable to parse JSON for times:"+_timesToPredict);
+				}
+			}
+			else{
+				/* Day of the week -> <time since 4am, wait time>*/
+				prediction = cNode.predict(nodeToPredict,null);
+			}
 			
 			if(prediction != null){
-				for(Entry<String, TreeSet<Pair<Integer, Double>>> foo:prediction.entrySet()){
+				for(Entry<String, TreeSet<Pair<Long, Double>>> foo:prediction.entrySet()){
 					try {
 						JSONArray dayData = new JSONArray();
-						for(Pair<Integer, Double> guess:foo.getValue()){
+						for(Pair<Long, Double> guess:foo.getValue()){
 							JSONObject element = new JSONObject();
 							element.put("x", guess.getFirst().toString());
 							element.put("y", guess.getSecond().toString());
