@@ -26,11 +26,12 @@ public class MySQL extends NodeListLoader{
 		return log;
 	}
 
-	private DBConnection connection;
-	private PreparedStatement listViewQueryPS;
-	private PreparedStatement mapViewQueryPS;
-	private QuubDBConnectionPool pool;
-	private boolean error;
+	private DBConnection connection = null;
+	private String namespace = null;
+	private PreparedStatement listViewQueryPS = null;
+	private PreparedStatement mapViewQueryPS = null;
+	private QuubDBConnectionPool pool = null;
+	private boolean error = false;
 	
 	public MySQL(){
 		super();
@@ -38,21 +39,29 @@ public class MySQL extends NodeListLoader{
 
 	@Override
 	public void init(JSONObject options){
-		error = false;
+		
 		Globals g = Globals.getGlobals();
 		if(g == null){
 			getLog().error("Globals is null");
 			error = true;
 		}
+		
 		String databaseDomain = null;
 		try {
 			databaseDomain = options.getString("server_address");
 		} catch (JSONException e) {
 		}
+		
 		if(databaseDomain == null){
 			getLog().error("Unable to get the \"server_address\"");
 			error = true;
 		}
+		
+		try{
+			namespace = options.getString("namespace");
+		} catch (JSONException e) {
+		}
+		
 		String database = null;
 		try {
 			database = options.getString("database");
@@ -62,6 +71,7 @@ public class MySQL extends NodeListLoader{
 			getLog().error("Unable to get the \"database\"");
 			error = true;
 		}
+		
 		String username=null;
 		try {
 			username = options.getString("user");
@@ -71,6 +81,7 @@ public class MySQL extends NodeListLoader{
 			getLog().error("Unable to get the \"user\"");
 			error = true;
 		}
+		
 		String password=null;
 		try {
 			password = options.getString("password");
@@ -80,6 +91,7 @@ public class MySQL extends NodeListLoader{
 			getLog().error("Unable to get the \"password\"");
 			error = true;
 		}
+		
 		String listViewQuery=null;
 		try {
 			listViewQuery = options.getString("listViewQuery");
@@ -154,8 +166,8 @@ public class MySQL extends NodeListLoader{
 		}
 	}
 
+	
 	private List<MetaCNode> executeQuery() {
-		
 		Map<String,MetaCNode> nodes = new TreeMap<String,MetaCNode>();
 		List<MetaCNode> ret = new ArrayList<MetaCNode>();
 		ResultSet rs = null;
@@ -171,6 +183,8 @@ public class MySQL extends NodeListLoader{
 							metaCNode.setGuid(id.trim());
 							String name = rs.getString("NAME");
 							metaCNode.setName(name.trim());
+							
+							metaCNode.setNamespace(namespace);
 							
 							nodes.put(id,metaCNode);
 						} catch (SQLException e) {

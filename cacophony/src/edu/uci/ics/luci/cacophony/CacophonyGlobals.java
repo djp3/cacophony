@@ -17,7 +17,7 @@ public class CacophonyGlobals extends Globals{
 	public static final String CONFIG_FILENAME_DEFAULT = "cacophony.properties";
 	public static final int DEFAULT_PORT = 2011;
 	private XMLPropertiesConfiguration config = null;
-	private transient volatile Logger log = null;
+	private static transient volatile Logger log = null;
 		
 	static{
 		/* Test that we are using GMT as the default */
@@ -41,7 +41,7 @@ public class CacophonyGlobals extends Globals{
 		setGlobals(null);
 	}
 	
-	public synchronized Logger getLog(){
+	public static synchronized Logger getLog(){
 		if(log == null){
 			log = Logger.getLogger(CacophonyGlobals.class);
 		}

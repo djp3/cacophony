@@ -165,20 +165,14 @@ body {
 		};
 
 		function updateNamespace(){
-			$.ajax({
-				url:'/namespace',
-				dataType:'jsonp',
-				data:{version:"1.1"},
-				timeout : 15000,
-				success:function(data){
-					myIconChange('#namespaceStatus','icon-time','icon-ok');
-					$('#namespace').html(data.namespace);
-				},
-				error:function(){
-					myIconChange('#namespaceStatus','icon-time','icon-remove');
-					$('#namespace').html('Unknown namespace');
-				}
-			});
+			var myNamespace = unescape(getURLParameter("namespace"));
+			if(myNamespace != null){
+				myIconChange('#namespaceStatus','icon-time','icon-ok');
+				$('#namespaceStatus').html(myNamespace);
+			}
+			else{
+				myIconChange('#currentServerStatus','icon-time','icon-remove');
+			}
 		}
 
 
@@ -195,65 +189,44 @@ body {
 				myIconChange('#currentServerStatus','icon-time','icon-remove');
 			}
 		}
-
-		function checkDirectoryServer(i,ip){
-
-			$.ajax({
-				url:'http://'+ip+'/version',
-				dataType:'jsonp',
-				data:{version:"1.1"},
-				timeout : 15000,
-				success:function(data){
-					myIconChange('#altServer'+i+'Status','icon-time','icon-ok');
-					$('#altServer'+i).removeClass('disabled');
-				},
-				error:function(){
-					myIconChange('#altServer'+i+'Status','icon-time','icon-remove');
-				}
-			});
+		
+		function updateID(){
+			var myNode = getURLParameter("node");
+			if(myNode != null){
+				myIconChange('#currentIDStatus','icon-time','icon-ok');
+				$('#currentID').removeClass('disabled');
+				$('#currentID').append(' '+myNode);
+			}
+			else{
+				myIconChange('#currentServerStatus','icon-time','icon-remove');
+			}
 		}
-
+		
+		
+		function updateName(){
+			var myName = unescape(getURLParameter("name"));
+			if(myName != null){
+				myIconChange('#currentNameStatus','icon-time','icon-ok');
+				$('#currentName').removeClass('disabled');
+				$('#currentName').append(' '+myName);
+			}
+			else{
+				myIconChange('#currentServerStatus','icon-time','icon-remove');
+			}
+		}
+		
+		
 		function updateMyServerList(){
 			$('#serverList').animate({opacity:0.0},500,function(){
 				$('#serverList').html('');
 				var myIndex=0;
-				$.each(myServerList.servers,function(k,v){
-					if(v.access_routes != undefined){
-						$.each(v.access_routes,function(kk,vv){
-							i=vv.url;
-							$('#serverList').append('<a class="btn disabled" id="altServer'+myIndex+'" href="http://'+i+'/index.html"><i class="icon-time" id="altServer'+myIndex+'Status"></i> '+i+'</a>');
-							checkDirectoryServer(myIndex,i);
-							myIndex=myIndex+1;
-						});
-					}
-				});
+				i= document.referrer;
+				$('#serverList').append('<a class="btn disabled" id="altServer'+myIndex+'" href="'+i+'"><i class="icon-time" id="altServer'+myIndex+'Status"></i> '+i+'</a>');
+				myIconChange('#altServer'+myIndex+'Status','icon-time','icon-ok');
+				$('#altServer'+myIndex).removeClass('disabled');
 				$('#serverList').animate({opacity:1.0},500);
 			});
 		}
-
-		function getMyServerList(){
-			if(!myServerListCallBusy){
-				myServerListCallBusy = true;
-
-				$.ajax({
-					url:'/servers',
-					dataType:'jsonp',
-					data:{version:"1.1"},
-					timeout : 10000,
-					success:function(data){
-						if(JSON.stringify(data) != JSON.stringify(myServerList)){
-							myServerList=data;
-							updateMyServerList();
-						}
-						myServerListCallBusy=false;
-					},
-					error:function(data){
-						myServerListCallBusy=false;
-					}
-				});
-			}
-		};
-
 
 		function setProgressBar(newWidth){
 			$('#nodeProgressBar').css('width',(newWidth)+'%');
@@ -657,7 +630,13 @@ vis.append("g")
 			updateCurrentLocation();
 
 			setProgressBar(3);
-			getMyServerList();
+			updateID();
+			
+			setProgressBar(4);
+			updateName();
+
+			setProgressBar(5);
+			updateMyServerList();
 
 			setProgressBar(10);
 			getPredictionData();
@@ -672,12 +651,6 @@ vis.append("g")
 					setProgressBar(currentBar);
 				}
 			}, 700);
-
-			
-			setInterval(function() {
-				getMyServerList();
-			},60*1000);
-
 			
 		});
 	</script>

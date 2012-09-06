@@ -65,6 +65,7 @@ public class HandlerNodeAssignment extends DirectoryRequestHandlerHelper {
 		if(retC != null){
 			try {
 				ret.put("node_id", retC.getGuid());
+				ret.put("name", retC.getName());
 				ret.put("node_configuration", retC.getConfiguration());
 				ret.put("error", "false");
 			} catch (JSONException e) {
