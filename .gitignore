@@ -27,7 +27,7 @@ cacophony/src/edu/uci/ics/luci/cacophony/SystemTest.cacophony.c_node_poolA.prope
 cacophony/src/edu/uci/ics/luci/cacophony/SystemTest.cacophony.c_node_poolB.properties
 
 #Necessary for sanity
-cacophony/src/edu/uci/ics/luci/cacophony/GitRevision.java
+#cacophony/src/edu/uci/ics/luci/cacophony/GitRevision.java
 
 
 directory.jar
