@@ -234,7 +234,8 @@ public class HandlerCNodePredictionTest {
 		
 		
 		/* Test with working case */
-		String testString = "1346852798000";
+		//["1347073200000","1347076800000","1347080400000"]
+		String testString = "1347073200000";
 		responseString = null;
 		try {
 			HashMap<String, String> params = new HashMap<String, String>();

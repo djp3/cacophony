@@ -35,6 +35,7 @@ import weka.core.Instance;
 import weka.core.Instances;
 import weka.filters.Filter;
 
+import com.quub.util.CalendarCache;
 import com.quub.util.Pair;
 import com.quub.util.Quittable;
 
@@ -460,12 +461,12 @@ public class CNode implements Quittable{
 	   		for(int i = 0; i < timesToPredict.length(); i++){
 	   			
 	   			/* Get the first time we are predicting */
-	   			Long t = timesToPredict.getLong(i);
+	   			Long originalTime = timesToPredict.getLong(i);
 	   			
 	   			/* Convert it to the standard and figure out the day of the week */
-	   			t = transformTimeForCalendar(getTimeZoneOffsets().get(nodeToPredict), t);
+	   			Long t = transformTimeForCalendar(getTimeZoneOffsets().get(nodeToPredict), originalTime);
 	   			
-	   			Calendar calendar = CacophonyGlobals.getGlobals().getCalendar(null);
+	   			Calendar calendar = CacophonyGlobals.getGlobals().getCalendar(CalendarCache.TZ_GMT);
 	   			calendar.setTimeInMillis(t);
 	   			
 	   			/* Translate the Calendar Day Of the Week (SUNDAY = 1) to SQL query (SUNDAY = 0) */
@@ -488,7 +489,8 @@ public class CNode implements Quittable{
    				int minutesSinceFour = calculateMinutesSinceMidnight(calendar);
    				c.setValue(minutesSinceFourIndex, canonicalizeFilter.toCanonical(minutesSinceFourIndex,minutesSinceFour));
    				
-   				c.setValue(epochTimeIndex,canonicalizeFilter.toCanonical(epochTimeIndex,t/1000.0));
+   				c.setValue(epochTimeIndex,canonicalizeFilter.toCanonical(epochTimeIndex,originalTime/1000.0));
+   				//c.setValue(epochTimeIndex,canonicalizeFilter.toCanonical(epochTimeIndex,System.currentTimeMillis()/1000.0));
    				
    				c.setValue(timeZoneIndex,getTimeZoneOffsets().get(nodeToPredict));
    				
@@ -617,6 +619,7 @@ public class CNode implements Quittable{
 			for(int i=0; i < localTestSet.numInstances(); i++){
 				/* Set restaurant to predict */
 				localTestSet.instance(i).setValue(zidIndex, nodeToPredict);
+   				localTestSet.instance(i).setValue(timeZoneIndex,getTimeZoneOffsets().get(nodeToPredict));
 			}
 		}
 			
@@ -651,7 +654,7 @@ public class CNode implements Quittable{
 				else{
 					double foo = localTestSet.instance(i).value(epochTimeIndex);
 					double baseTime = canonicalizeFilter.fromCanonical(epochTimeIndex, foo);
-					time = untransformTimeForCalendar(getTimeZoneOffsets().get(nodeToPredict), Math.round(baseTime*1000.0));
+					time = Math.round(baseTime*1000.0);
 				}
 				
 				
@@ -826,6 +829,9 @@ public class CNode implements Quittable{
 	    	String zid = nextElement.attributeSparse(zidIndex).value((int) Math.round(nextElement.value(zidIndex)));
 	    	
 	    	Integer timezoneOffset = (int)Math.round(nextElement.value(timeZoneIndex));
+	    	if((timezoneOffset < -12)||(timezoneOffset > 12)){
+	    		timezoneOffset = 0;
+	    	}
 	    	localTimeZoneOffsets.put(zid,timezoneOffset);
 	    	
 	    	
@@ -849,6 +855,9 @@ public class CNode implements Quittable{
 		   		trainingData.instance(index).setValue(waitTimeIndex,(wait/oldMaxWait));
 		   	}
 	    }
+	    
+	   	setTimeZoneOffsets(localTimeZoneOffsets);
+	   	setMaxWait(localMaxWait);
 	    
 	    /* Set the class index */
 	    trainingData.setClassIndex(waitTimeIndex);
@@ -882,7 +891,7 @@ public class CNode implements Quittable{
 		Bagging bagger = new Bagging();
 		try{
 			//bagger.setOptions(weka.core.Utils.splitOptions("-P 100 -S 1 -I 10 -W weka.classifiers.lazy.IBk -- -K 5 -W 0 -A \"weka.core.neighboursearch.KDTree -A \\\"weka.core.EuclideanDistance -R first-last\\\" -S weka.core.neighboursearch.kdtrees.SlidingMidPointOfWidestSide -W 0.01 -L 40 -N\""));
-			bagger.setOptions(weka.core.Utils.splitOptions("-P 50 -S 1 -I 10 -W weka.classifiers.lazy.IBk -- -K 5 -W 0 -I -A \"weka.core.neighboursearch.KDTree -A \\\"weka.core.EuclideanDistance -D -R 2-10\\\" -S weka.core.neighboursearch.kdtrees.SlidingMidPointOfWidestSide -W 0.01 -L 40 -N\""));
+			bagger.setOptions(weka.core.Utils.splitOptions("-P 50 -S 1 -I 10 -W weka.classifiers.lazy.IBk -- -K 20 -W 0 -I -A \"weka.core.neighboursearch.KDTree -A \\\"weka.core.EuclideanDistance -D -R 2-10\\\" -S weka.core.neighboursearch.kdtrees.SlidingMidPointOfWidestSide -W 0.01 -L 40 -N\""));
 			bagger.buildClassifier(canonicalizeData);   // build classifier		    
 		} catch (Exception e) {
 			getLog().error("Unable to build classifier\n"+e);
@@ -955,6 +964,9 @@ public class CNode implements Quittable{
 	   				}
 	   				c.setValue(minutesSinceFourIndex, canonicalizeFilter.toCanonical(minutesSinceFourIndex,j));
 	   				c.setValue(epochTimeIndex,canonicalizeFilter.toCanonical(epochTimeIndex,System.currentTimeMillis()/1000.0));
+	   		    	String nodeToPredict = typicalInstance.attributeSparse(zidIndex).value((int) Math.round(typicalInstance.value(zidIndex)));
+	   				Integer tzo = getTimeZoneOffsets().get(nodeToPredict);
+	   				c.setValue(timeZoneIndex,tzo);
 	   				c.setValue(waitTimeIndex,canonicalizeFilter.toCanonical(waitTimeIndex,0));
 	   				proposedTestSet.add(c);
 	   			}
@@ -1000,8 +1012,6 @@ public class CNode implements Quittable{
 		}
 		*/
 	   	
-	   	setTimeZoneOffsets(localTimeZoneOffsets);
-	   	setMaxWait(localMaxWait);
 	   	setTestSet(proposedTestSet);
 	   	setCanonicalizeFilter(canonicalizeFilter);
 	   	setModel(bagger);
