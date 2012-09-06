@@ -100,12 +100,8 @@ public class CNode implements Quittable{
 		else{
 			this.parentPool = parent;
 		}
-		if(baseUrls == null){
-			throw new IllegalArgumentException("Can't handle null urls");
-		}
-		else{
-			this.baseUrls = baseUrls;
-		}
+		
+		this.baseUrls = baseUrls;
 		this.heartbeatLock = new Object();
 	}
 
