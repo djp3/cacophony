@@ -67,7 +67,6 @@ public class SystemTest {
 		Globals.setGlobals(null);
 	}
 
-
 	@Before
 	public void setUp() throws Exception {
 	}
