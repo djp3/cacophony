@@ -120,7 +120,7 @@ public class CNodePoolTest {
 		}
 			
 		/* Add a this URL*/
-		Pair<Long, String> p = new Pair<Long,String>(0L,url+":"+testPort);
+		Pair<Long, String> p = new Pair<Long,String>(0L,url+":"+workingPort);
 		List<Pair<Long, String>> urls = new ArrayList<Pair<Long,String>>();
 		urls.add(p);
 			
@@ -147,7 +147,7 @@ public class CNodePoolTest {
 		} catch (UnknownHostException e1) {
 			url ="127.0.0.1";
 		}
-		baseUrls.add(new Pair<Long,String>(0L,url+":"+testPort));
+		baseUrls.add(new Pair<Long,String>(0L,url+":"+workingPort));
 		
 		String configFileName = "src/edu/uci/ics/luci/cacophony/CNodeTest.cacophony.c_node_pool.properties";
 		XMLPropertiesConfiguration config = null;
@@ -159,6 +159,7 @@ public class CNodePoolTest {
 		
 		CNodePool cNPool = new CNodePool().launchCNodePool(config,baseUrls);
 		assertTrue(cNPool != null);
+		assertTrue(cNPool.getPool().size() == 1);
 		//new PopUpWindow("Click To Stop Test:"+this.getClass().getCanonicalName());
 		Globals.getGlobals().addQuittables(cNPool);
 	}

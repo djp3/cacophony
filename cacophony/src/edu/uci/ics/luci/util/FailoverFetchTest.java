@@ -204,44 +204,39 @@ public class FailoverFetchTest {
 		FailoverFetch f = new FailoverFetch("localhost:"+workingPort,namespace);
 		assertTrue(f.directoryServerPool.size() >= 5);
 		
-		/* Now test to see if the code returns a web page */
-		String responseString;
+		/* Test to see if the code returns JSON */
 		try {
 			HashMap<String, String> params = new HashMap<String, String>();
 			
 			params.put("version", CacophonyRequestHandlerHelper.getAPIVersion());
 			params.put("namespace", namespace);
 
-			responseString = f.fetchWebPage("/servers", false, params, 30 * 1000);
+			JSONObject response = f.fetchJSONObject("/servers", false, params, 30 * 1000);
 		
-			JSONObject response = null;
+			//System.out.println(response.toString(5));
 			try {
-				response = new JSONObject(responseString);
-				//System.out.println(response.toString(5));
-				try {
-					assertEquals("false",response.getString("error"));
-				
-					assertTrue(response.getJSONObject("servers").length() > 0);
-				
-					Long heartbeat = response.getJSONObject("servers").getJSONObject(guid).getLong("heartbeat");
-					assertTrue(System.currentTimeMillis() - heartbeat < Directory.FIVE_MINUTES);
-				
-					namespace = response.getJSONObject("servers").getJSONObject(guid).getString("namespace");
-					assertEquals(d.getDirectoryNamespace(),namespace);
-    			
-					JSONArray servers = response.getJSONObject("servers").getJSONObject(guid).getJSONArray("access_routes");
-					assertEquals(5,servers.length());
-					for(int i =0 ; i < servers.length(); i++){
-						assertTrue(servers.getJSONObject(i).getString("url").contains(url));
-					}
-				
-				} catch (JSONException e) {
-					e.printStackTrace();
-					fail("No error code:"+e);
+				if(response.getString("error").equals("true")){
+					fail(response.getString("errors"));
 				}
+				assertEquals("false",response.getString("error"));
+			
+				assertTrue(response.getJSONObject("servers").length() > 0);
+			
+				Long heartbeat = response.getJSONObject("servers").getJSONObject(guid).getLong("heartbeat");
+				assertTrue(System.currentTimeMillis() - heartbeat < Directory.FIVE_MINUTES);
+			
+				namespace = response.getJSONObject("servers").getJSONObject(guid).getString("namespace");
+				assertEquals(d.getDirectoryNamespace(),namespace);
+			
+				JSONArray servers = response.getJSONObject("servers").getJSONObject(guid).getJSONArray("access_routes");
+				assertEquals(5,servers.length());
+				for(int i =0 ; i < servers.length(); i++){
+					assertTrue(servers.getJSONObject(i).getString("url").contains(url));
+				}
+			
 			} catch (JSONException e) {
 				e.printStackTrace();
-				fail("Bad JSON Response");
+				fail("No error code:"+e);
 			}
 		} catch (MalformedURLException e1) {
 			e1.printStackTrace();
@@ -249,6 +244,9 @@ public class FailoverFetchTest {
 		} catch (IOException e1) {
 			e1.printStackTrace();
 			fail("IO Exception"+e1);
+		} catch (JSONException e) {
+			e.printStackTrace();
+			fail("JSON Exception"+e);
 		}
 	}
 

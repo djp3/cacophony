@@ -1,12 +1,14 @@
 package edu.uci.ics.luci.cacophony.node;
 
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 
@@ -172,6 +174,37 @@ public class CNodeTest {
 		Globals.getGlobals().addQuittables(ws);
 		
 		//new PopUpWindow("Click To Stop Test: "+this.getClass().getCanonicalName());
+	}
+	
+	@Test
+	public void testCalendarAssumptions(){
+		long jan012013 = 1357012799000L; // Tuesday 1/1/2013 03:59:59 GMT;
+		Globals.setGlobals(new GlobalsTest());
+		Calendar c = Globals.getGlobals().getCalendar(null);
+		
+		c.setTimeInMillis(jan012013);
+		assertEquals(Calendar.TUESDAY,c.get(Calendar.DAY_OF_WEEK));
+		
+		c.setTimeInMillis(CNode.transformTimeForCalendar(0, jan012013));
+		assertEquals(Calendar.MONDAY,c.get(Calendar.DAY_OF_WEEK));
+		
+		c.setTimeInMillis(CNode.transformTimeForCalendar(-11, jan012013));
+		assertEquals(Calendar.MONDAY,c.get(Calendar.DAY_OF_WEEK));
+		
+		c.setTimeInMillis(CNode.transformTimeForCalendar(0, jan012013 + CNode.ONE_MINUTE));
+		assertEquals(Calendar.TUESDAY,c.get(Calendar.DAY_OF_WEEK));
+		
+		c.setTimeInMillis(jan012013);
+		assertEquals(3*60+59, CNode.calculateMinutesSinceMidnight(c));
+		
+		c.setTimeInMillis(CNode.transformTimeForCalendar(0, jan012013));
+		assertEquals(23*60+59, CNode.calculateMinutesSinceMidnight(c));
+		
+		c.setTimeInMillis(CNode.transformTimeForCalendar(0, jan012013 + CNode.ONE_MINUTE));
+		assertEquals(0, CNode.calculateMinutesSinceMidnight(c));
+		
+		
+		
 	}
 
 }

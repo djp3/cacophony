@@ -15,6 +15,7 @@ import java.util.List;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLPropertiesConfiguration;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.After;
@@ -227,8 +228,47 @@ public class HandlerCNodePredictionTest {
 				fail("No error code:"+e);
 			}
 		} catch (JSONException e) {
+			fail("Bad JSON Response:"+e);
+		}
+		
+		
+		
+		/* Test with working case */
+		String testString = "1346852798000";
+		responseString = null;
+		try {
+			HashMap<String, String> params = new HashMap<String, String>();
+			params.put("version", CacophonyRequestHandlerHelper.getAPIVersion());
+			params.put("namespace", d.getDirectoryNamespace());
+			params.put("node", cNPool.getPool().get(0).getTestSet().attribute(0).value(0)+"");
+			JSONArray times = new JSONArray();
+			times.put(testString);
+			params.put("times", times.toString());
+
+			responseString = WebUtil.fetchWebPage("http://localhost:" + workingPort + "/predict", false, params, 60 * 1000);
+		} catch (MalformedURLException e) {
 			e.printStackTrace();
-			fail("Bad JSON Response");
+			fail("Bad URL:"+e);
+		} catch (IOException e) {
+			e.printStackTrace();
+			fail("IO Exception:"+e);
+		}
+		
+		//System.out.println(responseString);
+
+		response = null;
+		try {
+			response = new JSONObject(responseString);
+			try {
+				assertEquals("false",response.getString("error"));
+				assertTrue(response.getJSONArray("predictions") != null);
+				assertEquals(testString,response.getJSONArray("predictions").getJSONObject(0).getString("x"));
+			} catch (JSONException e) {
+				e.printStackTrace();
+				fail("No error code:"+e);
+			}
+		} catch (JSONException e) {
+			fail("Bad JSON Response:"+e);
 		}
 	}
 

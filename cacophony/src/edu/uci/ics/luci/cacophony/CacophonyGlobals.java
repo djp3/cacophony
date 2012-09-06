@@ -12,6 +12,12 @@ import com.quub.util.CalendarCache;
 
 public class CacophonyGlobals extends Globals{
 	
+	private static final String SYSTEM_VERSION = "1.1";
+	private static final String PROPERTY_FILENAME_DEFAULT = "cacophony.log4j.properties";
+	public static final String CONFIG_FILENAME_DEFAULT = "cacophony.properties";
+	public static final int DEFAULT_PORT = 2011;
+	private static transient volatile Logger log = null;
+		
 	static{
 		/* Test that we are using GMT as the default */
 		if(!TimeZone.getDefault().equals(CalendarCache.TZ_GMT)){
@@ -23,16 +29,18 @@ public class CacophonyGlobals extends Globals{
 		if(!c.equals("UTF-8")){
 			throw new IllegalArgumentException("The character set is not UTF-8:"+c);
 		}
+		
+		
 	}
 	
-	private static final String PROPERTY_FILENAME_DEFAULT = "cacophony.log4j.properties";
-	public static final String CONFIG_FILENAME_DEFAULT = "cacophony.properties";
-	public static final int DEFAULT_PORT = 2011;
+	public static synchronized Logger getLog(){
+		if(log == null){
+			log = Logger.getLogger(CacophonyGlobals.class);
+		}
+		return log;
+	}
 	
 	private XMLPropertiesConfiguration config = null;
-	private transient volatile Logger log = null;
-		
-	
 	
 	/**
 	 * This is only need so far for testing in which the _globals sticks around from previous tests and is not reinitialized
@@ -42,12 +50,6 @@ public class CacophonyGlobals extends Globals{
 		setGlobals(null);
 	}
 	
-	public synchronized Logger getLog(){
-		if(log == null){
-			log = Logger.getLogger(CacophonyGlobals.class);
-		}
-		return log;
-	}
 	
 	public void setConfig(XMLPropertiesConfiguration config){
 		this.config = config;
@@ -91,6 +93,8 @@ public class CacophonyGlobals extends Globals{
 	public String getSystemVersion() {
 		return GitRevision.SYSTEM_REVISION;
 	}
+	
+	
 
 
 	public CacophonyGlobals() {

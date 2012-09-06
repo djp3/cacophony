@@ -155,6 +155,62 @@ public class FailoverFetch {
 		return responseString;
 
 	}
+	
+	/**
+	 * Fetch a web page's contents. If the webpage errors out or fails to parse JSON it's considered an error. 
+	 *
+	 * @param path
+	 *            The URL to fetch. This method can handle
+	 *            permanent redirects, but not javascript or meta redirects. The path is everything after the ip address
+	 *            including the "/".  So the path for http:///www.cnn.com/media/index.html should be "/media/index.html"
+	 *            The server locations are taken from the pool
+	 * @param authenticate
+	 * 	 		  True if basic authentication should be used.  In which case vars needs to have
+	 *            an entry for "username" and "password".           
+	 * @param vars
+	 * 			  A Map of params to be sent on the uri. "username" and "password" is removed before
+	 *            calling the uri.           
+	 * @param timeOutMilliSecs
+	 *            The read time out in milliseconds. Zero is not allowed. Note
+	 *            that this is not the timeout for the method call, but only for
+	 *            the connection. The method call may take longer.
+	 * @return A JSON object from the URL
+	 *
+	 * @throws IOException 
+	 * @throws MalformedURLException 
+	 * @throws JSONException 
+	 */
+	
+	public JSONObject fetchJSONObject(String path, boolean authenticate, Map<String, String> vars, int timeOutMilliSecs) throws  MalformedURLException, IOException, JSONException
+	{
+		JSONObject ret = null;
+		TreeSet<Pair<Long, String>> servers = orderDirectoryServers();
+		
+		while(servers.size() > 0){
+			String s = servers.pollFirst().getSecond();
+			try{
+				String responseString = WebUtil.fetchWebPage("http://"+s+path, authenticate, vars, timeOutMilliSecs);
+				if(responseString != null){
+					try{
+						ret = new JSONObject(responseString);
+						break;
+					} catch (JSONException e) {
+						incrementFailCount(s);
+						if(servers.size() == 0){
+							throw e;
+						}
+					}
+				}
+			}
+			catch(IOException e){
+				incrementFailCount(s);
+				if(servers.size() == 0){
+					throw e;
+				}
+			}
+		}
+		return ret;
+	}
 
 	protected TreeSet<Pair<Long, String>> orderDirectoryServers() {
 		TreeSet<Pair<Long,String>> servers = new TreeSet<Pair<Long,String>>();

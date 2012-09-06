@@ -139,17 +139,23 @@ public class MySQL extends NodeListLoader{
 		if(!error){
 			pool = new QuubDBConnectionPool(databaseDomain, database, username, password,1,1);
 			connection = pool.getConnection();
-			try {
-				listViewQueryPS = connection.prepareStatement(listViewQuery);
-			} catch (SQLException e) {
-				getLog().error("Query failed:"+listViewQuery+"\n"+e);
+			if(connection == null){
+				getLog().error("Query failed, couldn't connect to database");
 				error=true;
 			}
-			try {
-				mapViewQueryPS = connection.prepareStatement(mapViewQuery);
-			} catch (SQLException e) {
-				getLog().error("Query failed:"+mapViewQuery+"\n"+e);
-				error=true;
+			else{
+				try {
+					listViewQueryPS = connection.prepareStatement(listViewQuery);
+				} catch (SQLException e) {
+					getLog().error("Query failed:"+listViewQuery+"\n"+e);
+					error=true;
+				}
+				try {
+					mapViewQueryPS = connection.prepareStatement(mapViewQuery);
+				} catch (SQLException e) {
+					getLog().error("Query failed:"+mapViewQuery+"\n"+e);
+					error=true;
+				}
 			}
 		}
 	}
