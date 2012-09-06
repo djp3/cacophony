@@ -239,6 +239,7 @@ public class HandlerNodeAssignmentTest {
 				assertEquals("false",response.getString("error"));
 				assertTrue(response.getString("node_id") != null);
 				assertTrue(response.getString("node_configuration") != null);
+				assertTrue(response.getString("name") != null);
 			} catch (JSONException e) {
 				e.printStackTrace();
 				fail("No error code:"+e);

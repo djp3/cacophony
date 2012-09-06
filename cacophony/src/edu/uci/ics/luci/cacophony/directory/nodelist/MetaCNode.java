@@ -123,6 +123,13 @@ public class MetaCNode {
 			} catch (JSONException e1) {
 			}
 			
+			String namespace;
+			try {
+				namespace = j.getString("namespace");
+				c.setNamespace(namespace);
+			} catch (JSONException e1) {
+			}
+			
 			Double priority;
 			try {
 				priority = j.getDouble("priority");
@@ -197,6 +204,9 @@ public class MetaCNode {
 				if(c.getName() != null){
 					jsonObject.put("name", c.getName());
 				}
+				if(c.getNamespace() != null){
+					jsonObject.put("namespace", c.getNamespace());
+				}
 				if(c.getPriority() != null){
 					jsonObject.put("priority", c.getPriority());
 				}
@@ -233,6 +243,7 @@ public class MetaCNode {
 	private Long creationTime;
 	private String guid;
 	private String name;
+	private String namespace;
 	private Double latitude;
 	private Double longitude;
 	private Double mapWeight;
@@ -262,6 +273,12 @@ public class MetaCNode {
 	}
 	public void setName(String name) {
 		this.name = name;
+	}
+	public String getNamespace() {
+		return namespace;
+	}
+	public void setNamespace(String namespace) {
+		this.namespace = namespace;
 	}
 	
 	public void setLatitude(Double latitude) {
@@ -313,6 +330,7 @@ public class MetaCNode {
 		
 		ret &= !((this.getGuid() == null) ^ (that.getGuid() == null));
 		ret &= !((this.getName() == null) ^ (that.getName() == null));
+		ret &= !((this.getNamespace() == null) ^ (that.getNamespace() == null));
 		ret &= !((this.getLatitude() == null) ^ (that.getLatitude() == null));
 		ret &= !((this.getLongitude() == null) ^ (that.getLongitude() == null));
 		ret &= !((this.getMapWeight() == null) ^ (that.getMapWeight() == null));
@@ -322,6 +340,7 @@ public class MetaCNode {
 		
 		ret &= (this.getGuid() == null) || this.getGuid().equals(that.getGuid());
 		ret &= (this.getName() == null) || this.getName().equals(that.getName());
+		ret &= (this.getNamespace() == null) || this.getNamespace().equals(that.getNamespace());
 		ret &= (this.getLatitude() == null) || this.getLatitude().equals(that.getLatitude());
 		ret &= (this.getLongitude() == null) || this.getLongitude().equals(that.getLongitude());
 		ret &= (this.getMapWeight() == null) || this.getMapWeight().equals(that.getMapWeight());
@@ -337,6 +356,7 @@ public class MetaCNode {
 
 		result = HashCodeUtil.hash(result,this.getGuid());
 		result = HashCodeUtil.hash(result,this.getName());
+		result = HashCodeUtil.hash(result,this.getNamespace());
 		result = HashCodeUtil.hash(result,this.getLatitude());
 		result = HashCodeUtil.hash(result,this.getLongitude());
 		result = HashCodeUtil.hash(result,this.getMapWeight());

@@ -51,6 +51,7 @@ public class MetaCNodeTest {
 			mc.setCreationTime(System.currentTimeMillis());
 			mc.setGuid(Integer.toString(r.nextInt()));
 			mc.setName("Name_"+Integer.toString(r.nextInt()));
+			mc.setNamespace("Namespace_"+Integer.toString(r.nextInt()));
 			mc.setLatitude((r.nextDouble()*180.0)-90.0);
 			mc.setLongitude((r.nextDouble()*360.0)-180.0);
 			mc.setMapWeight(r.nextDouble());
@@ -61,6 +62,7 @@ public class MetaCNodeTest {
 		mc.setCreationTime(System.currentTimeMillis());
 		mc.setGuid(Integer.toString(r.nextInt()));
 		mc.setName(winner);
+		mc.setNamespace(winner);
 		mc.setLatitude((r.nextDouble()*180.0)-90.0);
 		mc.setLongitude((r.nextDouble()*360.0)-180.0);
 		mc.setMapWeight(r.nextDouble());
@@ -97,6 +99,7 @@ public class MetaCNodeTest {
 			mc.setCreationTime(System.currentTimeMillis());
 			mc.setGuid(Integer.toString(r.nextInt()));
 			mc.setName("Name_"+Integer.toString(r.nextInt()));
+			mc.setNamespace("Namespace_"+Integer.toString(r.nextInt()));
 			mc.setLatitude((r.nextDouble()*180.0)-90.0);
 			mc.setLongitude((r.nextDouble()*360.0)-180.0);
 			mc.setMapWeight(r.nextDouble());
@@ -120,6 +123,7 @@ public class MetaCNodeTest {
 		mc.setCreationTime(System.currentTimeMillis());
 		mc.setGuid(Integer.toString(r.nextInt()));
 		mc.setName(winner);
+		mc.setNamespace(winner);
 		mc.setLatitude((r.nextDouble()*180.0)-90.0);
 		mc.setLongitude((r.nextDouble()*360.0)-180.0);
 		mc.setMapWeight(r.nextDouble());
@@ -132,6 +136,7 @@ public class MetaCNodeTest {
 		mc.setCreationTime(System.currentTimeMillis());
 		mc.setGuid(Integer.toString(r.nextInt()));
 		mc.setName("Not "+winner);
+		mc.setNamespace("Not "+winner);
 		mc.setLatitude((r.nextDouble()*180.0)-90.0);
 		mc.setLongitude((r.nextDouble()*360.0)-180.0);
 		mc.setMapWeight(r.nextDouble());
@@ -163,6 +168,7 @@ public class MetaCNodeTest {
 		mc.setCreationTime(System.currentTimeMillis());
 		mc.setGuid(Integer.toString(r.nextInt()));
 		mc.setName("Name_"+Integer.toString(r.nextInt()));
+		mc.setNamespace("Namespace_"+Integer.toString(r.nextInt()));
 		mc.setLatitude((r.nextDouble()*180.0)-90.0);
 		mc.setLongitude((r.nextDouble()*360.0)-180.0);
 		mc.setMapWeight(r.nextDouble());
@@ -270,6 +276,16 @@ public class MetaCNodeTest {
 		assertEquals(mc,c2);
 		assertEquals(mc.hashCode(),c2.hashCode());
 		
+		mc.setNamespace(null);
+		assertTrue(!mc.equals(c2));
+		c2.setNamespace(null);
+		assertEquals(mc,c2);
+		assertEquals(mc.hashCode(),c2.hashCode());
+		j = mc.toJSONObject();
+		c2 = MetaCNode.fromJSONObject(j);
+		assertEquals(mc,c2);
+		assertEquals(mc.hashCode(),c2.hashCode());
+		
 		mc.setName(null);
 		assertTrue(!mc.equals(c2));
 		c2.setName(null);
@@ -303,8 +319,6 @@ public class MetaCNodeTest {
 		
 		c2 = MetaCNode.fromJSONObject(MetaCNode.toJSONObject(null));
 		assertEquals((MetaCNode)null,c2);
-			
-		
 	}
 	
 }

@@ -77,9 +77,11 @@ public class CNode implements Quittable{
 
 	private FailoverFetch failoverFetch;
 	private Object heartbeatLock = null;
-	private String nodeId;
+	private String nodeId="undefined";
+	private String nodeName="undefined";
+	private CNodePool parentPool;
+	private List<Pair<Long, String>> baseUrls;
 	//private String config;
-	private CNodePool myPool;
 	private ScheduledExecutorService scheduler = null;
 	
 	public String cNodeGuid = null;
@@ -88,25 +90,38 @@ public class CNode implements Quittable{
 	TreeSet<String> heartbeatList = null;
 	private boolean shuttingDown = false;
 
-	public CNode(FailoverFetch failoverFetch, CNodePool cNPool) {
+	public CNode(FailoverFetch failoverFetch, CNodePool parent, List<Pair<Long,String>> baseUrls){
 		this.random = new Random();
 		this.cNodeGuid = "Batch CNode bagged IbK "+random.nextInt(Integer.MAX_VALUE);
 		this.failoverFetch = failoverFetch;
-		this.myPool = cNPool;
+		if(parent == null){
+			throw new IllegalArgumentException("Can't handle null parent");
+		}
+		else{
+			this.parentPool = parent;
+		}
+		if(baseUrls == null){
+			throw new IllegalArgumentException("Can't handle null urls");
+		}
+		else{
+			this.baseUrls = baseUrls;
+		}
 		this.heartbeatLock = new Object();
 	}
 
-	public void getANewConfiguration(String namespace) {
+	public void getANewConfiguration() {
 		
 		try {
+
 			HashMap<String, String> params = new HashMap<String, String>();
 			params.put("version", CacophonyRequestHandlerHelper.getAPIVersion());
-			params.put("namespace", namespace);
+			params.put("namespace", parentPool.getNamespace());
 
 			JSONObject response = failoverFetch.fetchJSONObject("/node_assignment", false, params, 30 * 1000);
 			try {
 				if(response.getString("error").equals("false")){
 					this.nodeId = response.getString("node_id");
+					this.nodeName = response.getString("name");
 				}
 			} catch (JSONException e) {
 				getLog().error("Problem getting configuration:"+e);
@@ -118,8 +133,7 @@ public class CNode implements Quittable{
 			e.printStackTrace();
 			fail("IO Exception:"+e);
 		} catch (JSONException e) {
-			e.printStackTrace();
-			fail("JSON Exception:"+e);
+			getLog().error("Problem getting configuration:"+e);
 		}
 	}
 	
@@ -149,7 +163,7 @@ public class CNode implements Quittable{
 			urls = new ArrayList<Pair<Long,String>>();
 		}
 		
-		final String localNamespace = myPool.getNamespace();
+		final String localNamespace = parentPool.getNamespace();
 		if(localNamespace == null){
 			getLog().error("Set the namespace before starting the heartbeat");
 		}
@@ -253,14 +267,18 @@ public class CNode implements Quittable{
 	}
 	
 	
+	public void startHeartbeatAfterModeling(){
+		startHeartbeatAfterModeling(null,null);
+	}
+	
+	
 	/**
 	 * 
 	 * @param delay How long to wait before first heartbeat goes out in milliseconds. Default is 0
 	 * @param period How often to send a heartbeat in milliseconds. Default is 5 minutes
-	 * @param baseUrls A list of URLs with which to reference this directory with a number indicating preference order. Lower is more preferred.
 	 *  Default is just what java thinks the host address is.
 	 */
-	public void startHeartbeatAfterModeling(Long delay,Long period, String namespace,List<Pair<Long,String>> baseUrls){
+	public void startHeartbeatAfterModeling(Long delay,Long period){
 		
 		if(delay == null){
 			delay = 0L;
@@ -289,12 +307,11 @@ public class CNode implements Quittable{
 			baseUrls = new ArrayList<Pair<Long,String>>();
 		}
 		
-		if(namespace == null){
-			namespace = myPool.getNamespace();
-		}
-		final String localNamespace = namespace;
+		final String localName = nodeName;
+		
+		final String localNamespace = parentPool.getNamespace();
 		if(localNamespace == null){
-			getLog().error("Set the namespace before starting the heartbeat");
+			getLog().error("Set the namespace of the pool before starting the heartbeat");
 		}
 		
 		if(baseUrls.size() == 0){
@@ -360,7 +377,7 @@ public class CNode implements Quittable{
 					
 						for(Pair<Long,String> x:localBaseUrls){
 							try{
-								Pair<Long,String> p = new Pair<Long,String>(x.getFirst(),x.getSecond()+"/index.html?node="+URLEncoder.encode(metaCNodeGuid,"UTF-8"));
+								Pair<Long,String> p = new Pair<Long,String>(x.getFirst(),x.getSecond()+"/index.html?node="+URLEncoder.encode(metaCNodeGuid,"UTF-8")+"&name="+URLEncoder.encode(localName,"UTF-8")+"&namespace="+URLEncoder.encode(localNamespace,"UTF-8"));
 								accessRoutes.add(p);
 							} catch (UnsupportedEncodingException e) {
 								getLog().fatal("Something is wrong with URL Making\n"+e);
@@ -517,9 +534,9 @@ public class CNode implements Quittable{
 	}
 
 
-	public void launch(String namespace,List<Pair<Long,String>>accessRoutes,Instances trainingSet) {
+	public void launch(Instances trainingSet) {
 		buildModel(false,trainingSet);
-		startHeartbeatAfterModeling(null,null,namespace,accessRoutes);
+		startHeartbeatAfterModeling();
 	}
 	
 	private synchronized void setMaxWait(Map<String,Double> maxWait) {
@@ -869,7 +886,7 @@ public class CNode implements Quittable{
 		Bagging bagger = new Bagging();
 		try{
 			//bagger.setOptions(weka.core.Utils.splitOptions("-P 100 -S 1 -I 10 -W weka.classifiers.lazy.IBk -- -K 5 -W 0 -A \"weka.core.neighboursearch.KDTree -A \\\"weka.core.EuclideanDistance -R first-last\\\" -S weka.core.neighboursearch.kdtrees.SlidingMidPointOfWidestSide -W 0.01 -L 40 -N\""));
-			bagger.setOptions(weka.core.Utils.splitOptions("-P 50 -S 1 -I 10 -W weka.classifiers.lazy.IBk -- -K 20 -W 0 -I -A \"weka.core.neighboursearch.KDTree -A \\\"weka.core.EuclideanDistance -D -R 2-10\\\" -S weka.core.neighboursearch.kdtrees.SlidingMidPointOfWidestSide -W 0.01 -L 40 -N\""));
+			bagger.setOptions(weka.core.Utils.splitOptions("-P 50 -S 1 -I 10 -W weka.classifiers.lazy.IBk -- -K 5 -W 0 -I -A \"weka.core.neighboursearch.KDTree -A \\\"weka.core.EuclideanDistance -D -R 2-10\\\" -S weka.core.neighboursearch.kdtrees.SlidingMidPointOfWidestSide -W 0.01 -L 40 -N\""));
 			bagger.buildClassifier(canonicalizeData);   // build classifier		    
 		} catch (Exception e) {
 			getLog().error("Unable to build classifier\n"+e);

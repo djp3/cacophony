@@ -310,13 +310,13 @@ public class CNodePool implements Quittable{
 		
 		setPool(new ArrayList<CNode>());
 		for(int i = 0; i< poolSize; i++){
-			CNode c = new CNode(failoverFetch,this);
+			CNode c = new CNode(failoverFetch,this,accessRoutes);
 			if(config.getString("poll_for_config") != null){
 				if(config.getString("poll_for_config").equals("true")){
-					c.getANewConfiguration(getNamespace());
+					c.getANewConfiguration();
 				}
 			}
-			c.launch(getNamespace(),accessRoutes,trainingSet);
+			c.launch(trainingSet);
 			getPool().add(c);
 		}
 		return(this);
@@ -403,7 +403,6 @@ public class CNodePool implements Quittable{
 			HandlerAbstract handler =  new HandlerVersion();
 			requestHandlerRegistry.put("",handler);
 			requestHandlerRegistry.put("version",handler);
-			requestHandlerRegistry.put("shutdown",new HandlerShutdown());
 			requestHandlerRegistry.put("predict",new HandlerCNodePrediction(cNPool.getPool().get(0)));
 			requestHandlerRegistry.put(null, new HandlerFileServer(edu.uci.ics.luci.cacophony.CacophonyGlobals.class,"/wwwNode/"));
 			

@@ -12,7 +12,6 @@ import com.quub.util.CalendarCache;
 
 public class CacophonyGlobals extends Globals{
 	
-	private static final String SYSTEM_VERSION = "1.1";
 	private static final String PROPERTY_FILENAME_DEFAULT = "cacophony.log4j.properties";
 	public static final String CONFIG_FILENAME_DEFAULT = "cacophony.properties";
 	public static final int DEFAULT_PORT = 2011;
@@ -49,7 +48,6 @@ public class CacophonyGlobals extends Globals{
 	public static void resetGlobals(){
 		setGlobals(null);
 	}
-	
 	
 	public void setConfig(XMLPropertiesConfiguration config){
 		this.config = config;
