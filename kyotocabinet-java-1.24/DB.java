@@ -15,9 +15,10 @@
 
 package kyotocabinet;
 
-import java.util.*;
-import java.io.*;
-import java.net.*;
+import java.io.UnsupportedEncodingException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 /**

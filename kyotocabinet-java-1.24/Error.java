@@ -15,16 +15,17 @@
 
 package kyotocabinet;
 
-import java.util.*;
-import java.io.*;
-import java.net.*;
 
 
 /**
  * Error data.
  */
 public class Error extends RuntimeException {
-  //----------------------------------------------------------------
+  /**
+	 * 
+	 */
+	private static final long serialVersionUID = 4108759241793178142L;
+//----------------------------------------------------------------
   // static initializer
   //----------------------------------------------------------------
   static {
@@ -37,7 +38,12 @@ public class Error extends RuntimeException {
    * Exception for the success code.
    */
   public static class XSUCCESS extends Error {
-    XSUCCESS(String expr) {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -1387864851347841974L;
+
+	XSUCCESS(String expr) {
       super(expr);
     }
   }
@@ -45,7 +51,12 @@ public class Error extends RuntimeException {
    * Exception for the not implemented code.
    */
   public static class XNOIMPL extends Error {
-    XNOIMPL(String expr) {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 7804876083591125203L;
+
+	XNOIMPL(String expr) {
       super(expr);
     }
   }
@@ -53,7 +64,12 @@ public class Error extends RuntimeException {
    * Exception for the invalid operation code.
    */
   public static class XINVALID extends Error {
-    XINVALID(String expr) {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 4043130069884701538L;
+
+	XINVALID(String expr) {
       super(expr);
     }
   }
@@ -61,7 +77,12 @@ public class Error extends RuntimeException {
    * Exception for the no repository code.
    */
   public static class XNOREPOS extends Error {
-    XNOREPOS(String expr) {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 7184745928547403867L;
+
+	XNOREPOS(String expr) {
       super(expr);
     }
   }
@@ -69,7 +90,12 @@ public class Error extends RuntimeException {
    * Exception for the no permission code.
    */
   public static class XNOPERM extends Error {
-    public XNOPERM(String expr) {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 447612268430291947L;
+
+	public XNOPERM(String expr) {
       super(expr);
     }
   }
@@ -77,7 +103,12 @@ public class Error extends RuntimeException {
    * Exception for the broken file code.
    */
   public static class XBROKEN extends Error {
-    XBROKEN(String expr) {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -9159287725447424430L;
+
+	XBROKEN(String expr) {
       super(expr);
     }
   }
@@ -85,7 +116,12 @@ public class Error extends RuntimeException {
    * Exception for the record duplication code.
    */
   public static class XDUPREC extends Error {
-    XDUPREC(String expr) {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -4361588862410569491L;
+
+	XDUPREC(String expr) {
       super(expr);
     }
   }
@@ -93,7 +129,12 @@ public class Error extends RuntimeException {
    * Exception for the no record code.
    */
   public static class XNOREC extends Error {
-    XNOREC(String expr) {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 648328189531645090L;
+
+	XNOREC(String expr) {
       super(expr);
     }
   }
@@ -101,7 +142,12 @@ public class Error extends RuntimeException {
    * Exception for the logical inconsistency code.
    */
   public static class XLOGIC extends Error {
-    XLOGIC(String expr) {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 4665538465148201054L;
+
+	XLOGIC(String expr) {
       super(expr);
     }
   }
@@ -109,7 +155,12 @@ public class Error extends RuntimeException {
    * Exception for the system error code.
    */
   public static class XSYSTEM extends Error {
-    XSYSTEM(String expr) {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 2146041348516242706L;
+
+	XSYSTEM(String expr) {
       super(expr);
     }
   }
@@ -117,7 +168,12 @@ public class Error extends RuntimeException {
    * Exception for the miscellaneous error code.
    */
   public static class XMISC extends Error {
-    XMISC(String expr) {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -3116019419867171763L;
+
+	XMISC(String expr) {
       super(expr);
     }
   }

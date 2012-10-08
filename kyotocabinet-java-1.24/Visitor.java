@@ -15,9 +15,7 @@
 
 package kyotocabinet;
 
-import java.util.*;
-import java.io.*;
-import java.net.*;
+import java.io.Serializable;
 
 
 /**
@@ -31,6 +29,7 @@ public interface Visitor {
   public static final byte[] NOP = Utility.init_visitor_NOP();
   /** magic data: remove the record */
   public static final byte[] REMOVE = Utility.init_visitor_REMOVE();
+
   //----------------------------------------------------------------
   // public methods
   //----------------------------------------------------------------
@@ -42,6 +41,7 @@ public interface Visitor {
    * nothing is modified.  If it is Visitor.REMOVE, the record is removed.
    */
   public byte[] visit_full(byte[] key, byte[] value);
+
   /**
    * Visit a empty record space.
    * @param key the key.

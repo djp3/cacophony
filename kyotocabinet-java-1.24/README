@@ -1,3 +1,14 @@
+From djp3:
+
+	to build:
+make -j8 all CPPFLAGS="-I/Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/kyotocabinet-install/include -I/System/Library/Frameworks/JavaVM.framework/Versions/A/Headers" PKG_CONFIG_PATH="/Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/kyotocabinet-install/lib/pkgconfig"
+
+make install CPPFLAGS="-I/Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/kyotocabinet-install/include -I/System/Library/Frameworks/JavaVM.framework/Versions/A/Headers" PKG_CONFIG_PATH="/Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/kyotocabinet-install/lib/pkgconfig"
+
+
+
+
+
 ================================================================
  Kyoto Cabinet: a straightforward implementation of DBM
  Copyright (C) 2009-2010 FAL Labs

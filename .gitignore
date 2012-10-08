@@ -13,6 +13,12 @@ external/cassandra_config/trash
 external/cassandra_tmp
 external/hector
 external/hector_examples
+
+external/kyotocabinet-install
+
+external/kyotocabinet-1.2.76/*.o
+external/kyotocabinet-1.2.76/Makefile
+
 cacophony/src/www/bootstrap
 cacophony/src/www/lib/orig
 cacophony/bin
