@@ -477,6 +477,21 @@ public class CNode implements Quittable,Serializable{
 	}
 	
 	
+	public JSONObject getAccuracy() {
+		JSONObject ret = new JSONObject();
+		Evaluation eval = getEvaluation();
+		try {
+			ret.put("instances",eval.numInstances());
+			ret.put("mean_absolute_error", eval.meanAbsoluteError());
+			ret.put("root_mean_squared_error", eval.rootMeanSquaredError());
+			ret.put("relative_absolute_error", eval.relativeAbsoluteError());
+		} catch (JSONException e) {
+			getLog().error("Probably building JSON"+e+"\n"+eval.toSummaryString());
+		} catch (Exception e) {
+		}
+		return(ret);
+	}
+	
 	
 	public synchronized Map<String, TreeSet<Pair<Long, Double>>> predict(JSONArray timesToPredict) {
 		

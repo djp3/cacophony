@@ -106,8 +106,12 @@ body {
     
 	<div class="container-fluid">
 		<div class="row-fluid">
-			<div class="span12">
+			<div class="span8">
 				<div id="chart">
+				</div>
+			</div>
+			<div class="span4">
+				<div id="stats" style="font-size:150%;margin-top:30px">
 				</div>
 			</div>
 		</div>
@@ -125,16 +129,6 @@ body {
 					<button class="btn btn-mini btn-inverse day-btn" id="day-btn-friday">Friday</button>
 					<button class="btn btn-mini btn-danger day-btn" id="day-btn-saturday">Saturday</button>
 				</div>
-			</div>
-		</div>
-		<div class="row-fluid">
-			<div class="span1">
-				<button class="btn btn-mini btn-info"><i class="icon-chevron-left"></i></button>
-			</div>
-			<div class="span10">
-			</div>
-			<div class="span1">
-				<button class="btn btn-mini btn-info"><i class="icon-chevron-right"></i></button>
 			</div>
 		</div>
 	</div>
@@ -259,6 +253,12 @@ body {
 					}
 					else{
 						predictionData = data;
+						
+						var newTable = "<table><tr><td><strong>Training Instances:</strong></td><td>"+predictionData.stats.instances+"</td></tr>"+
+									   "<tr><td><strong>Mean Absolute Error:</strong> </td><td>"+predictionData.stats.mean_absolute_error.toFixed(5)+"</td></tr>"+
+						               "<tr><td><strong>Root Mean Squared Error:</strong>&nbsp;</td><td>"+predictionData.stats.root_mean_squared_error.toFixed(5)+"</td></tr>"+
+          							   "<tr><td><strong>Relative Absolute Error:</strong></td><td>"+predictionData.stats.relative_absolute_error.toFixed(5)+" % "+"</td></tr></table>";
+						$('#stats').html(newTable);
 						
 						var i;
 						predictionData.sunday[0]['lineStroke']="#08C";

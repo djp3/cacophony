@@ -96,6 +96,11 @@ public class HandlerCNodePrediction extends NodeRequestHandlerHelper {
 			errors.put("No \"node\" parameter present to predict");
 		}
 		
+		try {
+			ret.put("stats", cnp.getFromPool(nodeToPredict).getAccuracy());
+		} catch (JSONException e1) {
+		}
+		
 		try{
 			if(errors.length() == 0){
 				ret.put("error", "false");
