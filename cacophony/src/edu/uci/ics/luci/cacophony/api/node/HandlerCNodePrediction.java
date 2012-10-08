@@ -13,6 +13,7 @@ import com.quub.util.Pair;
 import com.quub.webserver.HandlerAbstract;
 import com.quub.webserver.RequestDispatcher.HTTPRequest;
 
+import edu.uci.ics.luci.cacophony.node.CNode;
 import edu.uci.ics.luci.cacophony.node.CNodePool;
 
 
@@ -60,7 +61,13 @@ public class HandlerCNodePrediction extends NodeRequestHandlerHelper {
 			if(_timesToPredict != null){
 				try {
 					JSONArray timesToPredict = new JSONArray(_timesToPredict);
-					prediction = cnp.getFromPool(nodeToPredict).predict(timesToPredict);
+					CNode fromPool = cnp.getFromPool(nodeToPredict);
+					if(fromPool != null){
+						prediction = fromPool.predict(timesToPredict);
+					}
+					else{
+						errors.put("No model currently exists for "+nodeToPredict);
+					}
 				} catch (JSONException e) {
 					getLog().error("Unable to parse JSON for times:"+_timesToPredict);
 					errors.put("Unable to parse JSON for times:"+_timesToPredict);
@@ -68,7 +75,13 @@ public class HandlerCNodePrediction extends NodeRequestHandlerHelper {
 			}
 			else{
 				/* Day of the week -> <time since 4am, wait time>*/
-				prediction = cnp.getFromPool(nodeToPredict).predict(null);
+				CNode fromPool = cnp.getFromPool(nodeToPredict);
+				if(fromPool != null){
+					prediction = fromPool.predict(null);
+				}
+				else{
+					errors.put("No model currently exists for "+nodeToPredict);
+				}
 			}
 			
 			if(prediction != null){

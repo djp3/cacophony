@@ -431,6 +431,11 @@ public class CNode implements Quittable,Serializable{
 		} catch (Exception e) {
 			getLog().error("Unable to get training instances from database\n"+e);
 		}
+		finally{
+			if(trainingQuery != null){
+				trainingQuery.close();
+			}
+		}
 		return data;
 	}
 
@@ -720,8 +725,8 @@ public class CNode implements Quittable,Serializable{
 		
 		    
 		/* Train */
-		/* For nearest neighbor we use half the instances up to a max of 20 */
-		long nnConstant = Math.round(Math.floor(trainingData.numInstances()/2.0)+1.0);
+		/* For nearest neighbor we use 1/10 the instances up to a max of 20 */
+		long nnConstant = Math.round(Math.floor(trainingData.numInstances()/10.0)+1.0);
 		if(nnConstant > 20){
 			nnConstant = 20;
 		}

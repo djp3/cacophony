@@ -22,5 +22,9 @@ cacophony/quub.log4j.properties
 cacophony/cacophony.log4j.properties
 cacophony/access_control_list.properties
 
+#kyotocabinet-java-1.24
+#kyotocabinet-java-install
+
 external/cassandra_config
 external/cassandra/lib
+#external/kyotocabinet-1.2.76.tar.gz

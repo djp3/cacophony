@@ -5,6 +5,12 @@ make -j8 all CPPFLAGS="-I/Users/djp3/Development/Mac/EclipseWorkspaceCacophony/e
 
 make install CPPFLAGS="-I/Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/kyotocabinet-install/include -I/System/Library/Frameworks/JavaVM.framework/Versions/A/Headers" PKG_CONFIG_PATH="/Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/kyotocabinet-install/lib/pkgconfig"
 
+	to configure on linux:
+export LD_LIBRARY_PATH="/home/don/external/kyotocabinet-install/lib/:$LD_LIBRARY_PATH"
+export CC="gcc44"
+export CXX="g++44"
+		./configure --prefix="/home/don/kyotocabinet-java-install" CPPFLAGS="-I/home/don/external/kyotocabinet-install/include -I/usr/lib/jvm/java-1.6.0-openjdk-1.6.0.0.x86_64/include -I/usr/lib/jvm/java-1.6.0-openjdk-1.6.0.0.x86_64/include/linux" PKG_CONFIG_PATH="/home/don/external/kyotocabinet-install/lib/pkgconfig" JAVA_HOME="/usr/lib/jvm/java-1.6.0-openjdk-1.6.0.0.x86_64"
+
 
 
 

@@ -151,7 +151,9 @@ public class CNodePool implements Quittable{
 	
 	public CNode getFromPool(String id){
 		CNode c = (CNode) (db.get(id));
-		c.setParentPool(this); // The parent is transient 
+		if(c != null){
+			c.setParentPool(this); // The parent is transient 
+		}
 		return(c);
 	}
 	
@@ -192,6 +194,7 @@ public class CNodePool implements Quittable{
 						if(fromPool != null){
 							fromPool.synchronizeWithNetwork();
 							me.addToPool(key, fromPool);
+							
 						}
 					}
 					me.setUpdatingActive(false);
@@ -319,9 +322,7 @@ public class CNodePool implements Quittable{
 			if(poolSize != null){
 				getLog().error("PoolSize should be null if you are using local config to load the pool");
 			}
-			else{
-				setPoolSize((long) cNodes.size());
-			}
+			setPoolSize((long) cNodes.size());
 			
 		}
 		

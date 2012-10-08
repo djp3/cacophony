@@ -8,7 +8,7 @@
                 <attribute name="Main-Class" value="org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader"/>
                 <attribute name="Rsrc-Main-Class" value="edu.uci.ics.luci.cacophony.directory.Directory"/>
                 <attribute name="Class-Path" value="."/>
-                <attribute name="Rsrc-Class-Path" value="./ junit.jar org.hamcrest.core_1.1.0.v20090501071000.jar annotations.jar jsr305.jar log4j-1.2.14.jar JSAP-2.1.jar commons-configuration-1.6.jar commons-codec-1.4.jar commons-lang-2.4.jar commons-logging-1.1.1.jar mysql-connector-java-5.1.7-bin.jar hector-core-1.0-4.jar hector-object-mapper-3.0-03.jar slf4j-log4j12-1.6.1.jar slf4j-api-1.6.1.jar apache-cassandra-thrift-1.1.1-SNAPSHOT.jar libthrift-0.7.0.jar commons-configuration-1.6.jar commons-lang-2.4.jar log4j-1.2.8.jar commons-logging-1.1.1.jar commons-collections-3.2.1.jar commons-codec-1.4.jar json.jar mail.jar annotations.jar commons-codec-1.3.jar jsr305.jar mysql-connector-java-5.1.7-bin.jar commons-io-1.4.jar commons-collections-3.2.jar google-collections-1.0.jar"/>
+                <attribute name="Rsrc-Class-Path" value="./ junit.jar org.hamcrest.core_1.1.0.v20090501071000.jar annotations.jar jsr305.jar log4j-1.2.14.jar JSAP-2.1.jar commons-configuration-1.6.jar commons-codec-1.4.jar commons-lang-2.4.jar commons-logging-1.1.1.jar mysql-connector-java-5.1.7-bin.jar hector-core-1.0-4.jar hector-object-mapper-3.0-03.jar slf4j-log4j12-1.6.1.jar slf4j-api-1.6.1.jar apache-cassandra-thrift-1.1.1-SNAPSHOT.jar libthrift-0.7.0.jar commons-configuration-1.6.jar commons-lang-2.4.jar log4j-1.2.8.jar commons-logging-1.1.1.jar commons-collections-3.2.1.jar commons-codec-1.4.jar json.jar mail.jar annotations.jar commons-codec-1.3.jar jsr305.jar mysql-connector-java-5.1.7-bin.jar commons-io-1.4.jar commons-collections-3.2.jar google-collections-1.0.jar java-cup.jar kyotocabinet.jar"/>
             </manifest>
             <zipfileset src="jar-in-jar-loader.zip"/>
             <fileset dir="/Users/djp3/Development/Mac/EclipseWorkspaceCacophony/cacophony/bin"/>
@@ -45,6 +45,10 @@
             <zipfileset dir="/Users/djp3/Documents/External/OpenPresence/code/quub/libs" includes="commons-io-1.4.jar"/>
             <zipfileset dir="/Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/cassandra/build/lib/jars" includes="commons-collections-3.2.jar"/>
             <zipfileset dir="/Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/libs" includes="google-collections-1.0.jar"/>
+            <fileset dir="/Users/djp3/Development/Mac/EclipseWorkspaceCacophony/weka/bin"/>
+            <zipfileset dir="/Users/djp3/Development/Mac/EclipseWorkspaceCacophony/weka/lib" includes="java-cup.jar"/>
+            <zipfileset dir="/Users/djp3/Development/Mac/EclipseWorkspaceCacophony/kyotocabinet-java-1.24" includes="kyotocabinet.jar"/>
+            <fileset dir="/Users/djp3/Development/Mac/EclipseWorkspaceCacophony/kyotocabinet-java-1.24/bin"/>
         </jar>
     </target>
 </project>
