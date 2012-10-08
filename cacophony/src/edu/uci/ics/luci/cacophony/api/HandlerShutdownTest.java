@@ -35,13 +35,21 @@ public class HandlerShutdownTest {
 
 
 	@BeforeClass
-	public static void setUpClass() throws Exception {
+	public static void setUpBeforeClass() throws Exception {
+		while(Globals.getGlobals() != null){
+			try{
+				Thread.sleep(1000);
+			}
+			catch(InterruptedException e){
+			}
+		}
 		Globals.setGlobals(new GlobalsTest());
 	}
 
 	@AfterClass
-	public static void tearDownClass() throws Exception {
-		Globals.getGlobals().setQuitting(true);
+	public static void tearDownAfterClass() throws Exception {
+		// These tests shut down manually
+		//Globals.getGlobals().setQuitting(true);
 		Globals.setGlobals(null);
 	}
 

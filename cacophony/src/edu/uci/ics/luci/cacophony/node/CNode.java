@@ -3,6 +3,7 @@ package edu.uci.ics.luci.cacophony.node;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
@@ -10,7 +11,6 @@ import java.net.URLEncoder;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -18,10 +18,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
@@ -33,6 +29,7 @@ import weka.classifiers.RandomizableIteratedSingleClassifierEnhancer;
 import weka.classifiers.meta.Bagging;
 import weka.core.Instance;
 import weka.core.Instances;
+import weka.experiment.InstanceQuery;
 import weka.filters.Filter;
 
 import com.quub.util.CalendarCache;
@@ -44,9 +41,14 @@ import edu.uci.ics.luci.cacophony.api.CacophonyRequestHandlerHelper;
 import edu.uci.ics.luci.cacophony.directory.nodelist.CNodeReference;
 import edu.uci.ics.luci.util.FailoverFetch;
 
-public class CNode implements Quittable{
+public class CNode implements Quittable,Serializable{
 	
-
+	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 6251847680422827405L;
+	
 	private static transient volatile Logger log = null;
 	public static Logger getLog(){
 		if(log == null){
@@ -68,45 +70,117 @@ public class CNode implements Quittable{
 	public static final Integer timeZoneIndex = 10;
 	public static final Integer waitTimeIndex = 11;
 	
-	private Map<String,Integer> timeZoneOffsets = null;
-	private Map<String,Double> maxWait = null;
+	private int timeZoneOffset;
+	private double maxWait;
 	
 	private Instance typicalInstance = null;
-	private Instances testSet = null;
+	private Instances typicalInstances = null;
+	private Instances graphingTestSet = null;    
 	private Canonicalize filter = null;
+	private Evaluation evaluation = null;
+	private Integer lastTrainingSetHash = null;
 	private RandomizableIteratedSingleClassifierEnhancer model = null;
 
 	private FailoverFetch failoverFetch;
-	private Object heartbeatLock = null;
-	private String nodeId="undefined";
-	private String nodeName="undefined";
-	private CNodePool parentPool;
-	private List<Pair<Long, String>> baseUrls;
+	private String metaCNodeGUID = null;
+	private String nodeName = null;
+	private InstanceQuery trainingQuery = null;
+	/*Warning this needs to be set when deserialized! */
+	private transient CNodePool parentPool = null;  
+	private List<Pair<Long, String>> baseUrls = null;
 	//private String config;
-	private ScheduledExecutorService scheduler = null;
 	
 	public String cNodeGuid = null;
-	public ScheduledFuture<?> heartbeatHandle;
 	private Random random = null;
 	TreeSet<String> heartbeatList = null;
 	private boolean shuttingDown = false;
 
-	public CNode(FailoverFetch failoverFetch, CNodePool parent, List<Pair<Long,String>> baseUrls){
+	/**
+	 * setFailoverFetch,setParentPool, setBaseUrls, setNodeId, and setNodeName should be called before launching
+	 */
+	public CNode(){
 		this.random = new Random();
-		this.cNodeGuid = "Batch CNode bagged IbK "+random.nextInt(Integer.MAX_VALUE);
-		this.failoverFetch = failoverFetch;
-		if(parent == null){
-			throw new IllegalArgumentException("Can't handle null parent");
-		}
-		else{
-			this.parentPool = parent;
-		}
-		
-		this.baseUrls = baseUrls;
-		this.heartbeatLock = new Object();
+	}
+	
+	public synchronized void setCNodeGuid(){
+		this.cNodeGuid = "Bagged IbK, "+getMetaCNodeGUID()+","+getNodeName()+","+random.nextInt(Integer.MAX_VALUE);
+	}
+	
+	public synchronized String getCNodeGuid() {
+		return cNodeGuid;
 	}
 
-	public void getANewConfiguration() {
+	public synchronized String getMetaCNodeGUID() {
+		return metaCNodeGUID;
+	}
+
+
+	public synchronized void setMetaCNodeGUID(String guid) {
+		this.metaCNodeGUID = guid;
+		setCNodeGuid();
+	}
+
+
+	public synchronized String getNodeName() {
+		return nodeName;
+	}
+
+
+	public synchronized void setNodeName(String nodeName) {
+		this.nodeName = nodeName;
+		setCNodeGuid();
+	}
+
+
+	public synchronized InstanceQuery getTrainingQuery() {
+		return trainingQuery;
+	}
+
+
+	public synchronized void setTrainingQuery(InstanceQuery trainingQuery) {
+		this.trainingQuery = trainingQuery;
+	}
+
+
+	public synchronized FailoverFetch getFailoverFetch() {
+		return failoverFetch;
+	}
+
+
+	public synchronized void setFailoverFetch(FailoverFetch failoverFetch) {
+		this.failoverFetch = failoverFetch;
+	}
+
+
+	public synchronized CNodePool getParentPool() {
+		return parentPool;
+	}
+
+
+	public synchronized void setParentPool(CNodePool parentPool) {
+		this.parentPool = parentPool;
+	}
+
+
+	public synchronized List<Pair<Long, String>> getBaseUrls() {
+		return baseUrls;
+	}
+
+
+	public synchronized void setBaseUrls(List<Pair<Long, String>> baseUrls) {
+		this.baseUrls = baseUrls;
+	}
+
+
+	private void setLastTrainingSetHash(int hashCode) {
+		this.lastTrainingSetHash = hashCode;
+	}
+
+	public synchronized Integer getLastTrainingSetHash() {
+		return lastTrainingSetHash;
+	}
+
+	public synchronized void getANewConfiguration() {
 		
 		try {
 
@@ -117,8 +191,23 @@ public class CNode implements Quittable{
 			JSONObject response = failoverFetch.fetchJSONObject("/node_assignment", false, params, 30 * 1000);
 			try {
 				if(response.getString("error").equals("false")){
-					this.nodeId = response.getString("node_id");
-					this.nodeName = response.getString("name");
+					this.setMetaCNodeGUID(response.getString("node_id"));
+					this.setNodeName(response.getString("name"));
+			    	InstanceQuery trainingQuery;
+			    	JSONObject configuration = response.getJSONObject("node_configuration");
+					String zid = null;
+					try {
+			    		trainingQuery = new InstanceQuery();
+			    		trainingQuery.setUsername(configuration.getString("username"));
+			    		trainingQuery.setPassword(configuration.getString("password"));
+			    		trainingQuery.setDatabaseURL("jdbc:mysql://"+configuration.getString("databaseDomain")+"/"+configuration.getString("database"));
+			    		String trainingQueryString = configuration.getString("trainingQuery");
+			    		zid = configuration.getString("node_id");
+			    		trainingQuery.setQuery(trainingQueryString.replaceAll("_NODE_ID_", zid));
+			    		this.setTrainingQuery(trainingQuery);
+					} catch (Exception e) {
+						getLog().error("Unable to load cnode training using: "+zid);
+					}
 				}
 			} catch (JSONException e) {
 				getLog().error("Problem getting configuration:"+e);
@@ -134,299 +223,101 @@ public class CNode implements Quittable{
 		}
 	}
 	
-	/**
-	 * 
-	 * @param delay How long to wait before first heartbeat goes out in milliseconds. Default is 0
-	 * @param period How often to send a heartbeat in milliseconds. Default is 5 minutes
-	 * @param metaCNodeID Some canonical name for the CNode configuration, like a restaurant id
-	 * @param urls A list of URLs with which to reference this directory with a number indicating preference order. Lower is more preferred.
-	 *  Default is just what java thinks the host address is.
-	 */
-	public void startHeartbeatAfterRequestingCNode(Long delay,Long period,String metaCNodeID, List<Pair<Long,String>> urls){
-		
-		if(delay == null){
-			delay = 0L;
-		}
-		
-		if(period == null){
-			period = FIVE_MINUTES;
-		}
-		
-		if(metaCNodeID == null){
-			metaCNodeID = "Unknown CNode";
-		}
-		
-		if(urls == null){
-			urls = new ArrayList<Pair<Long,String>>();
-		}
-		
-		final String localNamespace = parentPool.getNamespace();
-		if(localNamespace == null){
-			getLog().error("Set the namespace before starting the heartbeat");
-		}
-		
-		if(urls.size() == 0){
-			String url = null;
-			try {
-				url = InetAddress.getLocalHost().getHostAddress();
-			} catch (UnknownHostException e1) {
-				url ="127.0.0.1";
-			}
-			urls.add(new Pair<Long,String>(0L,url));
-		}
-		
-		
-	   	final JSONObject localData = new JSONObject();
-	   	try {
-			localData.put("guid",metaCNodeID);
-			localData.put("node_id",this.nodeId);
-			JSONArray servers = new JSONArray();
-			for(Pair<Long,String> x:urls){
-				JSONObject bar = new JSONObject();
-				bar.put("priority_order",x.getFirst());
-				bar.put("url",x.getSecond());
-				servers.put(bar);
-			}
-			localData.put("access_routes_for_ui", servers);
-	   	} catch (JSONException e) {
-	   		getLog().fatal("Something is wrong with JSON:"+localNamespace+"\n"+e);
-	   	}
-		
-	   	/* If we already started a heartbeat cancel it and reset */
-		synchronized(heartbeatLock){
-			if(heartbeatHandle != null){
-				while(!heartbeatHandle.isDone()){
-					heartbeatHandle.cancel(false);
-				}
-				heartbeatHandle = null;
-			}
-			if(scheduler != null){
-				scheduler.shutdown();
-				boolean done = false;
-				while(!done){
-					try {
-						done = scheduler.awaitTermination(1L,TimeUnit.SECONDS);
-					} catch (InterruptedException e) {
-					}
-				}
-			}
-	   	
-			scheduler = Executors.newScheduledThreadPool(1);
-		}
-		
-		
-		
-		
-		final Runnable beat = new Runnable() {
-			@Override
-			public void run(){
-				synchronized(heartbeatLock){
-					/* Update this nodes heartbeat */
-					String now = Long.toString(System.currentTimeMillis());
-					try {
-						localData.put("heartbeat",now);
-					} catch (JSONException e) {
-						getLog().fatal("Something is wrong with JSON:"+now+"\n"+e);
-					}
-						
-					try {
-						HashMap<String, String> params = new HashMap<String, String>();
-						params.put("version", CacophonyRequestHandlerHelper.getAPIVersion());
-						params.put("namespace", localNamespace);
-						params.put("json_data", localData.toString());
-						JSONObject response = failoverFetch.fetchJSONObject("/node_checkin", false, params, 30 * 1000);
-						try {
-							if(!response.getString("error").equals("false")){
-								getLog().error("Node check in didn't work for node:"+response.getString("error"));
-							}
-						} catch (JSONException e) {
-							getLog().fatal("Something is wrong with JSON:"+response.toString(1)+"\n"+e);
-						}
-					} catch (MalformedURLException e) {
-						getLog().warn("Bad URL when the CNode tried to check in:"+e);
-					} catch (IOException e) {
-						getLog().warn("IO Exception when the CNode tried to check in:"+e);
-					} catch (JSONException e) {
-						getLog().warn("JSON Exception when the CNode tried to check in:"+e);
-					}
-				}
-			}
-		};
-		
-		
-		heartbeatHandle = scheduler.scheduleAtFixedRate(beat, delay, period, TimeUnit.SECONDS);
-		
-		try {
-			getLog().info("Starting a CNode -> Directory heartbeat for: "+localData.toString(1));
-		} catch (JSONException e1) {
-		}
-		
-	}
 	
-	
-	public void startHeartbeatAfterModeling(){
-		startHeartbeatAfterModeling(null,null);
-	}
-	
-	
-	/**
-	 * 
-	 * @param delay How long to wait before first heartbeat goes out in milliseconds. Default is 0
-	 * @param period How often to send a heartbeat in milliseconds. Default is 5 minutes
-	 *  Default is just what java thinks the host address is.
-	 */
-	public void startHeartbeatAfterModeling(Long delay,Long period){
+	public synchronized void sendHeartbeat(){
 		
-		if(delay == null){
-			delay = 0L;
+		/* Sanity check the values */
+		if(this.getMetaCNodeGUID() == null){
+			getLog().error("Set the MetaCNodeGUID of the node before starting the heartbeat");
 		}
 		
-		if(period == null){
-			/* Minimum acceptable */
-			period = 1000L;
-			
-			int num = maxWait.keySet().size();
-			if(num == 0){
-				/* Check every five minutes to see if we've modeled anything */
-				period = FIVE_MINUTES;
-			}
-			else {
-				long proposed = FIVE_MINUTES/num;
-				if(proposed > period){
-					period = proposed;
-				}
-			}
+		if(this.getCNodeGuid() == null){
+			getLog().error("Set the CNodeGUID of the node before starting the heartbeat");
 		}
 		
-		final String localCNodeGuid = this.cNodeGuid;
-		
-		if(baseUrls == null){
-			baseUrls = new ArrayList<Pair<Long,String>>();
+		if(this.getNodeName() == null){
+			getLog().error("Set the CNode nodeName of the node before starting the heartbeat");
 		}
 		
-		final String localName = nodeName;
-		
-		final String localNamespace = parentPool.getNamespace();
-		if(localNamespace == null){
+		if(this.getParentPool().getNamespace() == null){
 			getLog().error("Set the namespace of the pool before starting the heartbeat");
 		}
 		
-		if(baseUrls.size() == 0){
+		if(this.getBaseUrls() == null){
+			this.setBaseUrls(new ArrayList<Pair<Long,String>>());
+		}
+		
+		if(this.getBaseUrls().size() == 0){
 			String url = null;
 			try {
 				url = InetAddress.getLocalHost().getHostAddress();
 			} catch (UnknownHostException e1) {
 				url ="127.0.0.1";
 			}
-			baseUrls.add(new Pair<Long,String>(0L,url));
-		}
-		final List<Pair<Long, String>> localBaseUrls = baseUrls;
-		
-		/* If we already started a heartbeat cancel it and reset */
-		synchronized(heartbeatLock){
-			if(heartbeatHandle != null){
-				while(!heartbeatHandle.isDone()){
-					heartbeatHandle.cancel(false);
-				}
-				heartbeatHandle = null;
-			}
-			if(scheduler != null){
-				scheduler.shutdown();
-				boolean done = false;
-				while(!done){
-					try {
-						done = scheduler.awaitTermination(1L,TimeUnit.SECONDS);
-					} catch (InterruptedException e) {
-					}
-				}
-			}
-	   	
-			scheduler = Executors.newScheduledThreadPool(1);
+			this.getBaseUrls().add(new Pair<Long,String>(0L,url));
 		}
 		
 		
-		final Runnable beat = new Runnable() {
-			@Override
-			public void run(){
-				synchronized(heartbeatLock){
-					if(heartbeatList == null){
-						heartbeatList = new TreeSet<String>();
-					}
-					if(heartbeatList.size() <= 0){
-						heartbeatList.addAll(maxWait.keySet());
-					}
-				
-				
-					/* Pick the heartbeat we are reporting */
-					if(heartbeatList.size() > 0){
-						CNodeReference cnr = new CNodeReference();
+		/* Build the reference to send */
+		
+		CNodeReference cnr = new CNodeReference();
 					
-						/* Set the identity */
-						String metaCNodeGuid = heartbeatList.pollFirst();
-						cnr.setMetaCNodeGuid(metaCNodeGuid);
+		/* Set the identity */
+		cnr.setMetaCNodeGuid(this.getMetaCNodeGUID());
+		cnr.setCNodeGuid(this.getCNodeGuid());
+
+		/* Update this node's heartbeat */
+		cnr.setLastHeartbeat(System.currentTimeMillis());
 					
-						cnr.setCNodeGuid(localCNodeGuid);
+		Set<Pair<Long, String>> accessRoutes = new TreeSet<Pair<Long, String>>();
 					
-						/* Update this node's heartbeat */
-						cnr.setLastHeartbeat(System.currentTimeMillis());
+		for(Pair<Long,String> x:this.getBaseUrls()){
+			try{
+				Pair<Long,String> p = new Pair<Long,String>(x.getFirst(),x.getSecond()+"/index.html?node="+URLEncoder.encode(this.getMetaCNodeGUID(),"UTF-8")+"&name="+URLEncoder.encode(this.getNodeName(),"UTF-8")+"&namespace="+URLEncoder.encode(this.getParentPool().getNamespace(),"UTF-8"));
+				accessRoutes.add(p);
+			} catch (UnsupportedEncodingException e) {
+				getLog().fatal("Something is wrong with URL Making\n"+e);
+			}
+		}
+		cnr.setAccessRoutesForUI(accessRoutes);
 					
-						Set<Pair<Long, String>> accessRoutes = new TreeSet<Pair<Long, String>>();
+		accessRoutes = new TreeSet<Pair<Long, String>>();
 					
-						for(Pair<Long,String> x:localBaseUrls){
-							try{
-								Pair<Long,String> p = new Pair<Long,String>(x.getFirst(),x.getSecond()+"/index.html?node="+URLEncoder.encode(metaCNodeGuid,"UTF-8")+"&name="+URLEncoder.encode(localName,"UTF-8")+"&namespace="+URLEncoder.encode(localNamespace,"UTF-8"));
-								accessRoutes.add(p);
-							} catch (UnsupportedEncodingException e) {
-								getLog().fatal("Something is wrong with URL Making\n"+e);
-							}
-						}
-						cnr.setAccessRoutesForUI(accessRoutes);
+		for(Pair<Long,String> x:this.getBaseUrls()){
+			try{
+				Pair<Long,String> p = new Pair<Long,String>(x.getFirst(),x.getSecond()+"/predict?version="+URLEncoder.encode(CacophonyRequestHandlerHelper.getAPIVersion(),"UTF-8")+"&namespace="+URLEncoder.encode(this.getParentPool().getNamespace(),"UTF-8")+"&node="+URLEncoder.encode(this.getMetaCNodeGUID(),"UTF-8"));
+				accessRoutes.add(p);
+				} catch (UnsupportedEncodingException e) {
+					getLog().fatal("Something is wrong with URL Making\n"+e);
+				}
+		}
+		cnr.setAccessRoutesForAPI(accessRoutes);
 					
-						accessRoutes = new TreeSet<Pair<Long, String>>();
-					
-						for(Pair<Long,String> x:localBaseUrls){
-							try{
-								Pair<Long,String> p = new Pair<Long,String>(x.getFirst(),x.getSecond()+"/predict?version="+URLEncoder.encode(CacophonyRequestHandlerHelper.getAPIVersion(),"UTF-8")+"&namespace="+URLEncoder.encode(localNamespace,"UTF-8")+"&node="+URLEncoder.encode(metaCNodeGuid,"UTF-8"));
-								accessRoutes.add(p);
-							} catch (UnsupportedEncodingException e) {
-								getLog().fatal("Something is wrong with URL Making\n"+e);
-							}
-						}
-						cnr.setAccessRoutesForAPI(accessRoutes);
-					
-						/* Send heartbeat */
-						try {
-							HashMap<String, String> params = new HashMap<String, String>();
-							params.put("version", CacophonyRequestHandlerHelper.getAPIVersion());
-							params.put("namespace", localNamespace);
-							params.put("json_data", cnr.toJSONObject().toString());
-							JSONObject response = failoverFetch.fetchJSONObject("/node_checkin", false, params, 30 * 1000);
+		/* Send heartbeat */
+		try {
+			HashMap<String, String> params = new HashMap<String, String>();
+			params.put("version", CacophonyRequestHandlerHelper.getAPIVersion());
+			params.put("namespace", this.getParentPool().getNamespace());
+			params.put("json_data", cnr.toJSONObject().toString());
+			JSONObject response = failoverFetch.fetchJSONObject("/node_checkin", false, params, 30 * 1000);
 						
-							if(response != null){
-								try {
-									if(response.getString("error").equals("true")){
-										getLog().error("Something is wrong with JSON:"+response.toString(1));
-									}
-								} catch (JSONException e) {
-									getLog().error("Something is wrong with JSON:"+response.toString(1)+"\n"+e);
-								}
-							}
-						} catch (MalformedURLException e) {
-							getLog().warn("Bad URL when the CNode tried to check in:"+e);
-						} catch (IOException e) {
-							getLog().warn("IO Exception when the CNode tried to check in:"+e);
-						}
-						catch (JSONException e) {
-							getLog().warn("JSON Exception when the CNode tried to check in:"+e);
-						}
+			if(response != null){
+				try {
+					if(response.getString("error").equals("true")){
+						getLog().error("Something is wrong with JSON:"+response.toString(1));
 					}
+				} catch (JSONException e) {
+					getLog().error("Something is wrong with JSON:"+response.toString(1)+"\n"+e);
 				}
 			}
-		};
-		 
-		heartbeatHandle = scheduler.scheduleAtFixedRate(beat, delay, period, TimeUnit.SECONDS);
-		
-		getLog().info("Starting a CNode -> Directory heartbeat for initial list of "+maxWait.size()+" nodes");
+		} catch (MalformedURLException e) {
+			getLog().warn("Bad URL when the CNode tried to check in:"+e);
+		} catch (IOException e) {
+			getLog().warn("IO Exception when the CNode tried to check in:"+e);
+		}
+		catch (JSONException e) {
+			getLog().warn("JSON Exception when the CNode tried to check in:"+e);
+		}
 	}
 	
 
@@ -435,15 +326,15 @@ public class CNode implements Quittable{
 	 * @param timesToPredict
 	 * @return
 	 */
-	protected Instances makeTestSet(String nodeToPredict, JSONArray timesToPredict) {
-		
-		if(this.getTestSet() == null){
-			getLog().error("TestSet is null. (Trying to predict without training first?)");
-			return null;
-		}
+	protected synchronized Instances makeTestSet(JSONArray timesToPredict) {
 		
 		if(typicalInstance == null){
 			getLog().error("typicalInstance is null. (Trying to predict without training first?)");
+			return null;
+		}
+		
+		if(typicalInstances == null){
+			getLog().error("typicalInstances is null. (Trying to predict without training first?)");
 			return null;
 		}
 		
@@ -455,7 +346,7 @@ public class CNode implements Quittable{
 		}
 		
 		/* Create test data set */
-	   	Instances proposedTestSet = new Instances(this.getTestSet(),0);
+	   	Instances proposedTestSet = new Instances(typicalInstances,0);
 		
 	   	try{
 	   		for(int i = 0; i < timesToPredict.length(); i++){
@@ -464,7 +355,7 @@ public class CNode implements Quittable{
 	   			Long originalTime = timesToPredict.getLong(i);
 	   			
 	   			/* Convert it to the standard and figure out the day of the week */
-	   			Long t = transformTimeForCalendar(getTimeZoneOffsets().get(nodeToPredict), originalTime);
+	   			Long t = transformTimeForCalendar(getTimeZoneOffset(), originalTime);
 	   			
 	   			Calendar calendar = CacophonyGlobals.getGlobals().getCalendar(CalendarCache.TZ_GMT);
 	   			calendar.setTimeInMillis(t);
@@ -475,7 +366,7 @@ public class CNode implements Quittable{
 	   			/* Set the fields */
 	   			Instance c = (Instance) typicalInstance.copy();
 	   			
-	   			c.setValue(zidIndex, nodeToPredict);
+	   			c.setValue(zidIndex, this.getMetaCNodeGUID());
 	   			
    				for(int k = 0;k < 7;k++){
    					if(dayOfTheWeek == k){
@@ -492,7 +383,7 @@ public class CNode implements Quittable{
    				c.setValue(epochTimeIndex,canonicalizeFilter.toCanonical(epochTimeIndex,originalTime/1000.0));
    				//c.setValue(epochTimeIndex,canonicalizeFilter.toCanonical(epochTimeIndex,System.currentTimeMillis()/1000.0));
    				
-   				c.setValue(timeZoneIndex,getTimeZoneOffsets().get(nodeToPredict));
+   				c.setValue(timeZoneIndex,getTimeZoneOffset());
    				
    				c.setValue(waitTimeIndex,canonicalizeFilter.toCanonical(waitTimeIndex,0));
    				proposedTestSet.add(c);
@@ -531,32 +422,37 @@ public class CNode implements Quittable{
 		return t;
 	}
 
-
-	public void launch(Instances trainingSet) {
-		buildModel(false,trainingSet);
-		startHeartbeatAfterModeling();
-	}
-	
-	private synchronized void setMaxWait(Map<String,Double> maxWait) {
-		HashMap<String, Double> ret = new HashMap<String,Double>();
-		ret.putAll(maxWait);
-		this.maxWait = Collections.synchronizedMap(maxWait);
-	}
-	
-	public synchronized Map<String, Integer> getTimeZoneOffsets() {
-		return timeZoneOffsets;
+	public synchronized Instances fetchTrainingSet() {
+		Instances data = null;
+		try {
+			if(trainingQuery != null){
+				data = trainingQuery.retrieveInstances();
+			}
+		} catch (Exception e) {
+			getLog().error("Unable to get training instances from database\n"+e);
+		}
+		return data;
 	}
 
-	public synchronized void setTimeZoneOffsets(Map<String, Integer> timeZoneOffsets) {
-		this.timeZoneOffsets = timeZoneOffsets;
-	}
 
-	private synchronized void setTestSet(Instances localTestSet) {
-		this.testSet = new Instances(localTestSet);
+	private synchronized void setMaxWait(double maxWait) {
+		this.maxWait = maxWait;
 	}
 	
-	public synchronized Instances getTestSet() {
-		return (this.testSet);
+	public synchronized int getTimeZoneOffset() {
+		return timeZoneOffset;
+	}
+
+	public synchronized void setTimeZoneOffset(int timeZoneOffset) {
+		this.timeZoneOffset = timeZoneOffset;
+	}
+	
+	private synchronized void setGraphingTestSet(Instances localTestSet) {
+		this.graphingTestSet = new Instances(localTestSet);
+	}
+	
+	public synchronized Instances getGraphingTestSet() {
+		return (this.graphingTestSet);
 	}
 	
 	private synchronized Canonicalize getCanonicalizeFilter() {
@@ -567,6 +463,14 @@ public class CNode implements Quittable{
 		this.filter = filter;
 	}
 	
+	private synchronized Evaluation getEvaluation() {
+		return(this.evaluation) ;
+	}
+	
+	private synchronized void setEvaluation(Evaluation evaluation) {
+		this.evaluation = evaluation;
+	}
+	
 	private synchronized void setModel(RandomizableIteratedSingleClassifierEnhancer bagging) {
 		this.model = bagging;
 		
@@ -574,28 +478,7 @@ public class CNode implements Quittable{
 	
 	
 	
-	public synchronized Map<String, TreeSet<Pair<Long, Double>>> predict(String nodeToPredict,JSONArray timesToPredict) {
-		
-		/* Check if the nodeToPredict has been seen during training */
-		if(getTestSet() == null){
-			return null;
-		}
-		
-		if(testSet.instance(0) == null){
-			return null;
-		}
-		
-		if(testSet.instance(0).attribute(0) == null){
-			return null;
-		}
-		
-		int valIndex = testSet.instance(0).attribute(0).indexOfValue(nodeToPredict);
-		if (valIndex == -1) {
-			if (testSet.instance(0).attribute(0).isNominal()) {
-				/* This node was never seen during training and we can't add it on the fly */
-				return null;
-			}
-		}
+	public synchronized Map<String, TreeSet<Pair<Long, Double>>> predict(JSONArray timesToPredict) {
 		
 		/* Check if we've got a filter */
 		if(this.getCanonicalizeFilter() == null){
@@ -606,20 +489,20 @@ public class CNode implements Quittable{
 		/* Assign the set we are testing with */
 		Instances localTestSet = null;
 		if(timesToPredict != null){
-			Instances foo = makeTestSet(nodeToPredict,timesToPredict);
+			Instances foo = makeTestSet(timesToPredict);
 			if(foo == null){
 				return null;
 			}
 			localTestSet = foo;
 		}
 		else{
-			localTestSet = getTestSet();
+			localTestSet = getGraphingTestSet();
 			
 			/* Label instances */
 			for(int i=0; i < localTestSet.numInstances(); i++){
 				/* Set restaurant to predict */
-				localTestSet.instance(i).setValue(zidIndex, nodeToPredict);
-   				localTestSet.instance(i).setValue(timeZoneIndex,getTimeZoneOffsets().get(nodeToPredict));
+				localTestSet.instance(i).setValue(zidIndex, this.getMetaCNodeGUID());
+   				localTestSet.instance(i).setValue(timeZoneIndex,getTimeZoneOffset());
 			}
 		}
 			
@@ -644,7 +527,7 @@ public class CNode implements Quittable{
 			try {
 				/* Predict and unscale*/
 				clsLabel = canonicalizeFilter.fromCanonical(waitTimeIndex, model.classifyInstance(localTestSet.instance(i)));
-				clsLabel *= maxWait.get(nodeToPredict);
+				clsLabel *= maxWait;
 				
 				/* Figure out what time that was for */
 				Long time = null;
@@ -695,114 +578,11 @@ public class CNode implements Quittable{
 		return(ret);
 	}
 
-//	public synchronized Map<String, TreeSet<Pair<Integer, Double>>> predict(String nodeToPredict) {
-//		
-//		if(testSet == null){
-//			return null;
-//		}
-//		
-//		if(filter == null){
-//			return null;
-//		}
-//		
-//		if(testSet.instance(0) == null){
-//			return null;
-//		}
-//		
-//		if(testSet.instance(0).attribute(0) == null){
-//			return null;
-//		}
-//		
-//		int valIndex = testSet.instance(0).attribute(0).indexOfValue(nodeToPredict);
-//		if (valIndex == -1) {
-//			if (testSet.instance(0).attribute(0).isNominal()) {
-//				/* This node was never seen during training and we can't add it on the fly */
-//				return null;
-//			}
-//		}
-//		
-//		HashMap<String, TreeSet<Pair<Integer, Double>>> ret = new HashMap<String, TreeSet<Pair<Integer, Double>>>();
-//		ret.put("sunday",new TreeSet<Pair<Integer,Double>>());
-//		ret.put("monday",new TreeSet<Pair<Integer,Double>>());
-//		ret.put("tuesday",new TreeSet<Pair<Integer,Double>>());
-//		ret.put("wednesday",new TreeSet<Pair<Integer,Double>>());
-//		ret.put("thursday",new TreeSet<Pair<Integer,Double>>());
-//		ret.put("friday",new TreeSet<Pair<Integer,Double>>());
-//		ret.put("saturday",new TreeSet<Pair<Integer,Double>>());
-//		
-//		/* Label instances */
-//		for(int i=0; i < testSet.numInstances(); i++){
-//			
-//			/* Set restaurant to predict */
-//			testSet.instance(i).setValue(zidIndex, nodeToPredict);
-//			
-//			double clsLabel;
-//			try {
-//				/* Predict */
-//				//clsLabel = model.classifyInstance(staticTestSet.instance(i)) * maxWait.get(nodeToPredict);
-//				clsLabel = model.classifyInstance(testSet.instance(i));
-//				
-//				/* Figure out what time that was for */
-//				double baseTime = filter.fromCanonical(minutesSinceFourIndex, testSet.instance(i).value(minutesSinceFourIndex));
-//				
-//				Integer time = Integer.valueOf((int) Math.floor(baseTime));
-//				
-//				/* Log it */
-//				Pair<Integer,Double> foo = new Pair<Integer,Double>(time,clsLabel);
-//				
-//				/* Put it in the right day */
-//				if(testSet.instance(i).value(1) == 1){
-//					ret.get("sunday").add(foo);
-//				}
-//				else if(testSet.instance(i).value(2) == 1){
-//					ret.get("monday").add(foo);
-//				}
-//				else if(testSet.instance(i).value(3) == 1){
-//					ret.get("tuesday").add(foo);
-//				}
-//				else if(testSet.instance(i).value(4) == 1){
-//					ret.get("wednesday").add(foo);
-//				}
-//				else if(testSet.instance(i).value(5) == 1){
-//					ret.get("thursday").add(foo);
-//				}
-//				else if(testSet.instance(i).value(6) == 1){
-//					ret.get("friday").add(foo);
-//				}
-//				else if(testSet.instance(i).value(7) == 1){
-//					ret.get("saturday").add(foo);
-//				}
-//			} catch (Exception e) {
-//				getLog().error("Unable to make prediction: ("+i+")");
-//			}
-//		}
-//		return(ret);
-//	}
-
 	@Override
 	public synchronized void setQuitting(boolean quitting) {
 		if(shuttingDown == false){
 			if(quitting == true){
 				shuttingDown = true;
-				synchronized(heartbeatLock){
-					if(heartbeatHandle != null){
-						while(!heartbeatHandle.isDone()){
-							heartbeatHandle.cancel(false);
-						}
-						heartbeatHandle = null;
-					}
-					if(scheduler != null){
-						scheduler.shutdown();
-						boolean done = false;
-						while(!done){
-							try {
-								done = scheduler.awaitTermination(1L,TimeUnit.SECONDS);
-							} catch (InterruptedException e) {
-							}
-						}
-						scheduler = null;
-					}
-				}
 			}
 		}
 		else{
@@ -814,8 +594,41 @@ public class CNode implements Quittable{
 			}
 		}
 	}
+	
+	public synchronized boolean modelOutdated(Instances trainingSet){
+		if((trainingSet == null) || (getLastTrainingSetHash() == null) || (getLastTrainingSetHash() != trainingSet.hashCode())){
+			return(true);
+		}
+		else{
+			return(false);
+		}
+	}
+	
+	
+	public synchronized void synchronizeWithNetwork(){
+		synchronizeWithNetwork(true,true,true,true);
+	}
+	
+	public synchronized void synchronizeWithNetwork(boolean checkForNewData, boolean rebuildModelIfNecessary, boolean testAccuracyOnSelf, boolean sendHeartbeat){
+		if(checkForNewData){
+			Instances trainingSet = fetchTrainingSet();
+			if(modelOutdated(trainingSet)){
+				if(rebuildModelIfNecessary){
+					buildModel(testAccuracyOnSelf,trainingSet);
+				}
+			}
+		}
+		if(sendHeartbeat){
+			sendHeartbeat();
+		}
+	}
 
-	public void buildModel(boolean selfEval,Instances trainingData) {
+	public synchronized void buildModel(boolean selfEval,Instances trainingData) {
+		
+		if(trainingData == null){
+			getLog().warn("Can't build a model with no training data");
+			return;
+		}
 		
 		getLog().info("Training on "+trainingData.numInstances()+" instances");
 		
@@ -856,8 +669,16 @@ public class CNode implements Quittable{
 		   	}
 	    }
 	    
-	   	setTimeZoneOffsets(localTimeZoneOffsets);
-	   	setMaxWait(localMaxWait);
+	    if(localTimeZoneOffsets.keySet().size() > 1){
+	    	getLog().fatal("Something unexpected happened.  I was only expecting training data from one zid"+localTimeZoneOffsets.keySet().toString());
+	    }
+	    
+	    if(localMaxWait.keySet().size() > 1){
+	    	getLog().fatal("Something unexpected happened.  I was only expecting training data from one zid"+localMaxWait.keySet().toString());
+	    }
+	    
+	   	setTimeZoneOffset(localTimeZoneOffsets.get(this.getMetaCNodeGUID()));
+	   	setMaxWait(localMaxWait.get(this.getMetaCNodeGUID()));
 	    
 	    /* Set the class index */
 	    trainingData.setClassIndex(waitTimeIndex);
@@ -881,34 +702,48 @@ public class CNode implements Quittable{
 			getLog().error("Unable to get filter training instances from database\n"+e);
 			return;
 		}
-		finally{
-			// Make space
-			trainingData = null;
-		}
 		
 		    
 		/* Train */
+		/* For nearest neighbor we use half the instances up to a max of 20 */
+		long nnConstant = Math.round(Math.floor(trainingData.numInstances()/2.0)+1.0);
+		if(nnConstant > 20){
+			nnConstant = 20;
+		}
+		
 		Bagging bagger = new Bagging();
 		try{
-			//bagger.setOptions(weka.core.Utils.splitOptions("-P 100 -S 1 -I 10 -W weka.classifiers.lazy.IBk -- -K 5 -W 0 -A \"weka.core.neighboursearch.KDTree -A \\\"weka.core.EuclideanDistance -R first-last\\\" -S weka.core.neighboursearch.kdtrees.SlidingMidPointOfWidestSide -W 0.01 -L 40 -N\""));
-			bagger.setOptions(weka.core.Utils.splitOptions("-P 50 -S 1 -I 10 -W weka.classifiers.lazy.IBk -- -K 20 -W 0 -I -A \"weka.core.neighboursearch.KDTree -A \\\"weka.core.EuclideanDistance -D -R 2-10\\\" -S weka.core.neighboursearch.kdtrees.SlidingMidPointOfWidestSide -W 0.01 -L 40 -N\""));
+			bagger.setOptions(weka.core.Utils.splitOptions("-P 50 -S 1 -I 10 -W weka.classifiers.lazy.IBk -- -K "+nnConstant+" -W 0 -I -A \"weka.core.neighboursearch.KDTree -A \\\"weka.core.EuclideanDistance -D -R 2-10\\\" -S weka.core.neighboursearch.kdtrees.SlidingMidPointOfWidestSide -W 0.01 -L 40 -N\""));
+		} catch (Exception e) {
+			getLog().error("Unable to build classifier\n"+e);
+			return;
+		}
+		
+		/* Evaluation must be done on an untrained classifer */
+		/* For number of folds we use 2 instances per fold up to 10 folds*/
+		int numFolds = (int) Math.round(Math.floor(trainingData.numInstances()/2.0)+1.0);
+		if(numFolds > 10){
+			numFolds = 10;
+		}
+		if(selfEval){
+			try{
+				Evaluation eval = new Evaluation(canonicalizeData);
+				eval.crossValidateModel(bagger, canonicalizeData,numFolds, this.random);
+				setEvaluation(eval);
+				getLog().info(eval.toSummaryString("\nResults\n======\n", false));
+			} catch (Exception e) {
+				getLog().error("Unable to build and evaluate classifier\n"+e);
+				return;
+			}
+		}
+		
+		try{
 			bagger.buildClassifier(canonicalizeData);   // build classifier		    
 		} catch (Exception e) {
 			getLog().error("Unable to build classifier\n"+e);
 			return;
 		}
 		    
-		if(selfEval){
-			try{
-				Evaluation eval = new Evaluation(canonicalizeData);
-				eval.evaluateModel(bagger,canonicalizeData);
-				getLog().info(eval.toSummaryString("\nResults\n======\n", false));
-			} catch (Exception e) {
-				getLog().error("Unable to self-test classifier\n"+e);
-				return;
-			}
-		}
-		
 		/* Dump a mid-pipeline copy */
 		/*
 		BufferedWriter writer = null;
@@ -945,6 +780,7 @@ public class CNode implements Quittable{
 		/* Create test data set */
 	   	Instances proposedTestSet = new Instances(canonicalizeData,0);
 		typicalInstance = canonicalizeData.instance(0);
+		typicalInstances = new Instances(canonicalizeData,0);
 		
 	   	// Make space
 	   	canonicalizeData = null;
@@ -964,8 +800,7 @@ public class CNode implements Quittable{
 	   				}
 	   				c.setValue(minutesSinceFourIndex, canonicalizeFilter.toCanonical(minutesSinceFourIndex,j));
 	   				c.setValue(epochTimeIndex,canonicalizeFilter.toCanonical(epochTimeIndex,System.currentTimeMillis()/1000.0));
-	   		    	String nodeToPredict = typicalInstance.attributeSparse(zidIndex).value((int) Math.round(typicalInstance.value(zidIndex)));
-	   				Integer tzo = getTimeZoneOffsets().get(nodeToPredict);
+	   				Integer tzo = getTimeZoneOffset();
 	   				c.setValue(timeZoneIndex,tzo);
 	   				c.setValue(waitTimeIndex,canonicalizeFilter.toCanonical(waitTimeIndex,0));
 	   				proposedTestSet.add(c);
@@ -1012,9 +847,10 @@ public class CNode implements Quittable{
 		}
 		*/
 	   	
-	   	setTestSet(proposedTestSet);
+	   	setGraphingTestSet(proposedTestSet);
 	   	setCanonicalizeFilter(canonicalizeFilter);
 	   	setModel(bagger);
+   		setLastTrainingSetHash(trainingData.hashCode());
 	}	
 
 }

@@ -1,12 +1,11 @@
 package edu.uci.ics.luci.cacophony.node;
 
-import static org.junit.Assert.fail;
-
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
@@ -16,8 +15,6 @@ import org.apache.commons.configuration.XMLPropertiesConfiguration;
 import org.apache.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import weka.core.Instances;
 
 import com.martiansoftware.jsap.FlaggedOption;
 import com.martiansoftware.jsap.JSAP;
@@ -37,6 +34,9 @@ import edu.uci.ics.luci.cacophony.CacophonyGlobals;
 import edu.uci.ics.luci.cacophony.api.HandlerVersion;
 import edu.uci.ics.luci.cacophony.api.directory.WebServerWarmUp;
 import edu.uci.ics.luci.cacophony.api.node.HandlerCNodePrediction;
+import edu.uci.ics.luci.cacophony.model.KyotoCabinet;
+import edu.uci.ics.luci.cacophony.model.KyotoCabinetVisitor;
+import edu.uci.ics.luci.cacophony.model.ModelStorage;
 import edu.uci.ics.luci.util.FailoverFetch;
 
 public class CNodePool implements Quittable{
@@ -52,38 +52,70 @@ public class CNodePool implements Quittable{
 	private FailoverFetch failoverFetch = null;
 	private String namespace = null;
 	private Long poolSize = null;
-	private List<CNode> pool = null;
 	private List<String> directoryList = null;
-	private Instances trainingSet = null;
 
+	private Object shuttingDownLock = new Object();
 	private boolean shuttingDown = false;
+	private boolean updatingActive = false;
+	private ModelStorage<String,CNode> db = null;
+	private Thread updateThread = null;
 	
-	public synchronized void setQuitting(boolean quitting) {
-		if(shuttingDown == false){
-			if(quitting == true){
-				shuttingDown = true;
-				if(pool != null){
-					for(CNode c:pool){
-						c.setQuitting(quitting);
-					}
-					pool.clear();
+	public CNodePool(ModelStorage<String,CNode> db){
+		directoryList = new ArrayList<String>();
+		this.db = db;
+		db.open(Globals.getGlobals().isTesting(),Globals.getGlobals().isTesting());
+	}
+	
+	public void setUpdatingActive(boolean active){
+		this.updatingActive = active;
+	}
+	
+	public boolean isUpdatingActive(){
+		return(this.updatingActive);
+	}
+	
+	
+
+	public void setQuitting(boolean quitting) {
+		synchronized(shuttingDownLock){
+			if(getQuitting() == false){
+				if(quitting == true){
+					shuttingDown = true;
+				}
+			}
+			else{
+				if(quitting == false){
+					getLog().fatal("Trying to undo a shutdown! Can't do that");
+				}
+				else{
+					getLog().fatal("Trying to shutdown twice! Don't do that");
 				}
 			}
 		}
-		else{
-			if(quitting == false){
-				getLog().fatal("Trying to undo a shutdown! Can't do that");
+		if(getQuitting()){
+			while(updateThread.isAlive()){
+				synchronized(updateThread){
+					updateThread.notifyAll();
+					try {
+						updateThread.join();
+					} catch (InterruptedException e) {
+					}
+				}
 			}
-			else{
-				getLog().fatal("Trying to shutdown twice! Don't do that");
+			if(db != null){
+				db.setQuitting(true);
 			}
 		}
-	}	
-	
-	
-	public CNodePool(){
-		directoryList = new ArrayList<String>();
 	}
+
+
+	
+	public boolean getQuitting(){
+		synchronized(shuttingDownLock){
+			return shuttingDown;
+		}
+	}
+	
 	
 	public String getNamespace() {
 		return namespace;
@@ -111,15 +143,21 @@ public class CNodePool implements Quittable{
 	
 	
 
-	public List<CNode> getPool() {
-		return pool;
+	public void addToPool(String id,CNode cnode){
+		if(!db.set(id, cnode)){
+			throw new RuntimeException("Unable to set ("+id+","+cnode.getMetaCNodeGUID()+") in kyotocabinet:"+db.error());
+		}
 	}
-
-
-	protected void setPool(List<CNode> pool) {
-		this.pool = pool;
+	
+	public CNode getFromPool(String id){
+		CNode c = (CNode) (db.get(id));
+		c.setParentPool(this); // The parent is transient 
+		return(c);
 	}
-
+	
+	public void removeFromPool(String id, CNode cnode){
+		db.remove(id);
+	}
 
 	
 	public FailoverFetch getFailoverFetch() {
@@ -136,98 +174,49 @@ public class CNodePool implements Quittable{
 		return directoryList;
 	}
 	
-	public Instances getTrainingSet() {
-		return trainingSet;
+	private void launchCNodePoolUpdateThread() {
+		
+		final CNodePool me = this;
+		
+		updateThread = new Thread(new Runnable(){
+			@Override
+			public void run() {
+				while(!getQuitting()){
+					me.setUpdatingActive(true);
+					Long now = System.currentTimeMillis();
+					
+					/* We don't use db.iterate here because it locks the db for any incoming REST request */
+					HashSet<String> poolKeySet = me.getPoolKeySet();
+					for(String key:poolKeySet){
+						CNode fromPool = me.getFromPool(key);
+						if(fromPool != null){
+							fromPool.synchronizeWithNetwork();
+							me.addToPool(key, fromPool);
+						}
+					}
+					me.setUpdatingActive(false);
+					
+					
+					Long elapsed = System.currentTimeMillis() - now;
+					synchronized(updateThread){
+						while ((elapsed < CNode.ONE_HOUR) && (!getQuitting())){
+							try {
+								updateThread.wait(CNode.ONE_HOUR - elapsed);
+							} catch (InterruptedException e) {
+							}
+							elapsed = System.currentTimeMillis() - now;
+						}
+					}
+				}
+			}
+		});
+		updateThread.setDaemon(false); //Force the thread to shut down cleanly
+		updateThread.setName("CNodePoolUpdater");
+		updateThread.start();
 	}
 
 
-	public void setTrainingSet(Instances trainingSet) {
-		this.trainingSet = trainingSet;
-	}
 
-
-	protected static JSAPResult parseCommandLine(String[] args) throws JSAPException {
-		JSAP jsap = new JSAP();
-		JSAPResult config = null;
-		Switch sw = null;
-		FlaggedOption fl = null;
-	        
-		try{
-			sw = new Switch("testing")
-                      .setDefault("false") 
-                      .setShortFlag('t') 
-                      .setLongFlag("testing");
-	        
-			sw.setHelp("Run in testing configuration");
-			jsap.registerParameter(sw);
-			
-			fl = new FlaggedOption("port")
-        			  .setStringParser(JSAP.INTEGER_PARSER)
-                      .setRequired(false) 
-                      .setShortFlag('p') 
-                      .setLongFlag("port");
-	        
-			fl.setHelp("Which port should I listen for REST commands on?");
-			jsap.registerParameter(fl);
-			
-			fl = new FlaggedOption("config")
-					.setStringParser(JSAP.STRING_PARSER)
-					.setDefault(""+CacophonyGlobals.CONFIG_FILENAME_DEFAULT) 
-					.setRequired(false) 
-					.setShortFlag('c') 
-					.setLongFlag("config");
-  
-			fl.setHelp("What is the name of the file with the configuation properties?");
-			jsap.registerParameter(fl);
-			
-			fl = new FlaggedOption("url.external")
-					.setStringParser(JSAP.STRING_PARSER)
-					.setRequired(false) 
-					.setShortFlag('u') 
-					.setLongFlag("url.external");
-  
-			fl.setHelp("What is the url that external web browsers can find you? (Maybe different than what the server thinks it is)");
-			jsap.registerParameter(fl);
-        
-			sw = new Switch("help")
-        			.setDefault("false") 
-        			.setShortFlag('h') 
-        			.setLongFlag("help");
-
-			sw.setHelp("Show this help message"); 
-			jsap.registerParameter(sw);
-        
-			config = jsap.parse(args);
-		}
-		catch(Exception e){
-			config=null;
-			getLog().error(e.toString());
-		}
-        
-        // check whether the command line was valid, and if it wasn't,
-        // display usage information and exit.
-        if ((config == null) || !config.success() || config.getBoolean("help")) {
-        	// print out specific error messages describing the problems
-            // with the command line, THEN print usage, THEN print full
-            // help.  This is called "beating the user with a clue stick."
-        	if(config != null){
-        		for (Iterator<?> errs = config.getErrorMessageIterator(); errs.hasNext();) {
-        			System.err.println("Error: " + errs.next());
-        		}
-        	}
-
-            System.err.println();
-            System.err.println("Usage: java " + CNodePool.class.getName());
-            System.err.println("                " + jsap.getUsage());
-            System.err.println();
-            System.err.println(jsap.getHelp());
-            System.err.println();
-            throw new InvalidParameterException("Unable to parse command line");
-        }
-
-		return config;
-	}
-	
 	public CNodePool launchCNodePool() {
 		String propertiesLocation = "cacophony.c_node_pool.properties";
 		
@@ -266,60 +255,181 @@ public class CNodePool implements Quittable{
 		
 		setNamespace(config.getString("namespace"));
 		
-		if(poolSize == null){
-			poolSize = config.getLong("pool_size");
-		}
-		setPoolSize(poolSize);
-		
 		if(directorySeed == null){
 			directorySeed = config.getString("directory_seed");
 		}
 		failoverFetch = new FailoverFetch(directorySeed,getNamespace());
 		
-		String historyLoader = config.getString("history.loader.class");
-		Class<? extends CNodeHistoryLoader> cnhl = null;
-		try {
-			 cnhl = (Class<? extends CNodeHistoryLoader>) Class.forName(historyLoader);
-		} catch(ClassCastException e){
-			getLog().error("Class does not extend CNodeHistoryLoader "+historyLoader);
-		} catch (ClassNotFoundException e) {
-			getLog().error("Unable to locate class to load nodes with "+historyLoader+"\n"+e);
+		if((config.getString("poll_for_config") != null) && (config.getString("poll_for_config").equals("true"))){
+			if(poolSize == null){
+				setPoolSize(config.getLong("pool_size"));
+			}
+			else{
+				setPoolSize(poolSize);
+			}
+				
+			for(int i = 0; i< getPoolSize(); i++){
+				CNode c = new CNode();
+				c.setFailoverFetch(failoverFetch);
+				c.setParentPool(this);
+				c.setBaseUrls(accessRoutes);
+				c.getANewConfiguration();
+				c.synchronizeWithNetwork(true,true,true,false);
+				addToPool(c.getMetaCNodeGUID(),c);
+			}
 		}
-		
-		if( cnhl != null){
-			String historyLoaderClassOptions = config.getString("history.loader.class.options");
+		else{
+			String cNodeLoader = config.getString("cnode.loader.class");
+			Class<? extends CNodeLoader> cnhl = null;
 			try {
-				JSONObject hlcOptions = new JSONObject(historyLoaderClassOptions);
-				CNodeHistoryLoader i = null;
+				cnhl = (Class<? extends CNodeLoader>) Class.forName(cNodeLoader);
+			} catch(ClassCastException e){
+				getLog().error("Class does not extend CNodeHistoryLoader "+cNodeLoader);
+			} catch (ClassNotFoundException e) {
+				getLog().error("Unable to locate class to load nodes with "+cNodeLoader+"\n"+e);
+			}
+		
+			List<CNode> cNodes = null;
+			if( cnhl != null){
+				String cNodeLoaderClassOptions = config.getString("cnode.loader.class.options");
 				try {
-					i = cnhl.newInstance();
-					i.init(hlcOptions);
-					trainingSet = i.loadCNodeHistory();
-				} catch (InstantiationException e) {
-					getLog().error("Unable to instantiate class to load nodes with "+historyLoader+"\n"+e);
-				} catch (IllegalAccessException e) {
-					getLog().error("Unable to instantiate class to load nodes with "+historyLoader+"\n"+e);
-				}
-			} catch (JSONException e) {
-				getLog().error("Property file does not contain valid json\n"+historyLoaderClassOptions+"\n"+e);
-			}
-			finally{}
-		}
-		
-		
-		setPool(new ArrayList<CNode>());
-		for(int i = 0; i< poolSize; i++){
-			CNode c = new CNode(failoverFetch,this,accessRoutes);
-			if(config.getString("poll_for_config") != null){
-				if(config.getString("poll_for_config").equals("true")){
-					c.getANewConfiguration();
+					JSONObject hlcOptions = new JSONObject(cNodeLoaderClassOptions);
+					CNodeLoader i = null;
+					try {
+						i = cnhl.newInstance();
+						i.init(hlcOptions);
+						cNodes = i.loadCNodes(this,failoverFetch,accessRoutes);
+					} catch (InstantiationException e) {
+						getLog().error("Unable to instantiate class to load nodes with "+cNodeLoader+"\n"+e);
+					} catch (IllegalAccessException e) {
+						getLog().error("Unable to instantiate class to load nodes with "+cNodeLoader+"\n"+e);
+					}
+				} catch (JSONException e) {
+					getLog().error("Property file does not contain valid json\n"+cNodeLoaderClassOptions+"\n"+e);
 				}
 			}
-			c.launch(trainingSet);
-			getPool().add(c);
+			
+			if(cNodes != null){
+				for(CNode c: cNodes){
+					c.synchronizeWithNetwork(true,true,true,false);
+					addToPool(c.getMetaCNodeGUID(),c);
+				}
+			}
+			
+			if(poolSize != null){
+				getLog().error("PoolSize should be null if you are using local config to load the pool");
+			}
+			else{
+				setPoolSize((long) cNodes.size());
+			}
+			
 		}
+		
+		launchCNodePoolUpdateThread();
+		
 		return(this);
 	}
+	
+	
+	static class CNodePoolKeySetVisitor extends KyotoCabinetVisitor<String, CNode>{
+		
+		public HashSet<String> keySet = new HashSet<String>();
+		
+		@Override
+		public Pair<Response, CNode> visit_full(String key, CNode c) {
+			keySet.add(key);
+			return new Pair<Response,CNode>(KyotoCabinetVisitor.Response.NOP,null);
+		}
+	 }
+	
+	public HashSet<String> getPoolKeySet(){
+		CNodePoolKeySetVisitor v = new CNodePoolKeySetVisitor();
+		db.iterate(v,true);
+		return(v.keySet);
+	}
+	
+	protected static JSAPResult parseCommandLine(String[] args) throws JSAPException {
+		JSAP jsap = new JSAP();
+		JSAPResult config = null;
+		Switch sw = null;
+		FlaggedOption fl = null;
+	        
+		try{
+			sw = new Switch("testing")
+	                  .setDefault("false") 
+	                  .setShortFlag('t') 
+	                  .setLongFlag("testing");
+	        
+			sw.setHelp("Run in testing configuration");
+			jsap.registerParameter(sw);
+			
+			fl = new FlaggedOption("port")
+	    			  .setStringParser(JSAP.INTEGER_PARSER)
+	                  .setRequired(false) 
+	                  .setShortFlag('p') 
+	                  .setLongFlag("port");
+	        
+			fl.setHelp("Which port should I listen for REST commands on?");
+			jsap.registerParameter(fl);
+			
+			fl = new FlaggedOption("config")
+					.setStringParser(JSAP.STRING_PARSER)
+					.setDefault(""+CacophonyGlobals.CONFIG_FILENAME_DEFAULT) 
+					.setRequired(false) 
+					.setShortFlag('c') 
+					.setLongFlag("config");
+	
+			fl.setHelp("What is the name of the file with the configuation properties?");
+			jsap.registerParameter(fl);
+			
+			fl = new FlaggedOption("url.external")
+					.setStringParser(JSAP.STRING_PARSER)
+					.setRequired(false) 
+					.setShortFlag('u') 
+					.setLongFlag("url.external");
+	
+			fl.setHelp("What is the url that external web browsers can find you? (Maybe different than what the server thinks it is)");
+			jsap.registerParameter(fl);
+	    
+			sw = new Switch("help")
+	    			.setDefault("false") 
+	    			.setShortFlag('h') 
+	    			.setLongFlag("help");
+	
+			sw.setHelp("Show this help message"); 
+			jsap.registerParameter(sw);
+	    
+			config = jsap.parse(args);
+		}
+		catch(Exception e){
+			config=null;
+			getLog().error(e.toString());
+		}
+	    
+	    // check whether the command line was valid, and if it wasn't,
+	    // display usage information and exit.
+	    if ((config == null) || !config.success() || config.getBoolean("help")) {
+	    	// print out specific error messages describing the problems
+	        // with the command line, THEN print usage, THEN print full
+	        // help.  This is called "beating the user with a clue stick."
+	    	if(config != null){
+	    		for (Iterator<?> errs = config.getErrorMessageIterator(); errs.hasNext();) {
+	    			System.err.println("Error: " + errs.next());
+	    		}
+	    	}
+	
+	        System.err.println();
+	        System.err.println("Usage: java " + CNodePool.class.getName());
+	        System.err.println("                " + jsap.getUsage());
+	        System.err.println();
+	        System.err.println(jsap.getHelp());
+	        System.err.println();
+	        throw new InvalidParameterException("Unable to parse command line");
+	    }
+	
+		return config;
+	}
+
 
 
 	public static void main(String[] args) {
@@ -391,7 +501,7 @@ public class CNodePool implements Quittable{
 		
 		String directorySeed = getConfig(clo,g.getConfig(),"directory_seed");
 
-		CNodePool cNPool = new CNodePool();
+		CNodePool cNPool = new CNodePool(new KyotoCabinet<String, CNode>());
 		cNPool.launchCNodePool(config,1L,directorySeed,urls);
 		Globals.getGlobals().addQuittables(cNPool);
 		
@@ -402,7 +512,7 @@ public class CNodePool implements Quittable{
 			HandlerAbstract handler =  new HandlerVersion();
 			requestHandlerRegistry.put("",handler);
 			requestHandlerRegistry.put("version",handler);
-			requestHandlerRegistry.put("predict",new HandlerCNodePrediction(cNPool.getPool().get(0)));
+			requestHandlerRegistry.put("predict",new HandlerCNodePrediction(cNPool));
 			requestHandlerRegistry.put(null, new HandlerFileServer(edu.uci.ics.luci.cacophony.CacophonyGlobals.class,"/wwwNode/"));
 			
 			RequestDispatcher requestDispatcher = new RequestDispatcher(requestHandlerRegistry);
@@ -410,7 +520,7 @@ public class CNodePool implements Quittable{
 			ws.start();
 			Globals.getGlobals().addQuittables(ws);
 		} catch (RuntimeException e) {
-			fail("Couldn't start webserver"+e);
+			getLog().fatal("Couldn't start webserver"+e);
 		}
 		
 		

@@ -17,10 +17,13 @@ import java.util.TreeMap;
 import me.prettyprint.cassandra.serializers.LongSerializer;
 import me.prettyprint.cassandra.serializers.StringSerializer;
 import me.prettyprint.cassandra.service.KeyIterator;
+import me.prettyprint.cassandra.service.OperationType;
 import me.prettyprint.cassandra.service.template.ColumnFamilyResult;
 import me.prettyprint.cassandra.service.template.ColumnFamilyUpdater;
 import me.prettyprint.cassandra.service.template.ThriftColumnFamilyTemplate;
 import me.prettyprint.hector.api.Cluster;
+import me.prettyprint.hector.api.ConsistencyLevelPolicy;
+import me.prettyprint.hector.api.HConsistencyLevel;
 import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.exceptions.HectorException;
 import me.prettyprint.hector.api.factory.HFactory;
@@ -101,6 +104,9 @@ public class Directory implements Quittable{
 		if(shuttingDown == false){
 			if(quitting == true){
 				shuttingDown = true;
+				if(heartbeat!= null){
+					heartbeat.cancel();
+				}
 			}
 		}
 		else{
@@ -112,6 +118,28 @@ public class Directory implements Quittable{
 			}
 		}
 	}	
+	
+	
+	static final class MyConsistencyLevel implements ConsistencyLevelPolicy {
+
+		@Override
+		public HConsistencyLevel get(OperationType op) {
+		   switch (op){
+		      case READ:return HConsistencyLevel.QUORUM;
+		      case WRITE: return HConsistencyLevel.QUORUM;
+		      default: return HConsistencyLevel.QUORUM; //Just in Case
+		   }
+		}
+		@Override
+		public HConsistencyLevel get(OperationType op, String cfName) {
+		   switch (op){
+		      case READ:return HConsistencyLevel.QUORUM;
+		      case WRITE: return HConsistencyLevel.QUORUM;
+		      default: return HConsistencyLevel.QUORUM; //Just in Case
+		   }
+		}
+		
+	}
 
 	
 	
@@ -139,6 +167,7 @@ public class Directory implements Quittable{
 		if (ksp == null) {
 			throw new RuntimeException("Unable to find keyspace");
 		}
+		ksp.setConsistencyLevelPolicy(new MyConsistencyLevel());
 		
 		stringSerializer = StringSerializer.get();
 		if (stringSerializer == null) {
@@ -270,6 +299,10 @@ public class Directory implements Quittable{
 			    	
 					@Override
 			    	public void run(){
+						if(shuttingDown){
+							heartbeat.cancel();
+							return;
+						}
 						/* Update this nodes heartbeat */
 			    		ColumnFamilyUpdater<String, String> updater = directoryServerTemplate.createUpdater(localGUID);
 			    		String now = Long.toString(System.currentTimeMillis());
@@ -413,6 +446,32 @@ public class Directory implements Quittable{
 						}
 					}
 					}, delay, period);
+	}
+	
+	/**
+	 * This will remove all directory servers from the backing store.
+	 * This is an immediate removal unlike the normal scrubbing that a directory does based on heartbeats that aren't refreshed.
+	 * This is really only intended to be used when doing tests
+	 */
+	public void removeAllServers(){
+		//while(getServers().size() > 0){
+			KeyIterator<String> keyIterator = new KeyIterator<String>(ksp, DIRECTORY_SERVER_CF,stringSerializer);
+		
+			for(String keyI: keyIterator){
+				try {
+					System.out.println("Removing: "+keyI);
+					directoryServerTemplate.deleteRow(keyI);
+				} catch (HectorException e) {
+					getLog().error("Problem getting a Directory Server List:\n"+e);
+				}
+			}
+		
+		//	try {
+		//		Thread.sleep(1000);
+		//	} catch (InterruptedException e) {
+		//	}
+		//}
+		
 	}
 	
 	

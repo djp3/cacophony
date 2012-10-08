@@ -31,12 +31,19 @@ public class WebServerWarmUpTest {
 
 
 	@BeforeClass
-	public static void setUpClass() throws Exception {
+	public static void setUpBeforeClass() throws Exception {
+		while(Globals.getGlobals() != null){
+			try{
+				Thread.sleep(1000);
+			}
+			catch(InterruptedException e){
+			}
+		}
 		Globals.setGlobals(new GlobalsTest());
 	}
 
 	@AfterClass
-	public static void tearDownClass() throws Exception {
+	public static void tearDownAfterClass() throws Exception {
 		Globals.getGlobals().setQuitting(true);
 		Globals.setGlobals(null);
 	}

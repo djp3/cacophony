@@ -13,7 +13,7 @@ import com.quub.util.Pair;
 import com.quub.webserver.HandlerAbstract;
 import com.quub.webserver.RequestDispatcher.HTTPRequest;
 
-import edu.uci.ics.luci.cacophony.node.CNode;
+import edu.uci.ics.luci.cacophony.node.CNodePool;
 
 
 public class HandlerCNodePrediction extends NodeRequestHandlerHelper {
@@ -27,15 +27,15 @@ public class HandlerCNodePrediction extends NodeRequestHandlerHelper {
 		return log;
 	}
 
-	private CNode cNode = null;
+	private CNodePool cnp = null;
 	
-	public HandlerCNodePrediction(CNode cNode) {
-		this.cNode = cNode;
+	public HandlerCNodePrediction(CNodePool cnp) {
+		this.cnp = cnp;
 	}
 	
 	@Override
 	public HandlerCNodePrediction copy() {
-		return new HandlerCNodePrediction(this.cNode);
+		return new HandlerCNodePrediction(this.cnp);
 	}
 
 	@Override
@@ -60,7 +60,7 @@ public class HandlerCNodePrediction extends NodeRequestHandlerHelper {
 			if(_timesToPredict != null){
 				try {
 					JSONArray timesToPredict = new JSONArray(_timesToPredict);
-					prediction = cNode.predict(nodeToPredict,timesToPredict);
+					prediction = cnp.getFromPool(nodeToPredict).predict(timesToPredict);
 				} catch (JSONException e) {
 					getLog().error("Unable to parse JSON for times:"+_timesToPredict);
 					errors.put("Unable to parse JSON for times:"+_timesToPredict);
@@ -68,7 +68,7 @@ public class HandlerCNodePrediction extends NodeRequestHandlerHelper {
 			}
 			else{
 				/* Day of the week -> <time since 4am, wait time>*/
-				prediction = cNode.predict(nodeToPredict,null);
+				prediction = cnp.getFromPool(nodeToPredict).predict(null);
 			}
 			
 			if(prediction != null){

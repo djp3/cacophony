@@ -1,6 +1,8 @@
 package edu.uci.ics.luci.util;
 
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -21,8 +23,12 @@ import com.quub.webserver.WebUtil;
 
 import edu.uci.ics.luci.cacophony.api.CacophonyRequestHandlerHelper;
 
-public class FailoverFetch {
+public class FailoverFetch implements Serializable{
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -5315766361652027469L;
 	private static transient volatile Logger log = null;
 	public static Logger getLog(){
 		if(log == null){
@@ -31,8 +37,12 @@ public class FailoverFetch {
 		return log;
 	}
 	
+	public static void setLog(){
+		log = null;
+	}
+	
 	/* Number of times the URL has failed and the URL like "localhost:1776" */
-	Object dspLock = new Object();
+	transient Object dspLock = new Object();
 	Map<String,Long> directoryServerPool = null;
 	
 	FailoverFetch(){
@@ -242,5 +252,12 @@ public class FailoverFetch {
 		}
 		
 	}
+	
+	private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+
+        setLog();
+        dspLock = new Object();
+    }
 
 }

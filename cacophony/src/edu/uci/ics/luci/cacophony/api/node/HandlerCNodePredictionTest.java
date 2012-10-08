@@ -11,6 +11,7 @@ import java.net.MalformedURLException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 import org.apache.commons.configuration.ConfigurationException;
@@ -43,6 +44,7 @@ import edu.uci.ics.luci.cacophony.api.directory.HandlerNodeAssignment;
 import edu.uci.ics.luci.cacophony.api.directory.HandlerNodeCheckin;
 import edu.uci.ics.luci.cacophony.api.directory.HandlerNodeList;
 import edu.uci.ics.luci.cacophony.directory.Directory;
+import edu.uci.ics.luci.cacophony.model.KyotoCabinet;
 import edu.uci.ics.luci.cacophony.node.CNode;
 import edu.uci.ics.luci.cacophony.node.CNodePool;
 
@@ -57,12 +59,19 @@ public class HandlerCNodePredictionTest {
 
 
 	@BeforeClass
-	public static void setUpClass() throws Exception {
+	public static void setUpBeforeClass() throws Exception {
+		while(Globals.getGlobals() != null){
+			try{
+				Thread.sleep(1000);
+			}
+			catch(InterruptedException e){
+			}
+		}
 		Globals.setGlobals(new GlobalsTest());
 	}
 
 	@AfterClass
-	public static void tearDownClass() throws Exception {
+	public static void tearDownAfterClass() throws Exception {
 		Globals.getGlobals().setQuitting(true);
 		Globals.setGlobals(null);
 	}
@@ -95,8 +104,9 @@ public class HandlerCNodePredictionTest {
 			
 			RequestDispatcher requestDispatcher = new RequestDispatcher(requestHandlerRegistry);
 			ws = new WebServer(requestDispatcher, port, false, new AccessControl());
-			ws .start();
+			ws.start();
 			Globals.getGlobals().addQuittables(ws);
+			
 		} catch (RuntimeException e) {
 			fail("Couldn't start webserver"+e);
 		}
@@ -104,7 +114,7 @@ public class HandlerCNodePredictionTest {
 	}
 	
 	
-	private WebServer startAWebServerForNode(int port,CNode c) {
+	private WebServer startAWebServerForPool(int port,CNodePool cnp) {
 		WebServer ws = null;
 		try {
 			HashMap<String, HandlerAbstract> requestHandlerRegistry = new HashMap<String,HandlerAbstract>();
@@ -112,13 +122,14 @@ public class HandlerCNodePredictionTest {
 			requestHandlerRegistry.put("",handler);
 			requestHandlerRegistry.put("version",handler);
 			requestHandlerRegistry.put("shutdown",new HandlerShutdown());
-			requestHandlerRegistry.put("predict",new HandlerCNodePrediction(c));
+			requestHandlerRegistry.put("predict",new HandlerCNodePrediction(cnp));
 			requestHandlerRegistry.put(null, new HandlerFileServer(edu.uci.ics.luci.cacophony.CacophonyGlobals.class,"/wwwNode/"));
 			
 			RequestDispatcher requestDispatcher = new RequestDispatcher(requestHandlerRegistry);
 			ws = new WebServer(requestDispatcher, port, false, new AccessControl());
 			ws.start();
 			Globals.getGlobals().addQuittables(ws);
+			
 		} catch (RuntimeException e) {
 			fail("Couldn't start webserver"+e);
 		}
@@ -183,17 +194,17 @@ public class HandlerCNodePredictionTest {
 		baseUrls.add(new Pair<Long,String>(0L,url+":"+workingPort));
 		
 
-		String configFileName = "src/edu/uci/ics/luci/cacophony/CNodeTest.cacophony.c_node_pool.properties";
+		String configFileName = "src/edu/uci/ics/luci/cacophony/CNodeTest.cacophony.c_node_pool.load_nodes.properties";
 		XMLPropertiesConfiguration config = null;
 		try {
 			config = new XMLPropertiesConfiguration(configFileName);
 		} catch (ConfigurationException e2) {
-			fail("Unable to use requested configuration file:"+configFileName);
+			fail("Unable to use requested configuration file:"+configFileName+"\n"+e2);
 		}
 		config.setProperty("namespace", d.getDirectoryNamespace());
-		CNodePool cNPool = new CNodePool().launchCNodePool(config,null,null,baseUrls);
+		CNodePool cNPool = new CNodePool(new KyotoCabinet<String,CNode>()).launchCNodePool(config,null,null,baseUrls);
 		assertTrue(cNPool != null);
-		startAWebServerForNode(workingPort,cNPool.getPool().get(0));
+		startAWebServerForPool(workingPort,cNPool);
 		Globals.getGlobals().addQuittables(cNPool);
 		
 		
@@ -203,7 +214,9 @@ public class HandlerCNodePredictionTest {
 			HashMap<String, String> params = new HashMap<String, String>();
 			params.put("version", CacophonyRequestHandlerHelper.getAPIVersion());
 			params.put("namespace", d.getDirectoryNamespace());
-			params.put("node", cNPool.getPool().get(0).getTestSet().attribute(0).value(0)+"");
+			HashSet<String> poolKeySet = cNPool.getPoolKeySet();
+			String key = poolKeySet.iterator().next();
+			params.put("node", cNPool.getFromPool(key).getGraphingTestSet().attribute(0).value(0)+"");
 
 			responseString = WebUtil.fetchWebPage("http://localhost:" + workingPort + "/predict", false, params, 60 * 1000);
 		} catch (MalformedURLException e) {
@@ -228,7 +241,7 @@ public class HandlerCNodePredictionTest {
 				fail("No error code:"+e);
 			}
 		} catch (JSONException e) {
-			fail("Bad JSON Response:"+e);
+			fail("Bad JSON Response:"+responseString+"\n"+e);
 		}
 		
 		
@@ -241,7 +254,9 @@ public class HandlerCNodePredictionTest {
 			HashMap<String, String> params = new HashMap<String, String>();
 			params.put("version", CacophonyRequestHandlerHelper.getAPIVersion());
 			params.put("namespace", d.getDirectoryNamespace());
-			params.put("node", cNPool.getPool().get(0).getTestSet().attribute(0).value(0)+"");
+			HashSet<String> poolKeySet = cNPool.getPoolKeySet();
+			String key = poolKeySet.iterator().next();
+			params.put("node", cNPool.getFromPool(key).getGraphingTestSet().attribute(0).value(0)+"");
 			JSONArray times = new JSONArray();
 			times.put(testString);
 			params.put("times", times.toString());

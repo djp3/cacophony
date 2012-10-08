@@ -54,6 +54,13 @@ public class DirectoryTest {
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
+		while(Globals.getGlobals() != null){
+			try{
+				Thread.sleep(1000);
+			}
+			catch(InterruptedException e){
+			}
+		}
 		Globals.setGlobals(new GlobalsTest());
 	}
 

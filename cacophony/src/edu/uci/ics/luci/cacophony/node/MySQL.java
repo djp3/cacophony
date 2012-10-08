@@ -1,5 +1,8 @@
 package edu.uci.ics.luci.cacophony.node;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -8,9 +11,16 @@ import weka.core.Instances;
 import weka.experiment.InstanceQuery;
 
 import com.quub.Globals;
+import com.quub.util.Pair;
 
-public class MySQL extends CNodeHistoryLoader{
+import edu.uci.ics.luci.util.FailoverFetch;
+
+public class MySQL extends CNodeLoader{
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -30178893631678570L;
 	private transient volatile Logger log = null;
 	public Logger getLog(){
 		if(log == null){
@@ -19,7 +29,12 @@ public class MySQL extends CNodeHistoryLoader{
 		return log;
 	}
 
-	private InstanceQuery query;
+	private InstanceQuery idQuery;
+	private String username;
+	private String password;
+	private String databaseDomain;
+	private String database;
+	private String trainingQueryString;
 	private boolean error;
 	
 	public MySQL(){
@@ -34,7 +49,7 @@ public class MySQL extends CNodeHistoryLoader{
 			getLog().error("Globals is null");
 			error = true;
 		}
-		String databaseDomain = null;
+		
 		try {
 			databaseDomain = options.getString("server_address");
 		} catch (JSONException e) {
@@ -43,7 +58,7 @@ public class MySQL extends CNodeHistoryLoader{
 			getLog().error("Unable to get the \"server_address\"");
 			error = true;
 		}
-		String database = null;
+		
 		try {
 			database = options.getString("database");
 		} catch (JSONException e) {
@@ -52,7 +67,7 @@ public class MySQL extends CNodeHistoryLoader{
 			getLog().error("Unable to get the \"database\"");
 			error = true;
 		}
-		String username=null;
+		
 		try {
 			username = options.getString("user");
 		} catch (JSONException e) {
@@ -61,7 +76,7 @@ public class MySQL extends CNodeHistoryLoader{
 			getLog().error("Unable to get the \"user\"");
 			error = true;
 		}
-		String password=null;
+		
 		try {
 			password = options.getString("password");
 		} catch (JSONException e) {
@@ -70,28 +85,38 @@ public class MySQL extends CNodeHistoryLoader{
 			getLog().error("Unable to get the \"password\"");
 			error = true;
 		}
-		String historyQuery=null;
+		
+		String nodeQueryString=null;
 		try {
-			historyQuery = options.getString("historyQuery");
+			nodeQueryString = options.getString("nodeQuery");
 		} catch (JSONException e) {
 		}
-		if(historyQuery == null){
-			getLog().error("Unable to get the \"historyQuery\"");
+		if(nodeQueryString == null){
+			getLog().error("Unable to get the \"nodeQuery\"");
+			error = true;
+		}
+		
+		try {
+			trainingQueryString = options.getString("trainingQuery");
+		} catch (JSONException e) {
+		}
+		if(trainingQueryString == null){
+			getLog().error("Unable to get the \"trainingQuery\"");
 			error = true;
 		}
 		
 		if(!error){
 			try {
-				query = new InstanceQuery();
-				query.setUsername(username);
-				query.setPassword(password);
-				query.setDatabaseURL("jdbc:mysql://"+databaseDomain+"/"+database);
-				query.setQuery(historyQuery);
+				idQuery = new InstanceQuery();
+				idQuery.setUsername(username);
+				idQuery.setPassword(password);
+				idQuery.setDatabaseURL("jdbc:mysql://"+databaseDomain+"/"+database);
+				idQuery.setQuery(nodeQueryString);
 			} catch (Exception e) {
 				try {
-					getLog().error("Unable to load history using: "+options.toString(1));
+					getLog().error("Unable to load cnodes using: "+options.toString(1));
 				} catch (JSONException e1) {
-					getLog().error("Unable to load history in "+this.getClass().getCanonicalName());
+					getLog().error("Unable to load cnodes in "+this.getClass().getCanonicalName());
 				}
 			}
 		}
@@ -99,14 +124,37 @@ public class MySQL extends CNodeHistoryLoader{
 
 
 	@Override
-	public Instances loadCNodeHistory() {
+	public List<CNode> loadCNodes(CNodePool parent, FailoverFetch failoverFetch, List<Pair<Long, String>> baseUrls) {
+		List<CNode> ret = new ArrayList<CNode>();
 		Instances data = null;
 		try {
-			data = query.retrieveInstances();
+			data = idQuery.retrieveInstances();
+			for(int i = 0; i< data.numInstances(); i++){
+		    	String zid = data.instance(i).attributeSparse(0).value((int) Math.round(data.instance(i).value(0)));
+		    	String name = data.instance(i).attributeSparse(1).value((int) Math.round(data.instance(i).value(1)));
+		    	CNode c = new CNode();
+		    	c.setFailoverFetch(failoverFetch);
+		    	c.setParentPool(parent);
+		    	c.setBaseUrls(baseUrls);
+		    	c.setMetaCNodeGUID(zid);
+		    	c.setNodeName(name);
+		    	
+		    	InstanceQuery trainingQuery;
+				try {
+		    		trainingQuery = new InstanceQuery();
+		    		trainingQuery.setUsername(username);
+		    		trainingQuery.setPassword(password);
+		    		trainingQuery.setDatabaseURL("jdbc:mysql://"+databaseDomain+"/"+database);
+		    		trainingQuery.setQuery(trainingQueryString.replaceAll("_NODE_ID_", zid));
+		    		c.setTrainingQuery(trainingQuery);
+				} catch (Exception e) {
+					getLog().error("Unable to load cnode training using: "+zid);
+				}
+				ret.add(c);
+			}
 		} catch (Exception e) {
 			getLog().error("Unable to get training instances from database\n"+e);
 		}
-		return data;
+		return ret;
 	}
-
 }

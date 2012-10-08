@@ -4,12 +4,12 @@ import java.util.HashSet;
 import java.util.Set;
 
 import weka.core.Capabilities;
+import weka.core.Capabilities.Capability;
 import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.RevisionUtils;
 import weka.core.SparseInstance;
 import weka.core.Utils;
-import weka.core.Capabilities.Capability;
 import weka.filters.Sourcable;
 import weka.filters.UnsupervisedFilter;
 import weka.filters.unsupervised.attribute.PotentialClassIgnorer;
@@ -33,7 +33,7 @@ import weka.filters.unsupervised.attribute.PotentialClassIgnorer;
  */
 public class Canonicalize 
 	extends PotentialClassIgnorer 
-	implements UnsupervisedFilter, Sourcable {
+	implements UnsupervisedFilter, Sourcable{
   
 	/** for serialization */
 	private static final long serialVersionUID = -4781283536482814912L;
