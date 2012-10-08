@@ -43,6 +43,7 @@ import edu.uci.ics.luci.cacophony.api.directory.HandlerNodeCheckin;
 import edu.uci.ics.luci.cacophony.api.directory.HandlerNodeList;
 import edu.uci.ics.luci.cacophony.api.node.HandlerCNodePrediction;
 import edu.uci.ics.luci.cacophony.directory.Directory;
+import edu.uci.ics.luci.cacophony.model.KyotoCabinet;
 import edu.uci.ics.luci.cacophony.node.CNode;
 import edu.uci.ics.luci.cacophony.node.CNodePool;
 import edu.uci.ics.luci.util.PopUpWindow;
@@ -59,6 +60,14 @@ public class SystemTest {
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
+		while(Globals.getGlobals() != null){
+			try{
+				Thread.sleep(1000);
+			}
+			catch(InterruptedException e){
+			}
+		}
+		Globals.setGlobals(new GlobalsTest());
 	}
 
 	@AfterClass
@@ -93,7 +102,7 @@ public class SystemTest {
 			
 			RequestDispatcher requestDispatcher = new RequestDispatcher(requestHandlerRegistry);
 			ws = new WebServer(requestDispatcher, port, false, new AccessControl());
-			ws .start();
+			ws.start();
 			Globals.getGlobals().addQuittables(ws);
 		} catch (RuntimeException e) {
 			fail("Couldn't start webserver"+e);
@@ -101,7 +110,8 @@ public class SystemTest {
 		return ws;
 	}
 	
-	private WebServer startAWebServerForNode(int port,CNode c) {
+	
+	private WebServer startAWebServerForPool(int port,CNodePool cnp) {
 		WebServer ws = null;
 		try {
 			HashMap<String, HandlerAbstract> requestHandlerRegistry = new HashMap<String,HandlerAbstract>();
@@ -109,7 +119,7 @@ public class SystemTest {
 			requestHandlerRegistry.put("",handler);
 			requestHandlerRegistry.put("version",handler);
 			requestHandlerRegistry.put("shutdown",new HandlerShutdown());
-			requestHandlerRegistry.put("predict",new HandlerCNodePrediction(c));
+			requestHandlerRegistry.put("predict",new HandlerCNodePrediction(cnp));
 			requestHandlerRegistry.put(null, new HandlerFileServer(edu.uci.ics.luci.cacophony.CacophonyGlobals.class,"/wwwNode/"));
 			
 			RequestDispatcher requestDispatcher = new RequestDispatcher(requestHandlerRegistry);
@@ -180,6 +190,10 @@ public class SystemTest {
 		pathsToDirectoryB = new Pair<Long,String>(1L,"foobarB.com");
 		urlsB.add(pathsToDirectoryB);
 		
+		/* Clean up anything left over */
+		directoryA.removeAllServers();
+		directoryB.removeAllServers();
+		
 		/* Start reporting heartbeats */
 		directoryA.startHeartbeat(guidA,urlsA);
 		directoryB.startHeartbeat(guidB,urlsB);
@@ -223,9 +237,15 @@ public class SystemTest {
 		} catch (ConfigurationException e2) {
 			fail("Unable to use requested configuration file:"+configFileName);
 		}
-		CNodePool cNPoolA = new CNodePool().launchCNodePool(config,null,null,baseUrls);
+		CNodePool cNPoolA = new CNodePool(new KyotoCabinet<String,CNode>("fileA")).launchCNodePool(config,null,null,baseUrls);
 		assertTrue(cNPoolA != null);
 		Globals.getGlobals().addQuittables(cNPoolA);
+		while(cNPoolA.isUpdatingActive()){
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+			}
+		}
 		
 		
 		/*Start the second one */
@@ -245,13 +265,13 @@ public class SystemTest {
 		} catch (ConfigurationException e2) {
 			fail("Unable to use requested configuration file:"+configFileName);
 		}
-		CNodePool cNPoolB = new CNodePool().launchCNodePool(config,null,null,baseUrls);
+		CNodePool cNPoolB = new CNodePool(new KyotoCabinet<String,CNode>("fileB")).launchCNodePool(config,null,null,baseUrls);
 		assertTrue(cNPoolB != null);
 		Globals.getGlobals().addQuittables(cNPoolB);
 		
 		/* Make 2 webservers for CNodes */
-		WebServer webserverNodeA = startAWebServerForNode(portNodePoolA,cNPoolA.getPool().get(0));
-		WebServer webserverNodeB = startAWebServerForNode(portNodePoolB,cNPoolB.getPool().get(0));
+		WebServer webserverNodeA = startAWebServerForPool(portNodePoolA,cNPoolA);
+		WebServer webserverNodeB = startAWebServerForPool(portNodePoolB,cNPoolB);
 		Globals.getGlobals().addQuittables(webserverNodeA);
 		Globals.getGlobals().addQuittables(webserverNodeB);
 		

@@ -13,6 +13,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.quub.Globals;
+import com.quub.GlobalsTest;
 import com.quub.util.Pair;
 import com.quub.webserver.HandlerAbstract;
 import com.quub.webserver.RequestDispatcher.HTTPRequest;
@@ -21,8 +23,11 @@ import edu.uci.ics.luci.cacophony.directory.Directory;
 
 public class DirectoryRequestHandlerHelperTest extends DirectoryRequestHandlerHelper{
 
+	private static Directory d;
+
 	public DirectoryRequestHandlerHelperTest() {
-		super(new Directory());
+		super(d = new Directory());
+		Globals.getGlobals().addQuittables(d);
 	}
 	
 	
@@ -33,10 +38,20 @@ public class DirectoryRequestHandlerHelperTest extends DirectoryRequestHandlerHe
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
+		while(Globals.getGlobals() != null){
+			try{
+				Thread.sleep(1000);
+			}
+			catch(InterruptedException e){
+			}
+		}
+		Globals.setGlobals(new GlobalsTest());
 	}
 
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
+		Globals.getGlobals().setQuitting(true);
+		Globals.setGlobals(null);
 	}
 
 	@Before

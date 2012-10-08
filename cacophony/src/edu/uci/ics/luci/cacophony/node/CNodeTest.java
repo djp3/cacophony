@@ -37,6 +37,7 @@ import edu.uci.ics.luci.cacophony.api.directory.HandlerNodeAssignment;
 import edu.uci.ics.luci.cacophony.api.directory.HandlerNodeCheckin;
 import edu.uci.ics.luci.cacophony.api.directory.HandlerNodeList;
 import edu.uci.ics.luci.cacophony.directory.Directory;
+import edu.uci.ics.luci.cacophony.model.KyotoCabinet;
 
 public class CNodeTest {
 	
@@ -49,12 +50,19 @@ public class CNodeTest {
 
 
 	@BeforeClass
-	public static void setUpClass() throws Exception {
+	public static void setUpBeforeClass() throws Exception {
+		while(Globals.getGlobals() != null){
+			try{
+				Thread.sleep(1000);
+			}
+			catch(InterruptedException e){
+			}
+		}
 		Globals.setGlobals(new GlobalsTest());
 	}
 
 	@AfterClass
-	public static void tearDownClass() throws Exception {
+	public static void tearDownAfterClass() throws Exception {
 		Globals.getGlobals().setQuitting(true);
 		Globals.setGlobals(null);
 	}
@@ -146,18 +154,34 @@ public class CNodeTest {
 		
 		startAWebServer(workingPort,d);
 		
-		/* Start a pool with no nodes */
-		String configFileName = "src/edu/uci/ics/luci/cacophony/CNodeTest.cacophony.c_node_pool.properties";
+		/* Start a pool where we fetch a configuration */
+		String configFileName = "src/edu/uci/ics/luci/cacophony/CNodeTest.cacophony.c_node_pool.fetch_config.properties";
 		XMLPropertiesConfiguration config = null;
+		/*
 		try {
 			config = new XMLPropertiesConfiguration(configFileName);
 		} catch (ConfigurationException e) {
 			fail("Unable to use requested configuration file:"+configFileName+"\n"+e);
 		}
-		CNodePool cNPool = new CNodePool();
+		CNodePool cNPool = new CNodePool(new KyotoCabinet());
+		cNPool.launchCNodePool(config,null,null,null);
+		assertTrue(cNPool.getPoolSize() == 1);
+		cNPool.setQuitting(true);
+		cNPool = null;
+		*/
+		
+		/* Start a pool where we load nodes*/
+		configFileName = "src/edu/uci/ics/luci/cacophony/CNodeTest.cacophony.c_node_pool.load_nodes.properties";
+		config = null;
+		try {
+			config = new XMLPropertiesConfiguration(configFileName);
+		} catch (ConfigurationException e) {
+			fail("Unable to use requested configuration file:"+configFileName+"\n"+e);
+		}
+		CNodePool cNPool = new CNodePool(new KyotoCabinet<String,CNode>());
 		cNPool.launchCNodePool(config,null,null,null);
 		Globals.getGlobals().addQuittables(cNPool);
-		assertTrue(cNPool.getTrainingSet().numInstances() > 0);
+		assertTrue(cNPool.getPoolSize() >= 1);
 		
 		//new PopUpWindow("Click To Stop Test: "+this.getClass().getCanonicalName());
 	}
@@ -179,7 +203,7 @@ public class CNodeTest {
 	@Test
 	public void testCalendarAssumptions(){
 		long jan012013 = 1357012799000L; // Tuesday 1/1/2013 03:59:59 GMT;
-		Globals.setGlobals(new GlobalsTest());
+		//Globals.setGlobals(new GlobalsTest());
 		Calendar c = Globals.getGlobals().getCalendar(null);
 		
 		c.setTimeInMillis(jan012013);

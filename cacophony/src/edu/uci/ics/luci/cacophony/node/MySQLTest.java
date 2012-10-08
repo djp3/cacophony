@@ -14,8 +14,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import weka.core.Instances;
-
 import com.quub.Globals;
 import com.quub.GlobalsTest;
 import com.quub.database.DBConnection;
@@ -25,11 +23,20 @@ public class MySQLTest {
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
+		while(Globals.getGlobals() != null){
+			try{
+				Thread.sleep(1000);
+			}
+			catch(InterruptedException e){
+			}
+		}
 		Globals.setGlobals(new GlobalsTest());
 	}
 
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
+		Globals.getGlobals().setQuitting(true);
+		Globals.setGlobals(null);
 	}
 
 	private QuubDBConnectionPool odbcp = null;
@@ -107,12 +114,7 @@ public class MySQLTest {
 			}
 			m = new MySQL();
 			m.init(jsonObject);
-			Instances i = m.loadCNodeHistory();
-			m = null;
-			assertTrue(i.numInstances() > 0);
 
-			
-			
 			/*Clean up*/
 			try {
 				s.executeUpdate("DROP TABLE IF EXISTS "+tableName);

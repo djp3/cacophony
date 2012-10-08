@@ -35,6 +35,7 @@ import edu.uci.ics.luci.cacophony.api.directory.HandlerNodeAssignment;
 import edu.uci.ics.luci.cacophony.api.directory.HandlerNodeCheckin;
 import edu.uci.ics.luci.cacophony.api.directory.HandlerNodeList;
 import edu.uci.ics.luci.cacophony.directory.Directory;
+import edu.uci.ics.luci.cacophony.model.KyotoCabinet;
 
 public class CNodePoolTest {
 
@@ -47,12 +48,19 @@ public class CNodePoolTest {
 
 
 	@BeforeClass
-	public static void setUpClass() throws Exception {
+	public static void setUpBeforeClass() throws Exception {
+		while(Globals.getGlobals() != null){
+			try{
+				Thread.sleep(1000);
+			}
+			catch(InterruptedException e){
+			}
+		}
 		Globals.setGlobals(new GlobalsTest());
 	}
 
 	@AfterClass
-	public static void tearDownClass() throws Exception {
+	public static void tearDownAfterClass() throws Exception {
 		Globals.getGlobals().setQuitting(true);
 		Globals.setGlobals(null);
 	}
@@ -149,17 +157,17 @@ public class CNodePoolTest {
 		}
 		baseUrls.add(new Pair<Long,String>(0L,url+":"+workingPort));
 		
-		String configFileName = "src/edu/uci/ics/luci/cacophony/CNodeTest.cacophony.c_node_pool.properties";
+		String configFileName = "src/edu/uci/ics/luci/cacophony/CNodeTest.cacophony.c_node_pool.load_nodes.properties";
 		XMLPropertiesConfiguration config = null;
 		try {
 			config = new XMLPropertiesConfiguration(configFileName);
 		} catch (ConfigurationException e2) {
-			fail("Unable to use requested configuration file:"+configFileName);
+			fail("Unable to use requested configuration file:"+configFileName+"\n"+e2);
 		}
 		
-		CNodePool cNPool = new CNodePool().launchCNodePool(config,baseUrls);
+		CNodePool cNPool = new CNodePool(new KyotoCabinet<String,CNode>()).launchCNodePool(config,baseUrls);
 		assertTrue(cNPool != null);
-		assertTrue(cNPool.getPool().size() == 1);
+		assertTrue(cNPool.getPoolSize() == 5);
 		//new PopUpWindow("Click To Stop Test:"+this.getClass().getCanonicalName());
 		Globals.getGlobals().addQuittables(cNPool);
 	}

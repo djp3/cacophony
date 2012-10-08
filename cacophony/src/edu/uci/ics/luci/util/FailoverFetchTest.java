@@ -12,6 +12,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.TreeSet;
 
 import org.apache.commons.configuration.ConfigurationException;
@@ -57,6 +58,13 @@ public class FailoverFetchTest {
 
 	@BeforeClass
 	public static void setUpClass() throws Exception {
+		while(Globals.getGlobals() != null){
+			try{
+				Thread.sleep(1000);
+			}
+			catch(InterruptedException e){
+			}
+		}
 		Globals.setGlobals(new GlobalsTest());
 	}
 
@@ -133,30 +141,6 @@ public class FailoverFetchTest {
 			fail("");
 		}
 
-		
-		/* Pick a Directory GUID*/
-		String directoryGUID = "DirectoryGUID:"+System.currentTimeMillis();
-		
-		/* Figure out our url */
-		String url = null;
-		try {
-			url = InetAddress.getLocalHost().getHostName();
-		} catch (UnknownHostException e) {
-			try {
-				url = InetAddress.getLocalHost().getHostAddress();
-			} catch (UnknownHostException e1) {
-			}
-		}
-			
-		/* Add a this URL*/
-		Pair<Long, String> p = new Pair<Long,String>(0L,url+":"+workingPort);
-		List<Pair<Long, String>> urls = new ArrayList<Pair<Long,String>>();
-		urls.add(p);
-			
-		/* Start reporting heartbeats */
-		String namespace = "test.waitscout.com";
-		d.setDirectoryNamespace(namespace);
-		d.startHeartbeat(directoryGUID,urls);
 		return(d);
 	}
 	
@@ -165,7 +149,6 @@ public class FailoverFetchTest {
 	public void testFetchDirectoryList() {
 		workingPort = testPortPlusPlus();
 		Directory d = startADirectory();
-		startAWebServer(workingPort,d);
 		
 		/* Pick a guid */
 		String guid = "Test "+this.getClass().getCanonicalName();
@@ -182,27 +165,33 @@ public class FailoverFetchTest {
 		}
 			
 		/* Add a bad URL*/
-		Pair<Long, String> p = new Pair<Long,String>(0L,url+":"+(workingPort+1));
+		Pair<Long, String> p = new Pair<Long,String>(0L,url+"foo:"+(workingPort+1));
 		List<Pair<Long, String>> urls = new ArrayList<Pair<Long,String>>();
 		urls.add(p);
 		
 		/* Add real URL multiple times */
-		 p = new Pair<Long,String>(0L,url+":"+workingPort);
-		urls.add(p);
 		p = new Pair<Long,String>(1L,url+":"+workingPort);
 		urls.add(p);
 		p = new Pair<Long,String>(2L,url+":"+workingPort);
 		urls.add(p);
 		p = new Pair<Long,String>(3L,url+":"+workingPort);
 		urls.add(p);
-			
+		p = new Pair<Long,String>(4L,url+":"+workingPort);
+		urls.add(p);
+		
+		/* Clean up junk */
+		d.removeAllServers();
+		
 		/* Start reporting heartbeats */
 		String namespace = "testNamespace@"+System.currentTimeMillis();
 		d.setDirectoryNamespace(namespace);
 		d.startHeartbeat(guid,urls);
 		
+		startAWebServer(workingPort,d);
+		
+		
 		FailoverFetch f = new FailoverFetch("localhost:"+workingPort,namespace);
-		assertTrue(f.directoryServerPool.size() >= 5);
+		assertEquals(2,f.directoryServerPool.size());  //Should only be keeping uniques
 		
 		/* Test to see if the code returns JSON */
 		try {
