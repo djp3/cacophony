@@ -9,8 +9,10 @@ import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URLEncoder;
 import java.net.UnknownHostException;
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -79,6 +81,7 @@ public class CNode implements Quittable,Serializable{
 	private Canonicalize filter = null;
 	private Evaluation evaluation = null;
 	private Integer lastTrainingSetHash = null;
+	private Long lastModelBuildTime = 0L;
 	private RandomizableIteratedSingleClassifierEnhancer model = null;
 
 	private FailoverFetch failoverFetch;
@@ -178,6 +181,14 @@ public class CNode implements Quittable,Serializable{
 
 	public synchronized Integer getLastTrainingSetHash() {
 		return lastTrainingSetHash;
+	}
+	
+	private void setLastModelBuildTime(long time) {
+		this.lastModelBuildTime = time;
+	}
+
+	public synchronized Long getLastModelBuildTime() {
+		return lastModelBuildTime;
 	}
 
 	public synchronized void getANewConfiguration() {
@@ -486,6 +497,8 @@ public class CNode implements Quittable,Serializable{
 		JSONObject ret = new JSONObject();
 		Evaluation eval = getEvaluation();
 		try {
+			Date build = new Date(getLastModelBuildTime());
+			ret.put("last_model_build_time", DateFormat.getInstance().format(build));
 			ret.put("instances",eval.numInstances());
 			ret.put("mean_absolute_error", eval.meanAbsoluteError());
 			ret.put("root_mean_squared_error", eval.rootMeanSquaredError());
@@ -727,8 +740,8 @@ public class CNode implements Quittable,Serializable{
 		/* Train */
 		/* For nearest neighbor we use 1/10 the instances up to a max of 20 */
 		long nnConstant = Math.round(Math.floor(trainingData.numInstances()/10.0)+1.0);
-		if(nnConstant > 20){
-			nnConstant = 20;
+		if(nnConstant > 20L){
+			nnConstant = 20L;
 		}
 		
 		Bagging bagger = new Bagging();
@@ -871,6 +884,7 @@ public class CNode implements Quittable,Serializable{
 	   	setCanonicalizeFilter(canonicalizeFilter);
 	   	setModel(bagger);
    		setLastTrainingSetHash(trainingData.hashCode());
+   		setLastModelBuildTime(System.currentTimeMillis());
 	}	
 
 }

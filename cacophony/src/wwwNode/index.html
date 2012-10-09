@@ -255,6 +255,7 @@ body {
 						predictionData = data;
 						
 						var newTable = "<table><tr><td><strong>Training Instances:</strong></td><td>"+predictionData.stats.instances+"</td></tr>"+
+									   "<tr><td><strong>Last Model Build Time:</strong> </td><td>"+predictionData.stats.last_model_build_time+"</td></tr>"+
 									   "<tr><td><strong>Mean Absolute Error:</strong> </td><td>"+predictionData.stats.mean_absolute_error.toFixed(5)+"</td></tr>"+
 						               "<tr><td><strong>Root Mean Squared Error:</strong>&nbsp;</td><td>"+predictionData.stats.root_mean_squared_error.toFixed(5)+"</td></tr>"+
           							   "<tr><td><strong>Relative Absolute Error:</strong></td><td>"+predictionData.stats.relative_absolute_error.toFixed(5)+" % "+"</td></tr></table>";

@@ -194,6 +194,11 @@ public class CNodePool implements Quittable{
 						if(fromPool != null){
 							fromPool.synchronizeWithNetwork();
 							me.addToPool(key, fromPool);
+							//Artificial delay
+							try {
+								Thread.sleep(500);
+							} catch (InterruptedException e) {
+							}
 							
 						}
 					}
@@ -316,6 +321,11 @@ public class CNodePool implements Quittable{
 				for(CNode c: cNodes){
 					c.synchronizeWithNetwork(true,true,true,false);
 					addToPool(c.getMetaCNodeGUID(),c);
+					//Artificial delay
+					try {
+						Thread.sleep(500);
+					} catch (InterruptedException e) {
+					}
 				}
 			}
 			

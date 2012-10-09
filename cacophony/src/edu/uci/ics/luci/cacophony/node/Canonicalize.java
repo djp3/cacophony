@@ -177,8 +177,9 @@ public class Canonicalize
 						(input.classIndex() != i)) {
 					m_Means[i] = input.meanOrMode(i);
 					m_StdDevs[i] = Math.sqrt(input.variance(i));
-					m_Mins[i] = input.kthSmallestValue(i, 1);
-					m_Maxs[i] = input.kthSmallestValue(i, input.numInstances());
+					input.sort(i);
+					m_Mins[i] = input.firstInstance().value(i);
+					m_Maxs[i] = input.lastInstance().value(i);
 				}
 			}
 
