@@ -671,6 +671,11 @@ public class CNode implements Quittable,Serializable{
 			return;
 		}
 		
+		if(trainingData.numInstances() < 3){
+			getLog().warn("It is beneath me to build a model with "+trainingData.numInstances()+" datapoints");
+			return;
+		}
+		
 		getLog().info("Training on "+trainingData.numInstances()+" instances");
 		
 		/*Keep track of the timezones for the restaurants*/
