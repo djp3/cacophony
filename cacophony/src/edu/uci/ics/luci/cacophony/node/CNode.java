@@ -81,7 +81,7 @@ public class CNode implements Quittable,Serializable{
 	private Canonicalize filter = null;
 	private Evaluation evaluation = null;
 	private Integer lastTrainingSetHash = null;
-	private Long lastModelBuildTime = 0L;
+	private Long lastModelBuildTime = null;
 	private RandomizableIteratedSingleClassifierEnhancer model = null;
 
 	private FailoverFetch failoverFetch;
@@ -497,8 +497,14 @@ public class CNode implements Quittable,Serializable{
 		JSONObject ret = new JSONObject();
 		Evaluation eval = getEvaluation();
 		try {
-			Date build = new Date(getLastModelBuildTime());
-			ret.put("last_model_build_time", DateFormat.getInstance().format(build));
+			Long lmbt = getLastModelBuildTime(); 
+			if((lmbt == null) || (lmbt == 0)){
+				ret.put("last_model_build_time", "never");
+			}
+			else{
+				Date build = new Date(lmbt);
+				ret.put("last_model_build_time", DateFormat.getInstance().format(build));
+			}
 			ret.put("instances",eval.numInstances());
 			ret.put("mean_absolute_error", eval.meanAbsoluteError());
 			ret.put("root_mean_squared_error", eval.rootMeanSquaredError());
@@ -645,14 +651,16 @@ public class CNode implements Quittable,Serializable{
 	public synchronized void synchronizeWithNetwork(boolean checkForNewData, boolean rebuildModelIfNecessary, boolean testAccuracyOnSelf, boolean sendHeartbeat){
 		if(checkForNewData){
 			Instances trainingSet = fetchTrainingSet();
-			if(modelOutdated(trainingSet)){
-				if(rebuildModelIfNecessary){
+			if(rebuildModelIfNecessary){
+				if(modelOutdated(trainingSet)){
 					buildModel(testAccuracyOnSelf,trainingSet);
 				}
 			}
 		}
-		if(sendHeartbeat){
-			sendHeartbeat();
+		if(getLastModelBuildTime() != null){
+			if(sendHeartbeat){
+				sendHeartbeat();
+			}
 		}
 	}
 
