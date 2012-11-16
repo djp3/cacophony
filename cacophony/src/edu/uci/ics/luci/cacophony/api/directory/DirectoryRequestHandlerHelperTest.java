@@ -1,7 +1,7 @@
 package edu.uci.ics.luci.cacophony.api.directory;
 
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 import java.net.InetAddress;
 import java.util.HashMap;
@@ -13,23 +13,20 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.quub.Globals;
-import com.quub.GlobalsTest;
-import com.quub.util.Pair;
-import com.quub.webserver.HandlerAbstract;
-import com.quub.webserver.RequestDispatcher.HTTPRequest;
-
 import edu.uci.ics.luci.cacophony.directory.Directory;
+import edu.uci.ics.luci.utility.Globals;
+import edu.uci.ics.luci.utility.GlobalsTest;
+import edu.uci.ics.luci.utility.datastructure.Pair;
+import edu.uci.ics.luci.utility.webserver.HandlerAbstract;
+import edu.uci.ics.luci.utility.webserver.RequestDispatcher.HTTPRequest;
 
 public class DirectoryRequestHandlerHelperTest extends DirectoryRequestHandlerHelper{
 
-	private static Directory d;
-
 	public DirectoryRequestHandlerHelperTest() {
-		super(d = new Directory());
-		Globals.getGlobals().addQuittables(d);
+		
+		super(new Directory());
+		Globals.getGlobals().addQuittables(super.getDirectory());
 	}
-	
 	
 	@Override
 	public HandlerAbstract copy() {

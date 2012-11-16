@@ -9,11 +9,9 @@ import org.json.JSONObject;
 
 import weka.core.Instances;
 import weka.experiment.InstanceQuery;
-
-import com.quub.Globals;
-import com.quub.util.Pair;
-
 import edu.uci.ics.luci.util.FailoverFetch;
+import edu.uci.ics.luci.utility.Globals;
+import edu.uci.ics.luci.utility.datastructure.Pair;
 
 public class MySQL extends CNodeLoader{
 	

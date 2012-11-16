@@ -8,12 +8,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.quub.util.Pair;
-import com.quub.webserver.HandlerAbstract;
-import com.quub.webserver.RequestDispatcher.HTTPRequest;
-
 import edu.uci.ics.luci.cacophony.directory.Directory;
 import edu.uci.ics.luci.cacophony.directory.nodelist.CNodeReference;
+import edu.uci.ics.luci.utility.datastructure.Pair;
+import edu.uci.ics.luci.utility.webserver.HandlerAbstract;
+import edu.uci.ics.luci.utility.webserver.RequestDispatcher.HTTPRequest;
 
 public class HandlerNodeCheckin extends DirectoryRequestHandlerHelper {
 	

@@ -11,14 +11,13 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.quub.Globals;
-import com.quub.GlobalsTest;
-import com.quub.webserver.AccessControl;
-import com.quub.webserver.HandlerAbstract;
-import com.quub.webserver.RequestDispatcher;
-import com.quub.webserver.WebServer;
-
 import edu.uci.ics.luci.cacophony.api.HandlerVersion;
+import edu.uci.ics.luci.utility.Globals;
+import edu.uci.ics.luci.utility.GlobalsTest;
+import edu.uci.ics.luci.utility.webserver.AccessControl;
+import edu.uci.ics.luci.utility.webserver.HandlerAbstract;
+import edu.uci.ics.luci.utility.webserver.RequestDispatcher;
+import edu.uci.ics.luci.utility.webserver.WebServer;
 
 public class WebServerWarmUpTest {
 	

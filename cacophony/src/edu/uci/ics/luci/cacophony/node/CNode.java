@@ -33,15 +33,13 @@ import weka.core.Instance;
 import weka.core.Instances;
 import weka.experiment.InstanceQuery;
 import weka.filters.Filter;
-
-import com.quub.util.CalendarCache;
-import com.quub.util.Pair;
-import com.quub.util.Quittable;
-
 import edu.uci.ics.luci.cacophony.CacophonyGlobals;
 import edu.uci.ics.luci.cacophony.api.CacophonyRequestHandlerHelper;
 import edu.uci.ics.luci.cacophony.directory.nodelist.CNodeReference;
 import edu.uci.ics.luci.util.FailoverFetch;
+import edu.uci.ics.luci.utility.CalendarCache;
+import edu.uci.ics.luci.utility.Quittable;
+import edu.uci.ics.luci.utility.datastructure.Pair;
 
 public class CNode implements Quittable,Serializable{
 	

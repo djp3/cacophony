@@ -18,10 +18,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.quub.util.Pair;
-import com.quub.webserver.WebUtil;
-
 import edu.uci.ics.luci.cacophony.api.CacophonyRequestHandlerHelper;
+import edu.uci.ics.luci.utility.datastructure.Pair;
+import edu.uci.ics.luci.utility.webserver.WebUtil;
 
 public class FailoverFetch implements Serializable{
 	

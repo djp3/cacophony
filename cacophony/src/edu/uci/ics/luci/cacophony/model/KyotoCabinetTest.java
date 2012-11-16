@@ -10,9 +10,9 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.quub.Globals;
-import com.quub.GlobalsTest;
-import com.quub.util.Pair;
+import edu.uci.ics.luci.utility.Globals;
+import edu.uci.ics.luci.utility.GlobalsTest;
+import edu.uci.ics.luci.utility.datastructure.Pair;
 
 public class KyotoCabinetTest {
 

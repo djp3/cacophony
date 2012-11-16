@@ -23,16 +23,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.quub.Globals;
-import com.quub.GlobalsTest;
-import com.quub.util.Pair;
-import com.quub.webserver.AccessControl;
-import com.quub.webserver.HandlerAbstract;
-import com.quub.webserver.RequestDispatcher;
-import com.quub.webserver.WebServer;
-import com.quub.webserver.WebUtil;
-import com.quub.webserver.handlers.HandlerFileServer;
-
 import edu.uci.ics.luci.cacophony.api.CacophonyRequestHandlerHelper;
 import edu.uci.ics.luci.cacophony.api.HandlerShutdown;
 import edu.uci.ics.luci.cacophony.api.HandlerVersion;
@@ -47,6 +37,15 @@ import edu.uci.ics.luci.cacophony.model.KyotoCabinet;
 import edu.uci.ics.luci.cacophony.node.CNode;
 import edu.uci.ics.luci.cacophony.node.CNodePool;
 import edu.uci.ics.luci.util.PopUpWindow;
+import edu.uci.ics.luci.utility.Globals;
+import edu.uci.ics.luci.utility.GlobalsTest;
+import edu.uci.ics.luci.utility.datastructure.Pair;
+import edu.uci.ics.luci.utility.webserver.AccessControl;
+import edu.uci.ics.luci.utility.webserver.HandlerAbstract;
+import edu.uci.ics.luci.utility.webserver.RequestDispatcher;
+import edu.uci.ics.luci.utility.webserver.WebServer;
+import edu.uci.ics.luci.utility.webserver.WebUtil;
+import edu.uci.ics.luci.utility.webserver.handlers.HandlerFileServer;
 
 public class SystemTest {
 	

@@ -12,9 +12,9 @@ import org.apache.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.quub.Globals;
-import com.quub.database.DBConnection;
-import com.quub.database.QuubDBConnectionPool;
+import edu.uci.ics.luci.utility.Globals;
+import edu.uci.ics.luci.utility.database.DBConnection;
+import edu.uci.ics.luci.utility.database.LUCIDBConnectionPool;
 
 public class MySQL extends NodeListLoader{
 	
@@ -30,7 +30,7 @@ public class MySQL extends NodeListLoader{
 	private String namespace = null;
 	private PreparedStatement listViewQueryPS = null;
 	private PreparedStatement mapViewQueryPS = null;
-	private QuubDBConnectionPool pool = null;
+	private LUCIDBConnectionPool pool = null;
 	private boolean error = false;
 	
 	public MySQL(){
@@ -149,7 +149,7 @@ public class MySQL extends NodeListLoader{
 		}
 		
 		if(!error){
-			pool = new QuubDBConnectionPool(databaseDomain, database, username, password,1,1);
+			pool = new LUCIDBConnectionPool(databaseDomain, database, username, password,1,1);
 			connection = pool.getConnection();
 			if(connection == null){
 				getLog().error("Query failed, couldn't connect to database");

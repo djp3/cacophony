@@ -2,7 +2,7 @@ package edu.uci.ics.luci.cacophony.model;
 
 import java.io.Serializable;
 
-import com.quub.util.Quittable;
+import edu.uci.ics.luci.utility.Quittable;
 
 public abstract class ModelStorage<K extends Serializable, V extends Serializable> implements Quittable{
 

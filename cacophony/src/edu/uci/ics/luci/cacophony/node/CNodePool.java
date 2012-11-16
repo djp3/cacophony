@@ -21,14 +21,6 @@ import com.martiansoftware.jsap.JSAP;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import com.martiansoftware.jsap.Switch;
-import com.quub.Globals;
-import com.quub.util.Pair;
-import com.quub.util.Quittable;
-import com.quub.webserver.AccessControl;
-import com.quub.webserver.HandlerAbstract;
-import com.quub.webserver.RequestDispatcher;
-import com.quub.webserver.WebServer;
-import com.quub.webserver.handlers.HandlerFileServer;
 
 import edu.uci.ics.luci.cacophony.CacophonyGlobals;
 import edu.uci.ics.luci.cacophony.api.HandlerVersion;
@@ -38,6 +30,14 @@ import edu.uci.ics.luci.cacophony.model.KyotoCabinet;
 import edu.uci.ics.luci.cacophony.model.KyotoCabinetVisitor;
 import edu.uci.ics.luci.cacophony.model.ModelStorage;
 import edu.uci.ics.luci.util.FailoverFetch;
+import edu.uci.ics.luci.utility.Globals;
+import edu.uci.ics.luci.utility.Quittable;
+import edu.uci.ics.luci.utility.datastructure.Pair;
+import edu.uci.ics.luci.utility.webserver.AccessControl;
+import edu.uci.ics.luci.utility.webserver.HandlerAbstract;
+import edu.uci.ics.luci.utility.webserver.RequestDispatcher;
+import edu.uci.ics.luci.utility.webserver.WebServer;
+import edu.uci.ics.luci.utility.webserver.handlers.HandlerFileServer;
 
 public class CNodePool implements Quittable{
 	
@@ -177,7 +177,6 @@ public class CNodePool implements Quittable{
 	}
 	
 	private void launchCNodePoolUpdateThread() {
-		
 		final CNodePool me = this;
 		
 		updateThread = new Thread(new Runnable(){

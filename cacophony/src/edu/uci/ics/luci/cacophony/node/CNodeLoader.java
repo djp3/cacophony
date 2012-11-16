@@ -5,9 +5,8 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.json.JSONObject;
 
-import com.quub.util.Pair;
-
 import edu.uci.ics.luci.util.FailoverFetch;
+import edu.uci.ics.luci.utility.datastructure.Pair;
 
 public abstract class CNodeLoader {
 	

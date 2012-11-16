@@ -3,8 +3,7 @@ package edu.uci.ics.luci.cacophony.model;
 import java.io.Serializable;
 
 import kyotocabinet.Visitor;
-
-import com.quub.util.Pair;
+import edu.uci.ics.luci.utility.datastructure.Pair;
 
 public abstract class KyotoCabinetVisitor<K extends Serializable, V extends Serializable> extends ModelStorageVisitor<K,V> implements Visitor{
 	public static enum Response{

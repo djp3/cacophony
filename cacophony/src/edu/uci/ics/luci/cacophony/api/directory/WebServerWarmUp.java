@@ -8,11 +8,10 @@ import org.apache.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.quub.webserver.WebServer;
-import com.quub.webserver.WebUtil;
-
 import edu.uci.ics.luci.cacophony.CacophonyGlobals;
 import edu.uci.ics.luci.cacophony.api.CacophonyRequestHandlerHelper;
+import edu.uci.ics.luci.utility.webserver.WebServer;
+import edu.uci.ics.luci.utility.webserver.WebUtil;
 
 public class WebServerWarmUp {
 	

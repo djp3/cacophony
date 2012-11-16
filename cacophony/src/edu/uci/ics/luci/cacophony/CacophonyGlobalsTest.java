@@ -1,7 +1,7 @@
 package edu.uci.ics.luci.cacophony;
 
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.util.Calendar;
 
@@ -11,8 +11,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.quub.Globals;
-import com.quub.GlobalsTest;
+import edu.uci.ics.luci.utility.Globals;
+import edu.uci.ics.luci.utility.GlobalsTest;
 
 public class CacophonyGlobalsTest {
 

@@ -9,9 +9,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.quub.util.Pair;
-
 import edu.uci.ics.luci.util.HashCodeUtil;
+import edu.uci.ics.luci.utility.datastructure.Pair;
 
 public class CNodeReference {
 	

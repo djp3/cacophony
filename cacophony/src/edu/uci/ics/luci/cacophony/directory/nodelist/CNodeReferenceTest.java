@@ -1,6 +1,5 @@
 package edu.uci.ics.luci.cacophony.directory.nodelist;
 
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -16,9 +15,9 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.quub.Globals;
-import com.quub.GlobalsTest;
-import com.quub.util.Pair;
+import edu.uci.ics.luci.utility.Globals;
+import edu.uci.ics.luci.utility.GlobalsTest;
+import edu.uci.ics.luci.utility.datastructure.Pair;
 
 public class CNodeReferenceTest {
 	
@@ -78,8 +77,6 @@ public class CNodeReferenceTest {
 		
 		assertEquals(c2,c2);
 		assertEquals(c2.hashCode(),c2.hashCode());
-		
-		assertTrue(!c.equals(Integer.valueOf(1)));
 		
 		c2 = new CNodeReference(c);
 		assertEquals(c,c2);

@@ -14,10 +14,10 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.quub.Globals;
-import com.quub.GlobalsTest;
-import com.quub.database.DBConnection;
-import com.quub.database.QuubDBConnectionPool;
+import edu.uci.ics.luci.utility.Globals;
+import edu.uci.ics.luci.utility.GlobalsTest;
+import edu.uci.ics.luci.utility.database.DBConnection;
+import edu.uci.ics.luci.utility.database.LUCIDBConnectionPool;
 
 public class MySQLTest {
 
@@ -39,13 +39,13 @@ public class MySQLTest {
 		Globals.setGlobals(null);
 	}
 
-	private QuubDBConnectionPool odbcp = null;
+	private LUCIDBConnectionPool odbcp = null;
 	private MySQL m = null;
 
 	@Before
 	public void setUp() throws Exception {
 		try{
-			odbcp = new QuubDBConnectionPool(Globals.getGlobals().getDatabaseDomain(), "testDatabase", "testuser", "testuserPassword",null,0);
+			odbcp = new LUCIDBConnectionPool(Globals.getGlobals().getDatabaseDomain(), "testDatabase", "testuser", "testuserPassword",null,0);
 		}
 		catch(Exception e){
 			fail("Couldn't make a pool\n"+e);

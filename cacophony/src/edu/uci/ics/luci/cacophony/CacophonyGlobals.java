@@ -7,8 +7,9 @@ import java.util.TimeZone;
 import org.apache.commons.configuration.XMLPropertiesConfiguration;
 import org.apache.log4j.Logger;
 
-import com.quub.Globals;
-import com.quub.util.CalendarCache;
+import edu.uci.ics.luci.utility.CalendarCache;
+import edu.uci.ics.luci.utility.Globals;
+
 
 public class CacophonyGlobals extends Globals{
 	

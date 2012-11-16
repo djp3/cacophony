@@ -18,15 +18,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.quub.Globals;
-import com.quub.GlobalsTest;
-import com.quub.util.Pair;
-import com.quub.webserver.AccessControl;
-import com.quub.webserver.HandlerAbstract;
-import com.quub.webserver.RequestDispatcher;
-import com.quub.webserver.WebServer;
-import com.quub.webserver.handlers.HandlerFileServer;
-
 import edu.uci.ics.luci.cacophony.api.HandlerShutdown;
 import edu.uci.ics.luci.cacophony.api.HandlerVersion;
 import edu.uci.ics.luci.cacophony.api.directory.HandlerDirectoryNamespace;
@@ -36,6 +27,14 @@ import edu.uci.ics.luci.cacophony.api.directory.HandlerNodeCheckin;
 import edu.uci.ics.luci.cacophony.api.directory.HandlerNodeList;
 import edu.uci.ics.luci.cacophony.directory.Directory;
 import edu.uci.ics.luci.cacophony.model.KyotoCabinet;
+import edu.uci.ics.luci.utility.Globals;
+import edu.uci.ics.luci.utility.GlobalsTest;
+import edu.uci.ics.luci.utility.datastructure.Pair;
+import edu.uci.ics.luci.utility.webserver.AccessControl;
+import edu.uci.ics.luci.utility.webserver.HandlerAbstract;
+import edu.uci.ics.luci.utility.webserver.RequestDispatcher;
+import edu.uci.ics.luci.utility.webserver.WebServer;
+import edu.uci.ics.luci.utility.webserver.handlers.HandlerFileServer;
 
 public class CNodePoolTest {
 
@@ -90,7 +89,7 @@ public class CNodePoolTest {
 			requestHandlerRegistry.put("node_assignment",new HandlerNodeAssignment(d));
 			requestHandlerRegistry.put("node_checkin",new HandlerNodeCheckin(d));
 			requestHandlerRegistry.put("namespace",new HandlerDirectoryNamespace(d));
-			requestHandlerRegistry.put(null, new HandlerFileServer(com.quub.Globals.class,"/www_test/"));
+			requestHandlerRegistry.put(null, new HandlerFileServer(Globals.class,"/www_test/"));
 			
 			RequestDispatcher requestDispatcher = new RequestDispatcher(requestHandlerRegistry);
 			ws = new WebServer(requestDispatcher, port, false, new AccessControl());
