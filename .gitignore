@@ -12,8 +12,6 @@ cacophony/cacophony.log4j.properties
 external/cassandra
 external/cassandra_config/trash
 external/cassandra_tmp
-external/hector
-external/hector_examples
 
 external/kyotocabinet-install
 
