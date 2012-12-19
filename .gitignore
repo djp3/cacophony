@@ -13,6 +13,9 @@ external/cassandra
 external/cassandra_config/trash
 external/cassandra_tmp
 
+external/hector
+external/hector-examples
+
 external/kyotocabinet-install
 
 external/kyotocabinet-1.2.76/*.o
