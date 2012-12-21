@@ -193,12 +193,17 @@ public class DirectoryTest {
 		
 		/* Figure out our url */
 		String url = null;
-		try {
-			url = InetAddress.getLocalHost().getHostName();
-		} catch (UnknownHostException e) {
+		if(System.getProperty("os.name").contains("Windows")){
+			url = "127.0.0.1";
+		}
+		else{
 			try {
-				url = InetAddress.getLocalHost().getHostAddress();
-			} catch (UnknownHostException e1) {
+				url = InetAddress.getLocalHost().getHostName();
+			} catch (UnknownHostException e) {
+				try {
+					url = InetAddress.getLocalHost().getHostAddress();
+				} catch (UnknownHostException e1) {
+				}
 			}
 		}
 			
