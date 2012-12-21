@@ -264,7 +264,16 @@ public class Directory implements Quittable{
 		if(urls.size() == 0){
 			String url = null;
 			try {
-				url = InetAddress.getLocalHost().getHostAddress();
+				if(System.getProperty("os.name").contains("Windows")){
+					url = "127.0.0.1";
+				}
+				else{
+					try {
+						url = InetAddress.getLocalHost().getHostName();
+					} catch (UnknownHostException e) {
+						url = InetAddress.getLocalHost().getHostAddress();
+					}
+				}
 			} catch (UnknownHostException e1) {
 				url ="127.0.0.1";
 			}
