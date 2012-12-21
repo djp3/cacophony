@@ -148,8 +148,13 @@ public class Directory implements Quittable{
 		
 		String url = null;
 		try {
-			url = InetAddress.getLocalHost().getHostAddress();
-			getLog().info("Connecting to Cassandra ring on: "+url);
+			if(System.getProperty("os.name").contains("Windows")){
+				url = "127.0.0.1";
+			}
+			else{
+				url = InetAddress.getLocalHost().getHostAddress();
+				getLog().info("Connecting to Cassandra ring on: "+url);
+			}
 		} catch (UnknownHostException e1) {
 			url ="127.0.0.1";
 		}

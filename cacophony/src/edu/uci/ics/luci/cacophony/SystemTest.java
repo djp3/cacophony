@@ -168,13 +168,20 @@ public class SystemTest {
 		/* Figure out our url */
 		String url = null;
 		try {
-			url = InetAddress.getLocalHost().getHostName();
-		} catch (UnknownHostException e) {
-			try {
-				url = InetAddress.getLocalHost().getHostAddress();
-			} catch (UnknownHostException e1) {
+			if(System.getProperty("os.name").contains("Windows")){
+				url = "127.0.0.1";
 			}
+			else{
+				try {
+					url = InetAddress.getLocalHost().getHostName();
+				} catch (UnknownHostException e) {
+					url = InetAddress.getLocalHost().getHostAddress();
+				}
+			}
+		} catch (UnknownHostException e1) {
+			url ="127.0.0.1";
 		}
+		
 			
 		/* Add a real URL and a dummy URL */
 		Pair<Long, String> pathsToDirectoryA = new Pair<Long,String>(0L,url+":"+portDirectoryA);
@@ -223,10 +230,20 @@ public class SystemTest {
 		List<Pair<Long,String>> baseUrls = new ArrayList<Pair<Long,String>>();
 		url = null;
 		try {
-			url = InetAddress.getLocalHost().getHostAddress();
+			if(System.getProperty("os.name").contains("Windows")){
+				url = "127.0.0.1";
+			}
+			else{
+				try {
+					url = InetAddress.getLocalHost().getHostName();
+				} catch (UnknownHostException e) {
+					url = InetAddress.getLocalHost().getHostAddress();
+				}
+			}
 		} catch (UnknownHostException e1) {
 			url ="127.0.0.1";
 		}
+		
 		baseUrls.add(new Pair<Long,String>(0L,url+":"+portNodePoolA));
 		
 		
@@ -251,7 +268,16 @@ public class SystemTest {
 		baseUrls = new ArrayList<Pair<Long,String>>();
 		url = null;
 		try {
-			url = InetAddress.getLocalHost().getHostAddress();
+			if(System.getProperty("os.name").contains("Windows")){
+				url = "127.0.0.1";
+			}
+			else{
+				try {
+					url = InetAddress.getLocalHost().getHostName();
+				} catch (UnknownHostException e) {
+					url = InetAddress.getLocalHost().getHostAddress();
+				}
+			}
 		} catch (UnknownHostException e1) {
 			url ="127.0.0.1";
 		}
