@@ -1,0 +1,9 @@
+This directory needs to contain various external projects such as
+
+hector:
+	git clone https://github.com/hector-client/hector.git
+	git checkout hector-1.1-2
+	git checkout -b hector-1.1-2-local
+	cd hector
+	mvn clean package 
+
