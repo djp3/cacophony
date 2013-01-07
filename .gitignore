@@ -2,13 +2,17 @@
 .classpath
 .project
 cacophony/.settings
+
 cacophony/cacophony.log4j.properties
+cacophony/luci.log4j.properties
+
 *.kct
 *.class
 *.log
 *.swp
 *.log.*
 *.DS_Store
+
 external/cassandra
 external/cassandra_config/trash
 external/cassandra_tmp
@@ -29,6 +33,8 @@ cacophony/cnode_pool.cloud2.config.properties
 cacophony/cnode_pool.cloud3.config.properties
 cacophony/directory.cloud2.config.properties
 cacophony/directory.cloud3.config.properties
+
+#These have passwords in them
 cacophony/src/edu/uci/ics/luci/cacophony/CNodeTest.cacophony.c_node_pool.properties
 cacophony/src/edu/uci/ics/luci/cacophony/DirectoryTest.cacophony.directory.properties
 cacophony/src/edu/uci/ics/luci/cacophony/SystemTest.cacophony.c_node_poolA.properties
@@ -37,6 +43,7 @@ cacophony/src/edu/uci/ics/luci/cacophony/SystemTest.cacophony.c_node_poolB.prope
 #Necessary for sanity
 cacophony/src/edu/uci/ics/luci/cacophony/GitRevision.java
 
+#These are for deployment of the code
 directory.jar
 cnode_pool.jar
 node.jar
@@ -48,4 +55,12 @@ directory.cloud3.config.properties
 jar-in-jar-loader.zip
 
 weka
-cacophony/src/edu/uci/ics/luci/cacophony/GitRevision.java
+
+#These should be built locally
+cacophony/lib/apache-cassandra-1.1.8-SNAPSHOT.jar
+cacophony/lib/apache-cassandra-clientutil-1.1.8-SNAPSHOT.jar
+cacophony/lib/apache-cassandra-thrift-1.1.8-SNAPSHOT.jar
+cacophony/lib/hector-core-1.1-2-sources.jar
+cacophony/lib/libthrift-0.7.0.jar
+cacophony/lib/slf4j-api-1.6.1.jar
+cacophony/lib/slf4j-log4j12-1.6.1.jar

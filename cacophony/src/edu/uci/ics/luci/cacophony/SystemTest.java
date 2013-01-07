@@ -49,7 +49,7 @@ import edu.uci.ics.luci.utility.webserver.handlers.HandlerFileServer;
 
 public class SystemTest {
 	
-	private static final String namespace = "systemtest.waitscout.com";
+	private static final String namespace = "cacophony.luci.ics.uci.edu";
 	
 	private static final int portDirectoryA = 9020;
 	private static final int portDirectoryB = 9021;
@@ -158,6 +158,9 @@ public class SystemTest {
 			directoryB.initializeDirectory(config);
 		} catch (ConfigurationException e2) {
 			fail("Unable to use requested configuration file:"+configFileName);
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+			fail("Unable to initialize Directory");
 		}
 		
 			

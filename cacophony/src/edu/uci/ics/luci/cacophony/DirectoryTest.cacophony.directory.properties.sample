@@ -3,13 +3,13 @@
  <properties>
    <comment>First entry is for JUnit testing</comment>
    <entry key="test">value</entry>
-   <entry key="namespace">waitscout.com</entry>
+   <entry key="namespace">cacophony.luci.ics.uci.edu</entry>
    <entry key="nodelist.loader.class">edu.uci.ics.luci.cacophony.directory.nodelist.MySQL</entry>
-   <entry key="nodelist.loader.class.options">{	server_address:"127.0.0.1:33060"\,
+   <entry key="nodelist.loader.class.options">{	server_address:"127.0.0.1:3306"\,
    												user:"<username>"\, >
    												password:"<password>"\,
    												database:"<databasename>"\,
-   												listViewQuery:"select a.zid AS ID\, a.name AS NAME from zrdata as a join call_list as b on a.zid = b.zid where b.zid is not null group by a.zid order by a.zid limit 50000"\,
-   												mapViewQuery:"select a.zid AS ID\, AVG(a.latitude) AS Y\, AVG(a.longitude) AS X\, log10(count(*)) AS MAP_WEIGHT from zrdata as a join call_list as b on a.zid = b.zid where b.zid is not null and a.latitude is not null and a.longitude is not null group by a.zid order by a.zid limit 50000"}
+   												listViewQuery:"select id AS ID\, name AS NAME from testList"\,
+   												mapViewQuery:"select id AS ID\, Y(point) AS Y\, X(point) AS X\, weight AS MAP_WEIGHT from testList"}
    												</entry>
  </properties>

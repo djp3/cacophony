@@ -159,7 +159,13 @@ public class Directory implements Quittable{
 			url ="127.0.0.1";
 		}
 		
-		cluster = HFactory.getOrCreateCluster("CacophonyClusterV1_0",url+":"+Integer.toString(Directory.CASSANDRA_PORT));
+		try{
+			cluster = HFactory.getOrCreateCluster("CacophonyClusterV1_0",url+":"+Integer.toString(Directory.CASSANDRA_PORT));
+		}
+		catch(NoClassDefFoundError e){
+			log.error("Make sure you are including libthrift.jar in theproject");
+			throw e;
+		}
 		
 		if((g == null) || (g.isTesting())){
 			KEYSPACE = "CacophonyKeyspaceV1_0s";
@@ -759,13 +765,15 @@ public class Directory implements Quittable{
 			initializeDirectory(config);
 		} catch (ConfigurationException e) {
 			getLog().error("Unable to initialize directory with "+defaultFileName);
+		} catch (ClassNotFoundException e) {
+			getLog().error("Unable to initialize directory with "+defaultFileName);
 		}
 	}
 
 
 
 	@SuppressWarnings("unchecked")
-	public void initializeDirectory(XMLPropertiesConfiguration config) {
+	public void initializeDirectory(XMLPropertiesConfiguration config) throws ClassNotFoundException {
 		if(config == null){
 			getLog().warn("Called with null config, using default");
 			initializeDirectory();
@@ -777,6 +785,9 @@ public class Directory implements Quittable{
 		setDirectoryNamespace(namespace);
 		
 		String nodeListLoader = config.getString("nodelist.loader.class");
+		if(nodeListLoader == null){
+			throw new ClassNotFoundException("You need to specify a nodelist.loader.class in the properties file: "+config.getBasePath());
+		}
 		Class<? extends NodeListLoader> c = null;
 		try {
 			 c = (Class<? extends NodeListLoader>) Class.forName(nodeListLoader);
@@ -855,7 +866,12 @@ public class Directory implements Quittable{
 		Directory directory = new Directory();
 		Globals.getGlobals().addQuittables(directory);
 		
-		directory.initializeDirectory(config);
+		try {
+			directory.initializeDirectory(config);
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+			log.warn("Could not initialize directory");
+		}
 		
 		/* Set up the urls to access the directory from */
 		List<Pair<Long, String>> urls = new ArrayList<Pair<Long,String>>();

@@ -13,6 +13,8 @@ import java.util.Vector;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+import com.mysql.jdbc.exceptions.jdbc4.CommunicationsException;
+
 public class DBConnectionPool {
 	public static final String URL_PREFIX = "jdbc:mysql:";
 	private static final int POOL_SOFT_LIMIT = 400;
@@ -259,7 +261,9 @@ public class DBConnectionPool {
 						getLog().log(Level.DEBUG, "Trying to make a connection for hot standby, available pool size is "+(connections.size()-inuse)+"/"+connections.size()+" < "+numberToKeepHot);
 						//c[i] = getSoftConnection(); //Why soft and not hard?
 						DBConnection c = getHardConnection(); 
-						cList.add(c);
+						if(c != null){
+							cList.add(c);
+						}
 						
 						ResultSet dummy=null;
 						try{
@@ -336,6 +340,10 @@ public class DBConnectionPool {
 			Connection conn = null;
 			try {
 				conn = DriverManager.getConnection(URL_PREFIX+url, p);
+			} catch (CommunicationsException e){
+				getLog().error("Is your database running?  Is it accessible? "+URL_PREFIX+url+"\n"+e);
+				return(null);
+			
 			} catch (SQLException e) {
 				getLog().log(Level.ERROR, "Unable to get a hard connection from the database: "+e);
 			}
