@@ -49,7 +49,7 @@ import edu.uci.ics.luci.utility.webserver.handlers.HandlerFileServer;
 
 public class SystemTest {
 	
-	private static final String namespace = "cacophony.luci.ics.uci.edu";
+	private static final String namespace = "edu.uci.ics.luci.cacophony";
 	
 	private static final int portDirectoryA = 9020;
 	private static final int portDirectoryB = 9021;

@@ -479,7 +479,7 @@ public class Directory implements Quittable{
 		
 			for(String keyI: keyIterator){
 				try {
-					System.out.println("Removing: "+keyI);
+					//System.out.println("Removing: "+keyI);
 					directoryServerTemplate.deleteRow(keyI);
 				} catch (HectorException e) {
 					getLog().error("Problem getting a Directory Server List:\n"+e);
