@@ -56,7 +56,7 @@ jar-in-jar-loader.zip
 
 weka
 
-#These should be built locally
+#These should be built or downloaded locally
 cacophony/lib/apache-cassandra-1.1.8-SNAPSHOT.jar
 cacophony/lib/apache-cassandra-clientutil-1.1.8-SNAPSHOT.jar
 cacophony/lib/apache-cassandra-thrift-1.1.8-SNAPSHOT.jar
@@ -64,3 +64,5 @@ cacophony/lib/hector-core-1.1-2-sources.jar
 cacophony/lib/libthrift-0.7.0.jar
 cacophony/lib/slf4j-api-1.6.1.jar
 cacophony/lib/slf4j-log4j12-1.6.1.jar
+cacophony/lib/commons-codec-1.7
+cacophony/lib/commons-collections-3.2.1

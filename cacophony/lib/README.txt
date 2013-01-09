@@ -13,11 +13,23 @@ This is what is in this directory on a working distribution
 		hector-core-1.1-2-sources.jar -> ../../external/hector/core/target/hector-core-1.1-2-sources.jar
 		hector-object-mapper-3.1-07.jar -> ../../external/hector/object-mapper/target/hector-object-mapper-3.1-07.jar
 
-	jars without a well described pedigree:
+	jars from other places:
 		JSAP-2.1.jar
-		annotations.jar
-		commons-codec-1.4.jar
-		commons-collections-3.2.1.jar
+			Java Simple Argument Parser
+			http://sourceforge.net/projects/jsap/
+
+		commons-codec-1.7/commons-codec-1.7-sources.jar
+		commons-codec-1.7//commons-codec-1.7.jar
+			Apache Commons Codec
+			http://commons.apache.org/codec/
+
+		commons-collections-3.2.1/commons-collections-3.2.1-sources.jar
+		commons-collections-3.2.1/commons-collections-3.2.1.jar
+			Apache Commons Collections
+			http://commons.apache.org/collections/
+			
+
+	jars without a well described pedigree:
 		commons-configuration-1.6.jar
 		commons-lang-2.4.jar
 		commons-logging-1.1.1.jar
