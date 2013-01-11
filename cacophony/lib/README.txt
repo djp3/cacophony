@@ -43,10 +43,15 @@ This is what is in this directory on a working distribution
 		commons-lang-2.6.jar
 			Apache Commons Lang
 			http://commons.apache.org/lang/
-			
 
+		commons-logging-1.1.1/commons-logging-1.1.1-sources.jar
+		commons-logging-1.1.1/commons-logging-1.1.1.jar
+		commons-logging-1.1.1/commons-logging-adapters-1.1.1.jar
+		commons-logging-1.1.1/commons-logging-api-1.1.1.jar
+			Apache Commons Logging
+			http://commons.apache.org/logging/
+			
 	jars without a well described pedigree:
-		commons-logging-1.1.1.jar
 		json.jar
 		log4j-1.2.14.jar
 		mysql-connector-java-5.1.7-bin.jar
