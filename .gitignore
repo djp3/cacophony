@@ -53,8 +53,6 @@ cnode_pool.cloud3.config.properties
 directory.cloud2.config.properties
 directory.cloud3.config.properties
 
-jar-in-jar-loader.zip
-
 #These should be built or downloaded locally
 cacophony/lib/apache-cassandra-1.1.8-SNAPSHOT.jar
 cacophony/lib/apache-cassandra-clientutil-1.1.8-SNAPSHOT.jar
@@ -89,3 +87,8 @@ utility/libs/commons-logging-1.1.1
 deploy.batch.txt
 deploy.cloud2.sh
 deploy.cloud3.sh
+
+#local build files
+ant_directory.xml
+ant_node.xml
+jar-in-jar-loader.zip
