@@ -1,0 +1,37 @@
+Zero Weights processed. Default weights will be used
+Zero Weights processed. Default weights will be used
+Zero Weights processed. Default weights will be used
+Zero Weights processed. Default weights will be used
+Zero Weights processed. Default weights will be used
+Zero Weights processed. Default weights will be used
+Zero Weights processed. Default weights will be used
+Zero Weights processed. Default weights will be used
+Zero Weights processed. Default weights will be used
+Zero Weights processed. Default weights will be used
+Stemmer 'porter' unknown!
+Stemmer 'porter' unknown!
+Stemmer 'porter' unknown!
+Stemmer 'porter' unknown!
+Stemmer 'porter' unknown!
+Stemmer 'porter' unknown!
+Stemmer 'porter' unknown!
+Stemmer 'porter' unknown!
+Stemmer 'porter' unknown!
+Stemmer 'porter' unknown!
+Stemmer 'porter' unknown!
+Stemmer 'porter' unknown!
+Stemmer 'porter' unknown!
+Stemmer 'porter' unknown!
+A linear kernel, i.e., Exponent=1, is not possible!
+A linear kernel, i.e., Exponent=1, is not possible!
+A linear kernel, i.e., Exponent=1, is not possible!
+A linear kernel, i.e., Exponent=1, is not possible!
+No subset size evaluator given, using evaluator that is used for final search.
+No subset size evaluator given, using evaluator that is used for final search.
+No subset size evaluator given, using evaluator that is used for final search.
+No subset size evaluator given, using evaluator that is used for final search.
+No subset size evaluator given, using evaluator that is used for final search.
+NOTE: at least 1 cluster definition is necessary, created default one.
+NOTE: at least 1 cluster definition is necessary, created default one.
+NOTE: at least 1 cluster definition is necessary, created default one.
+NOTE: at least 1 cluster definition is necessary, created default one.

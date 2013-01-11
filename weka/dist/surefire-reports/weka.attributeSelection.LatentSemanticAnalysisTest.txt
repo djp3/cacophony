@@ -1,0 +1,279 @@
+-------------------------------------------------------------------------------
+Test set: weka.attributeSelection.LatentSemanticAnalysisTest
+-------------------------------------------------------------------------------
+Tests run: 19, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 0.544 sec <<< FAILURE!
+testRegression(weka.attributeSelection.LatentSemanticAnalysisTest)  Time elapsed: 0.037 sec  <<< FAILURE!
+junit.framework.AssertionFailedError: Regression test failed. Difference:
++++ Reference: src/test/resources/wekarefs/weka/attributeSelection/LatentSemanticAnalysisTest.ref +++
+=== Attribute Selection on all input data ===
+Search Method:
+	Attribute ranking.
+Attribute Evaluator (unsupervised):
+	Latent Semantic Analysis Attribute Transformer
+Number of latent variables utilized: 1
+SingularValue	LatentVariable#
+12149897946236.85888	1
+Attribute vectors (left singular vectors) -- row vectors show
+the relation between the original attributes and the latent 
+variables computed by the singular value decomposition:
+LatentVariable#1	AttributeName
+  0      		Nominal1
+  0      		Nominal2
+  0      		Numeric1
+  1      		Date1
+Instance vectors (right singular vectors) -- column
+vectors show the relation between the original instances and the
+latent variables computed by the singular value decomposition:
+Instance#1	Instance#2	Instance#3	Instance#4	Instance#5	Instance#6	Instance#7	Instance#8	Instance#9	Instance#10	Instance#11	Instance#12	Instance#13	Instance#14	Instance#15	Instance#16	Instance#17	Instance#18	Instance#19	Instance#20	LatentVariable#
+  0.09091	  0.31687	  0.10129	  0.18441	  0.15584	  0.24414	  0.0961 	  0.22856	  0.23636	  0.32207	  0.08052	  0.23375	  0.18701	  0.28311	  0.27531	  0.2935 	  0.0883 	  0.32466	  0.21298	  0.21298	1
+Ranked attributes:
+ 1 1 0    Nominal1+0    Nominal2+0    Numeric1+0    Date1
+Selected attributes: 1 : 1
+=== Attribute Selection on all input data ===
+Search Method:
+	Attribute ranking.
+Attribute Evaluator (unsupervised):
+	Latent Semantic Analysis Attribute Transformer
+Number of latent variables utilized: 1
+SingularValue	LatentVariable#
+13535468797765.83936	1
+Attribute vectors (left singular vectors) -- row vectors show
+the relation between the original attributes and the latent 
+variables computed by the singular value decomposition:
+LatentVariable#1	AttributeName
+  0      		Nominal1
+  0      		Nominal2
+  0      		Numeric1
+  1      		Date1
+Instance vectors (right singular vectors) -- column
+vectors show the relation between the original instances and the
+latent variables computed by the singular value decomposition:
+Instance#1	Instance#2	Instance#3	Instance#4	Instance#5	Instance#6	Instance#7	Instance#8	Instance#9	Instance#10	Instance#11	Instance#12	Instance#13	Instance#14	Instance#15	Instance#16	Instance#17	Instance#18	Instance#19	Instance#20	LatentVariable#
+  0.0816 	  0.24713	  0.23314	  0.13056	  0.20517	  0.26812	  0.21915	  0.2448 	  0.17019	  0.10025	  0.11424	  0.29843	  0.07227	  0.27045	  0.2891 	  0.29843	  0.29143	  0.24713	  0.26345	  0.17719	1
+Ranked attributes:
+ 1 1 0    Nominal1+0    Nominal2+0    Numeric1+0    Date1
+Selected attributes: 1 : 1
+=== Attribute Selection on all input data ===
+Search Method:
+	Attribute ranking.
+Attribute Evaluator (unsupervised):
+	Latent Semantic Analysis Attribute Transformer
+Number of latent variables utilized: 1
+SingularValue	LatentVariable#
+10940596499549.85984	1
+Attribute vectors (left singular vectors) -- row vectors show
+the relation between the original attributes and the latent 
+variables computed by the singular value decomposition:
+LatentVariable#1	AttributeName
+  0      		Nominal1
+  0      		Nominal2
+  0      		Numeric1
+  1      		Date1
+Instance vectors (right singular vectors) -- column
+vectors show the relation between the original instances and the
+latent variables computed by the singular value decomposition:
+Instance#1	Instance#2	Instance#3	Instance#4	Instance#5	Instance#6	Instance#7	Instance#8	Instance#9	Instance#10	Instance#11	Instance#12	Instance#13	Instance#14	Instance#15	Instance#16	Instance#17	Instance#18	Instance#19	Instance#20	LatentVariable#
+  0.08653	  0.27402	  0.23652	  0.20768	  0.11826	  0.15287	  0.2221 	  0.15575	  0.2769 	  0.35767	  0.25671	  0.25671	  0.10384	  0.35479	  0.10095	  0.10672	  0.0923 	  0.0923 	  0.28267	  0.34036	1
+Ranked attributes:
+ 1 1 0    Nominal1+0    Nominal2+0    Numeric1+0    Date1
+Selected attributes: 1 : 1
+=== Attribute Selection on all input data ===
+Search Method:
+	Attribute ranking.
+Attribute Evaluator (unsupervised):
+	Latent Semantic Analysis Attribute Transformer
+Number of latent variables utilized: 1
+SingularValue	LatentVariable#
+47631112273572.13696	1
+Attribute vectors (left singular vectors) -- row vectors show
+the relation between the original attributes and the latent 
+variables computed by the singular value decomposition:
+LatentVariable#1	AttributeName
+  0      		Nominal1
+  0      		Nominal2
+  0.96576		Numeric1
+  0.25945		Date1
+Instance vectors (right singular vectors) -- column
+vectors show the relation between the original instances and the
+latent variables computed by the singular value decomposition:
+Instance#1	Instance#2	Instance#3	Instance#4	Instance#5	Instance#6	Instance#7	Instance#8	Instance#9	Instance#10	Instance#11	Instance#12	Instance#13	Instance#14	Instance#15	Instance#16	Instance#17	Instance#18	Instance#19	Instance#20	LatentVariable#
+  0.15958	  0.14107	  0.32943	  0.19646	  0.12518	  0.31921	  0.13645	  0.29702	  0.17635	  0.3222 	  0.2362 	  0.23187	  0.13073	  0.23237	  0.25166	  0.10646	  0.30046	  0.246  	  0.16786	  0.11799	1
+Ranked attributes:
+ 0.986 1 0    Nominal1+0    Nominal2+0    Numeric1+0    Date1
+Selected attributes: 1 : 1
+=== Attribute Selection on all input data ===
+Search Method:
+	Attribute ranking.
+Attribute Evaluator (unsupervised):
+	Latent Semantic Analysis Attribute Transformer
+Number of latent variables utilized: 1
+SingularValue	LatentVariable#
+13204726207175.25248	1
+Attribute vectors (left singular vectors) -- row vectors show
+the relation between the original attributes and the latent 
+variables computed by the singular value decomposition:
+LatentVariable#1	AttributeName
+  0      		Nominal1
+  0      		Nominal2
+  0      		Numeric1
+  1      		Date1
+Instance vectors (right singular vectors) -- column
+vectors show the relation between the original instances and the
+latent variables computed by the singular value decomposition:
+Instance#1	Instance#2	Instance#3	Instance#4	Instance#5	Instance#6	Instance#7	Instance#8	Instance#9	Instance#10	Instance#11	Instance#12	Instance#13	Instance#14	Instance#15	Instance#16	Instance#17	Instance#18	Instance#19	Instance#20	LatentVariable#
+  0.23898	  0.1171 	  0.29156	  0.23898	  0.22225	  0.16968	  0.18163	  0.27483	  0.29395	  0.22704	  0.08842	  0.16728	  0.10276	  0.1171 	  0.29634	  0.28678	  0.15056	  0.29395	  0.17207	  0.3059 	1
+Ranked attributes:
+ 1 1 0    Nominal1+0    Nominal2+0    Numeric1+0    Date1
+Selected attributes: 1 : 1
++++ Current +++
+=== Attribute Selection on all input data ===
+Search Method:
+	Attribute ranking.
+Attribute Evaluator (unsupervised):
+	Latent Semantic Analysis Attribute Transformer
+Number of latent variables utilized: 1
+SingularValue	LatentVariable#
+12150213097168.9856	1
+Attribute vectors (left singular vectors) -- row vectors show
+the relation between the original attributes and the latent 
+variables computed by the singular value decomposition:
+LatentVariable#1	AttributeName
+  0      		Nominal1
+  0      		Nominal2
+  0      		Numeric1
+  1      		Date1
+Instance vectors (right singular vectors) -- column
+vectors show the relation between the original instances and the
+latent variables computed by the singular value decomposition:
+Instance#1	Instance#2	Instance#3	Instance#4	Instance#5	Instance#6	Instance#7	Instance#8	Instance#9	Instance#10	Instance#11	Instance#12	Instance#13	Instance#14	Instance#15	Instance#16	Instance#17	Instance#18	Instance#19	Instance#20	LatentVariable#
+  0.09091	  0.31687	  0.1013 	  0.18441	  0.15584	  0.24414	  0.0961 	  0.22856	  0.23636	  0.32207	  0.08052	  0.23375	  0.18701	  0.2831 	  0.27531	  0.29349	  0.08831	  0.32466	  0.21298	  0.21298	1
+Ranked attributes:
+ 1 1 0    Nominal1+0    Nominal2+0    Numeric1+0    Date1
+Selected attributes: 1 : 1
+=== Attribute Selection on all input data ===
+Search Method:
+	Attribute ranking.
+Attribute Evaluator (unsupervised):
+	Latent Semantic Analysis Attribute Transformer
+Number of latent variables utilized: 1
+SingularValue	LatentVariable#
+13535787998059.55072	1
+Attribute vectors (left singular vectors) -- row vectors show
+the relation between the original attributes and the latent 
+variables computed by the singular value decomposition:
+LatentVariable#1	AttributeName
+  0      		Nominal1
+  0      		Nominal2
+  0      		Numeric1
+  1      		Date1
+Instance vectors (right singular vectors) -- column
+vectors show the relation between the original instances and the
+latent variables computed by the singular value decomposition:
+Instance#1	Instance#2	Instance#3	Instance#4	Instance#5	Instance#6	Instance#7	Instance#8	Instance#9	Instance#10	Instance#11	Instance#12	Instance#13	Instance#14	Instance#15	Instance#16	Instance#17	Instance#18	Instance#19	Instance#20	LatentVariable#
+  0.0816 	  0.24713	  0.23314	  0.13056	  0.20517	  0.26812	  0.21915	  0.2448 	  0.17019	  0.10025	  0.11424	  0.29842	  0.07228	  0.27045	  0.2891 	  0.29842	  0.29143	  0.24713	  0.26345	  0.17719	1
+Ranked attributes:
+ 1 1 0    Nominal1+0    Nominal2+0    Numeric1+0    Date1
+Selected attributes: 1 : 1
+=== Attribute Selection on all input data ===
+Search Method:
+	Attribute ranking.
+Attribute Evaluator (unsupervised):
+	Latent Semantic Analysis Attribute Transformer
+Number of latent variables utilized: 1
+SingularValue	LatentVariable#
+10940904617025.85344	1
+Attribute vectors (left singular vectors) -- row vectors show
+the relation between the original attributes and the latent 
+variables computed by the singular value decomposition:
+LatentVariable#1	AttributeName
+  0      		Nominal1
+  0      		Nominal2
+  0      		Numeric1
+  1      		Date1
+Instance vectors (right singular vectors) -- column
+vectors show the relation between the original instances and the
+latent variables computed by the singular value decomposition:
+Instance#1	Instance#2	Instance#3	Instance#4	Instance#5	Instance#6	Instance#7	Instance#8	Instance#9	Instance#10	Instance#11	Instance#12	Instance#13	Instance#14	Instance#15	Instance#16	Instance#17	Instance#18	Instance#19	Instance#20	LatentVariable#
+  0.08653	  0.27402	  0.23652	  0.20768	  0.11826	  0.15287	  0.2221 	  0.15575	  0.2769 	  0.35766	  0.25671	  0.25671	  0.10384	  0.35478	  0.10096	  0.10672	  0.0923 	  0.0923 	  0.28267	  0.34035	1
+Ranked attributes:
+ 1 1 0    Nominal1+0    Nominal2+0    Numeric1+0    Date1
+Selected attributes: 1 : 1
+=== Attribute Selection on all input data ===
+Search Method:
+	Attribute ranking.
+Attribute Evaluator (unsupervised):
+	Latent Semantic Analysis Attribute Transformer
+Number of latent variables utilized: 1
+SingularValue	LatentVariable#
+47632428894796.19584	1
+Attribute vectors (left singular vectors) -- row vectors show
+the relation between the original attributes and the latent 
+variables computed by the singular value decomposition:
+LatentVariable#1	AttributeName
+  0      		Nominal1
+  0      		Nominal2
+  0.96576		Numeric1
+  0.25945		Date1
+Instance vectors (right singular vectors) -- column
+vectors show the relation between the original instances and the
+latent variables computed by the singular value decomposition:
+Instance#1	Instance#2	Instance#3	Instance#4	Instance#5	Instance#6	Instance#7	Instance#8	Instance#9	Instance#10	Instance#11	Instance#12	Instance#13	Instance#14	Instance#15	Instance#16	Instance#17	Instance#18	Instance#19	Instance#20	LatentVariable#
+  0.15958	  0.14107	  0.32943	  0.19646	  0.12518	  0.31921	  0.13645	  0.29702	  0.17635	  0.32219	  0.2362 	  0.23187	  0.13074	  0.23237	  0.25165	  0.10646	  0.30046	  0.246  	  0.16786	  0.118  	1
+Ranked attributes:
+ 0.986 1 0    Nominal1+0    Nominal2+0    Numeric1+0    Date1
+Selected attributes: 1 : 1
+=== Attribute Selection on all input data ===
+Search Method:
+	Attribute ranking.
+Attribute Evaluator (unsupervised):
+	Latent Semantic Analysis Attribute Transformer
+Number of latent variables utilized: 1
+SingularValue	LatentVariable#
+13205046537662.4128	1
+Attribute vectors (left singular vectors) -- row vectors show
+the relation between the original attributes and the latent 
+variables computed by the singular value decomposition:
+LatentVariable#1	AttributeName
+  0      		Nominal1
+  0      		Nominal2
+  0      		Numeric1
+  1      		Date1
+Instance vectors (right singular vectors) -- column
+vectors show the relation between the original instances and the
+latent variables computed by the singular value decomposition:
+Instance#1	Instance#2	Instance#3	Instance#4	Instance#5	Instance#6	Instance#7	Instance#8	Instance#9	Instance#10	Instance#11	Instance#12	Instance#13	Instance#14	Instance#15	Instance#16	Instance#17	Instance#18	Instance#19	Instance#20	LatentVariable#
+  0.23898	  0.1171 	  0.29156	  0.23898	  0.22225	  0.16968	  0.18163	  0.27483	  0.29395	  0.22704	  0.08842	  0.16729	  0.10277	  0.1171 	  0.29634	  0.28678	  0.15056	  0.29395	  0.17207	  0.3059 	1
+Ranked attributes:
+ 1 1 0    Nominal1+0    Nominal2+0    Numeric1+0    Date1
+Selected attributes: 1 : 1
++++
+	at junit.framework.Assert.fail(Assert.java:47)
+	at weka.attributeSelection.AbstractAttributeSelectionTest.testRegression(AbstractAttributeSelectionTest.java:796)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at junit.framework.TestCase.runTest(TestCase.java:164)
+	at junit.framework.TestCase.runBare(TestCase.java:130)
+	at junit.framework.TestResult$1.protect(TestResult.java:106)
+	at junit.framework.TestResult.runProtected(TestResult.java:124)
+	at junit.framework.TestResult.run(TestResult.java:109)
+	at junit.framework.TestCase.run(TestCase.java:120)
+	at junit.framework.TestSuite.runTest(TestSuite.java:230)
+	at junit.framework.TestSuite.run(TestSuite.java:225)
+	at sun.reflect.GeneratedMethodAccessor9.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at org.apache.maven.surefire.junit.JUnitTestSet.execute(JUnitTestSet.java:98)
+	at org.apache.maven.surefire.junit.JUnit3Provider.executeTestSet(JUnit3Provider.java:107)
+	at org.apache.maven.surefire.junit.JUnit3Provider.invoke(JUnit3Provider.java:84)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at org.apache.maven.surefire.booter.ProviderFactory$ClassLoaderProxy.invoke(ProviderFactory.java:103)
+	at $Proxy0.invoke(Unknown Source)
+	at org.apache.maven.surefire.booter.SurefireStarter.invokeProvider(SurefireStarter.java:150)
+	at org.apache.maven.surefire.booter.SurefireStarter.runSuitesInProcess(SurefireStarter.java:91)
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:69)
+

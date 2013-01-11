@@ -1,0 +1,83 @@
+-------------------------------------------------------------------------------
+Test set: weka.classifiers.functions.IsotonicRegressionTest
+-------------------------------------------------------------------------------
+Tests run: 23, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 0.253 sec <<< FAILURE!
+testRegression(weka.classifiers.functions.IsotonicRegressionTest)  Time elapsed: 0.009 sec  <<< FAILURE!
+junit.framework.AssertionFailedError: Regression test failed. Difference:
++++ Reference: src/test/resources/wekarefs/weka/classifiers/functions/IsotonicRegressionTest.ref +++
+10 predictions
+NUM: 0.18782009184360504 0.15169496089220047 1.0
+NUM: 1.1450062096118927 1.2058614268898964 1.0
+NUM: 0.007854551076889038 0.05800917372107506 1.0
+NUM: 0.20444922149181366 0.15169496089220047 1.0
+NUM: 0.24350892007350922 0.16638723015785217 1.0
+NUM: 1.1201436221599579 1.0771798491477966 1.0
+NUM: 1.2374650239944458 1.2058614268898964 1.0
+NUM: 1.1591611355543137 1.2058614268898964 1.0
+NUM: 1.0900637060403824 1.0771798491477966 1.0
+NUM: 1.1143292635679245 1.0771798491477966 1.0
+10 predictions
+NUM: 1.89340926E12 0.0 1.0
+NUM: 3.62909886E12 0.0 1.0
+NUM: 1.32532926E12 0.0 1.0
+NUM: 2.96632446E12 0.0 1.0
+NUM: 1.67248446E12 0.0 1.0
+NUM: 2.01963966E12 0.0 1.0
+NUM: 2.74548606E12 0.0 1.0
+NUM: 2.20894206E12 0.0 1.0
+NUM: 2.84009406E12 0.0 1.0
+NUM: 2.80855806E12 0.0 1.0
++++ Current +++
+10 predictions
+NUM: 0.18782009184360504 0.15169496089220047 1.0
+NUM: 1.1450062096118927 1.2058614268898964 1.0
+NUM: 0.007854551076889038 0.05800917372107506 1.0
+NUM: 0.20444922149181366 0.15169496089220047 1.0
+NUM: 0.24350892007350922 0.16638723015785217 1.0
+NUM: 1.1201436221599579 1.0771798491477966 1.0
+NUM: 1.2374650239944458 1.2058614268898964 1.0
+NUM: 1.1591611355543137 1.2058614268898964 1.0
+NUM: 1.0900637060403824 1.0771798491477966 1.0
+NUM: 1.1143292635679245 1.0771798491477966 1.0
+10 predictions
+NUM: 1.89348486E12 0.0 1.0
+NUM: 3.62917446E12 0.0 1.0
+NUM: 1.32540486E12 0.0 1.0
+NUM: 2.96640006E12 0.0 1.0
+NUM: 1.67256006E12 0.0 1.0
+NUM: 2.01971526E12 0.0 1.0
+NUM: 2.74556166E12 0.0 1.0
+NUM: 2.20901766E12 0.0 1.0
+NUM: 2.84016966E12 0.0 1.0
+NUM: 2.80863366E12 0.0 1.0
++++
+	at junit.framework.Assert.fail(Assert.java:47)
+	at weka.classifiers.AbstractClassifierTest.testRegression(AbstractClassifierTest.java:975)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at junit.framework.TestCase.runTest(TestCase.java:164)
+	at junit.framework.TestCase.runBare(TestCase.java:130)
+	at junit.framework.TestResult$1.protect(TestResult.java:106)
+	at junit.framework.TestResult.runProtected(TestResult.java:124)
+	at junit.framework.TestResult.run(TestResult.java:109)
+	at junit.framework.TestCase.run(TestCase.java:120)
+	at junit.framework.TestSuite.runTest(TestSuite.java:230)
+	at junit.framework.TestSuite.run(TestSuite.java:225)
+	at sun.reflect.GeneratedMethodAccessor9.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at org.apache.maven.surefire.junit.JUnitTestSet.execute(JUnitTestSet.java:98)
+	at org.apache.maven.surefire.junit.JUnit3Provider.executeTestSet(JUnit3Provider.java:107)
+	at org.apache.maven.surefire.junit.JUnit3Provider.invoke(JUnit3Provider.java:84)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at org.apache.maven.surefire.booter.ProviderFactory$ClassLoaderProxy.invoke(ProviderFactory.java:103)
+	at $Proxy0.invoke(Unknown Source)
+	at org.apache.maven.surefire.booter.SurefireStarter.invokeProvider(SurefireStarter.java:150)
+	at org.apache.maven.surefire.booter.SurefireStarter.runSuitesInProcess(SurefireStarter.java:91)
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:69)
+

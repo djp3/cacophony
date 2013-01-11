@@ -1,0 +1,94 @@
+-------------------------------------------------------------------------------
+Test set: weka.filters.unsupervised.attribute.WaveletTest
+-------------------------------------------------------------------------------
+Tests run: 18, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 0.052 sec <<< FAILURE!
+testRegression(weka.filters.unsupervised.attribute.WaveletTest)  Time elapsed: 0.005 sec  <<< FAILURE!
+junit.framework.AssertionFailedError: Regression test failed. Difference:
++++ Reference: src/test/resources/wekarefs/weka/filters/unsupervised/attribute/WaveletTest.ref +++
+@relation 'FilterTest-weka.filters.unsupervised.attribute.Wavelet-AHaar-PZero-Fweka.filters.MultiFilter -F \"weka.filters.unsupervised.attribute.ReplaceMissingValues \" -F \"weka.filters.unsupervised.attribute.Normalize -S 1.0 -T 0.0\"'
+@attribute NumericAtt1 numeric
+@attribute Haar_2 numeric
+@attribute Haar_3 numeric
+@attribute Haar_4 numeric
+@attribute Haar_5 numeric
+@data
+1,0.772759,0.772759,-0.313359,0
+2,0.733389,0.733389,-0.369037,0
+3,0.768822,0.768822,-0.318927,0
+4,0.654649,0.654649,-0.480392,0
+5,0.760948,0.760948,-0.330062,0
+6,0.575953,0.575953,-0.591809,0
+7,0.753118,0.753118,-0.34126,0
+8,0.497212,0.497212,-0.703165,0
+9,0.785921,0.785921,-0.298565,0
+9.4,0.51033,0.51033,-0.688309,0
+1.4,0.537933,0.537933,-0.649396,0
+2.3,0.577303,0.577303,-0.593719,0
+3.3,0.705649,0.705649,-0.412209,0
+4.3,0.656043,0.656043,-0.482363,0
+5.3,0.644276,0.644276,-0.499128,0
+6.5,0.695457,0.695457,-0.426747,0
+7.5,0.716492,0.716492,-0.400818,0
+8.5,0.775547,0.775547,-0.317301,0
+9.4,0.826772,0.826772,-0.244982,0
+4.3,0.366142,0.366142,0.517803,0
+0,0.5,0.5,0.707107,0
++++ Current +++
+@relation 'FilterTest-weka.filters.unsupervised.attribute.Wavelet-AHaar-PZero-Fweka.filters.MultiFilter -F \"weka.filters.unsupervised.attribute.ReplaceMissingValues \" -F \"weka.filters.unsupervised.attribute.Normalize -S 1.0 -T 0.0\"'
+@attribute NumericAtt1 numeric
+@attribute Haar_2 numeric
+@attribute Haar_3 numeric
+@attribute Haar_4 numeric
+@attribute Haar_5 numeric
+@data
+1,0.77276,0.77276,-0.313359,0
+2,0.73339,0.73339,-0.369037,0
+3,0.768823,0.768823,-0.318927,0
+4,0.654649,0.654649,-0.480392,0
+5,0.760949,0.760949,-0.330063,0
+6,0.575953,0.575953,-0.591809,0
+7,0.753118,0.753118,-0.34126,0
+8,0.497213,0.497213,-0.703165,0
+9,0.785921,0.785921,-0.298565,0
+9.4,0.51033,0.51033,-0.688309,0
+1.4,0.537933,0.537933,-0.649397,0
+2.3,0.577303,0.577303,-0.593719,0
+3.3,0.705649,0.705649,-0.41221,0
+4.3,0.656043,0.656043,-0.482363,0
+5.3,0.644276,0.644276,-0.499128,0
+6.5,0.695457,0.695457,-0.426747,0
+7.5,0.716492,0.716492,-0.400818,0
+8.5,0.775547,0.775547,-0.317301,0
+9.4,0.826772,0.826772,-0.244982,0
+4.3,0.366142,0.366142,0.517803,0
+0,0.5,0.5,0.707107,0
++++
+	at junit.framework.Assert.fail(Assert.java:47)
+	at weka.filters.AbstractFilterTest.testRegression(AbstractFilterTest.java:402)
+	at sun.reflect.GeneratedMethodAccessor108.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at junit.framework.TestCase.runTest(TestCase.java:164)
+	at junit.framework.TestCase.runBare(TestCase.java:130)
+	at junit.framework.TestResult$1.protect(TestResult.java:106)
+	at junit.framework.TestResult.runProtected(TestResult.java:124)
+	at junit.framework.TestResult.run(TestResult.java:109)
+	at junit.framework.TestCase.run(TestCase.java:120)
+	at junit.framework.TestSuite.runTest(TestSuite.java:230)
+	at junit.framework.TestSuite.run(TestSuite.java:225)
+	at sun.reflect.GeneratedMethodAccessor9.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at org.apache.maven.surefire.junit.JUnitTestSet.execute(JUnitTestSet.java:98)
+	at org.apache.maven.surefire.junit.JUnit3Provider.executeTestSet(JUnit3Provider.java:107)
+	at org.apache.maven.surefire.junit.JUnit3Provider.invoke(JUnit3Provider.java:84)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at org.apache.maven.surefire.booter.ProviderFactory$ClassLoaderProxy.invoke(ProviderFactory.java:103)
+	at $Proxy0.invoke(Unknown Source)
+	at org.apache.maven.surefire.booter.SurefireStarter.invokeProvider(SurefireStarter.java:150)
+	at org.apache.maven.surefire.booter.SurefireStarter.runSuitesInProcess(SurefireStarter.java:91)
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:69)
+

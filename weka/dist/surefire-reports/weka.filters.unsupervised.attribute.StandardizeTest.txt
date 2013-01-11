@@ -1,0 +1,98 @@
+-------------------------------------------------------------------------------
+Test set: weka.filters.unsupervised.attribute.StandardizeTest
+-------------------------------------------------------------------------------
+Tests run: 18, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 0.036 sec <<< FAILURE!
+testRegression(weka.filters.unsupervised.attribute.StandardizeTest)  Time elapsed: 0.004 sec  <<< FAILURE!
+junit.framework.AssertionFailedError: Regression test failed. Difference:
++++ Reference: src/test/resources/wekarefs/weka/filters/unsupervised/attribute/StandardizeTest.ref +++
+@relation FilterTest-weka.filters.unsupervised.attribute.Standardize
+@attribute StringAtt1 string
+@attribute NominalAtt1 {r,g,b}
+@attribute NumericAtt1 numeric
+@attribute StringAtt2 string
+@attribute NominalAtt2 {a,b,c,d}
+@attribute NumericAtt2 numeric
+@attribute DateAtt1 date yyyy-MM-dd
+@data
+humpty,g,-1.414386,the,a,0.542597,1970-01-01
+dumpty,b,-1.069814,quick,b,0.230759,1970-01-01
+sat,r,-0.725242,brown,c,0.511413,1970-01-01
+on,r,-0.38067,fox,d,-0.392915,1970-01-01
+a,b,-0.036098,jumped,a,0.449046,1970-01-01
+wall,r,0.308474,over,b,-1.016589,1970-01-01
+humpty,r,0.653046,the,c,0.386678,1970-01-01
+dumpty,g,0.997618,lazy,d,-1.640263,1970-01-01
+had,b,1.34219,dog,?,0.636148,1970-01-01
+a,r,1.480019,?,?,-1.546712,1970-01-01
+great,r,-1.276558,the,a,-1.328426,1970-01-01
+fall,b,-0.966443,quick,b,-1.016589,1970-01-01
+all,r,-0.621871,brown,c,?,1970-01-01
+the,r,-0.277298,fox,d,-0.392915,1970-01-01
+kings,g,0.067274,jumped,?,-0.486466,1970-01-01
+horses,b,0.48076,over,b,-0.081078,1970-01-01
+and,r,0.825332,the,c,0.074841,1970-01-01
+all,r,1.169904,lazy,d,0.542597,1970-01-01
+the,r,1.480019,?,a,0.947985,1970-01-01
+{0 wall,2 -0.277298,4 d,5 1.259822,6 1970-01-01}
+{1 b,2 -1.758959,3 lazy,5 2.320068,6 1970-01-01}
++++ Current +++
+@relation FilterTest-weka.filters.unsupervised.attribute.Standardize
+@attribute StringAtt1 string
+@attribute NominalAtt1 {r,g,b}
+@attribute NumericAtt1 numeric
+@attribute StringAtt2 string
+@attribute NominalAtt2 {a,b,c,d}
+@attribute NumericAtt2 numeric
+@attribute DateAtt1 date yyyy-MM-dd
+@data
+humpty,g,-1.414386,the,a,0.542597,1969-12-31
+dumpty,b,-1.069814,quick,b,0.230759,1969-12-31
+sat,r,-0.725242,brown,c,0.511413,1969-12-31
+on,r,-0.38067,fox,d,-0.392915,1969-12-31
+a,b,-0.036098,jumped,a,0.449046,1969-12-31
+wall,r,0.308474,over,b,-1.016589,1969-12-31
+humpty,r,0.653046,the,c,0.386678,1969-12-31
+dumpty,g,0.997618,lazy,d,-1.640263,1969-12-31
+had,b,1.34219,dog,?,0.636148,1969-12-31
+a,r,1.480019,?,?,-1.546712,1969-12-31
+great,r,-1.276558,the,a,-1.328426,1969-12-31
+fall,b,-0.966443,quick,b,-1.016589,1969-12-31
+all,r,-0.621871,brown,c,?,1969-12-31
+the,r,-0.277298,fox,d,-0.392915,1969-12-31
+kings,g,0.067274,jumped,?,-0.486466,1969-12-31
+horses,b,0.48076,over,b,-0.081078,1969-12-31
+and,r,0.825332,the,c,0.074841,1969-12-31
+all,r,1.169904,lazy,d,0.542597,1969-12-31
+the,r,1.480019,?,a,0.947985,1969-12-31
+{0 wall,2 -0.277298,4 d,5 1.259822,6 1969-12-31}
+{1 b,2 -1.758959,3 lazy,5 2.320068,6 1969-12-31}
++++
+	at junit.framework.Assert.fail(Assert.java:47)
+	at weka.filters.AbstractFilterTest.testRegression(AbstractFilterTest.java:402)
+	at sun.reflect.GeneratedMethodAccessor108.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at junit.framework.TestCase.runTest(TestCase.java:164)
+	at junit.framework.TestCase.runBare(TestCase.java:130)
+	at junit.framework.TestResult$1.protect(TestResult.java:106)
+	at junit.framework.TestResult.runProtected(TestResult.java:124)
+	at junit.framework.TestResult.run(TestResult.java:109)
+	at junit.framework.TestCase.run(TestCase.java:120)
+	at junit.framework.TestSuite.runTest(TestSuite.java:230)
+	at junit.framework.TestSuite.run(TestSuite.java:225)
+	at sun.reflect.GeneratedMethodAccessor9.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at org.apache.maven.surefire.junit.JUnitTestSet.execute(JUnitTestSet.java:98)
+	at org.apache.maven.surefire.junit.JUnit3Provider.executeTestSet(JUnit3Provider.java:107)
+	at org.apache.maven.surefire.junit.JUnit3Provider.invoke(JUnit3Provider.java:84)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at org.apache.maven.surefire.booter.ProviderFactory$ClassLoaderProxy.invoke(ProviderFactory.java:103)
+	at $Proxy0.invoke(Unknown Source)
+	at org.apache.maven.surefire.booter.SurefireStarter.invokeProvider(SurefireStarter.java:150)
+	at org.apache.maven.surefire.booter.SurefireStarter.runSuitesInProcess(SurefireStarter.java:91)
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:69)
+

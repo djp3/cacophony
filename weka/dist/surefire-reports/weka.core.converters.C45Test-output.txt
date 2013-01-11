@@ -1,0 +1,7 @@
+testLoaderWithStream is ignored!
+---Registering Weka Editors---
+Trying to add database driver (JDBC): RmiJdbc.RJDriver - Error, not in CLASSPATH?
+Trying to add database driver (JDBC): jdbc.idbDriver - Error, not in CLASSPATH?
+Trying to add database driver (JDBC): org.gjt.mm.mysql.Driver - Error, not in CLASSPATH?
+Trying to add database driver (JDBC): com.mckoi.JDBCDriver - Error, not in CLASSPATH?
+Trying to add database driver (JDBC): org.hsqldb.jdbcDriver - Error, not in CLASSPATH?
