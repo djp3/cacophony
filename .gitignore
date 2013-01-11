@@ -75,6 +75,13 @@ cacophony/lib/libjkyotocabinet.1.1.0.dylib
 cacophony/lib/libjkyotocabinet.1.dylib
 cacophony/lib/libjkyotocabinet.dylib
 cacophony/lib/libjkyotocabinet.jnilib
+cacophony/lib/commons-logging-1.1.1.jar
+cacophony/lib/hector-core-1.1-2.jar
+cacophony/lib/hector-object-mapper-3.1-07.jar
+cacophony/lib/json.jar
+cacophony/lib/jsr305.jar
+cacophony/lib/log4j-1.2.14.jar
+cacophony/lib/mysql-connector-java-5.1.7-bin.jar
 
 utility/libs/commons-lang-2.6
 utility/libs/commons-logging-1.1.1
