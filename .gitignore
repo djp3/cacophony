@@ -20,10 +20,11 @@ external/cassandra_tmp
 external/hector
 external/hector-examples
 
+external/kyotocabinet-1.2.76
 external/kyotocabinet-install
+external/kyotocabinet-java-1.24
+external/kyotocabinet-java-install
 
-external/kyotocabinet-1.2.76/*.o
-external/kyotocabinet-1.2.76/Makefile
 
 cacophony/src/www/bootstrap
 cacophony/src/www/lib/orig
