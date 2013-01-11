@@ -107,7 +107,8 @@ public class MySQLTest {
 								"password:\"testuserPassword\","+
 								"database:\"testDatabase\","+
 								"listViewQuery:\"SELECT id AS ID, name AS NAME , 1 AS CALL_COUNT from "+tableName+" limit 1000\","+
-								"mapViewQuery:\"SELECT id AS ID, 1 AS X, 2 AS Y, 1 AS MAP_WEIGHT from "+tableName+" limit 1000\"}";
+								"mapViewQuery:\"SELECT id AS ID, 1 AS X, 2 AS Y, 1 AS MAP_WEIGHT from "+tableName+" limit 1000\","+
+								"configurationQuery:\"SELECT configuration AS CONFIGURATION from configurations\"}";
 
 			JSONObject jsonObject = null;
 			try {
