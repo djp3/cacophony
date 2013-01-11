@@ -48,6 +48,5 @@ This is what is in this directory on a working distribution
 	jars without a well described pedigree:
 		commons-logging-1.1.1.jar
 		json.jar
-		jsr305.jar
 		log4j-1.2.14.jar
 		mysql-connector-java-5.1.7-bin.jar
