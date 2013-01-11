@@ -105,11 +105,15 @@ public class CNodePoolTest {
 		Directory d = new Directory();
 		
 		/* Load up the data */
+		String configFileName = null;
 		try {
-			String configFileName="src/edu/uci/ics/luci/cacophony/DirectoryTest.cacophony.directory.properties";
+			configFileName="src/edu/uci/ics/luci/cacophony/DirectoryTest.cacophony.directory.properties";
 			d.initializeDirectory(new XMLPropertiesConfiguration(configFileName));
-		} catch (ConfigurationException e1) {
-			fail("");
+		} catch (ConfigurationException e2) {
+			fail("Unable to use requested configuration file:"+configFileName);
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+			fail("Unable to initialize Directory");
 		}
 		
 		/* Pick a Directory GUID*/
@@ -166,7 +170,7 @@ public class CNodePoolTest {
 		
 		CNodePool cNPool = new CNodePool(new KyotoCabinet<String,CNode>()).launchCNodePool(config,baseUrls);
 		assertTrue(cNPool != null);
-		assertTrue(cNPool.getPoolSize() == 5);
+		assertTrue(cNPool.getPoolSize() > 1000); /* equal to 2131 in don's database */
 		//new PopUpWindow("Click To Stop Test:"+this.getClass().getCanonicalName());
 		Globals.getGlobals().addQuittables(cNPool);
 	}
