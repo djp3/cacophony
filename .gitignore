@@ -83,12 +83,16 @@ cacophony/lib/mysql-connector-java-5.1.7-bin.jar
 utility/libs/commons-lang-2.6
 utility/libs/commons-logging-1.1.1
 
-#waitscout files on don's computer
-deploy.batch.txt
-deploy.cloud2.sh
-deploy.cloud3.sh
-
 #local build files
 ant_directory.xml
 ant_node.xml
 jar-in-jar-loader.zip
+
+#waitscout files on don's computer
+deploy.batch.txt
+deploy.cloud2.sh
+deploy.cloud3.sh
+launch.cnode_pool.cloud2.sh*
+launch.cnode_pool.cloud3.sh*
+launch.directory.cloud2.sh*
+launch.directory.cloud3.sh*
