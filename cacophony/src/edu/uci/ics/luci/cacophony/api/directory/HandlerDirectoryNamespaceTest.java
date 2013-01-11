@@ -100,8 +100,11 @@ public class HandlerDirectoryNamespaceTest {
 		String configFileName="src/edu/uci/ics/luci/cacophony/DirectoryTest.cacophony.directory.properties";
 		try {
 			d.initializeDirectory(new XMLPropertiesConfiguration(configFileName));
-		} catch (ConfigurationException e1) {
-			fail("");
+		} catch (ConfigurationException e2) {
+			fail("Unable to use requested configuration file:"+configFileName);
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+			fail("Unable to initialize Directory");
 		}
 		
 		String directoryNamespace = "test.namespace";
