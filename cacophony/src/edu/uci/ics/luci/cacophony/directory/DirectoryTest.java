@@ -178,11 +178,15 @@ public class DirectoryTest {
 		Directory d = new Directory();
 		Globals.getGlobals().addQuittables(d);
 		
+		String configFileName = null;
 		try {
-			String configFileName="src/edu/uci/ics/luci/cacophony/DirectoryTest.cacophony.directory.properties";
+			configFileName="src/edu/uci/ics/luci/cacophony/DirectoryTest.cacophony.directory.properties";
 			d.initializeDirectory(new XMLPropertiesConfiguration(configFileName));
-		} catch (ConfigurationException e1) {
-			fail("");
+		} catch (ConfigurationException e2) {
+			fail("Unable to use requested configuration file:"+configFileName);
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+			fail("Unable to initialize Directory");
 		}
 		
 		workingPort =testPortPlusPlus();

@@ -1,7 +1,6 @@
 package edu.uci.ics.luci.cacophony.api.node;
 
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -16,9 +15,6 @@ import java.util.List;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLPropertiesConfiguration;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -209,7 +205,6 @@ public class HandlerCNodePredictionTest {
 		assertTrue(cNPool != null);
 		startAWebServerForPool(workingPort,cNPool);
 		Globals.getGlobals().addQuittables(cNPool);
-		
 		
 		/* Test with working case */
 		String responseString = null;
