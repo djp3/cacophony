@@ -33,10 +33,14 @@ This is what is in this directory on a working distribution
 		commons-collections-3.2.1/commons-collections-3.2.1.jar
 			Apache Commons Collections
 			http://commons.apache.org/collections/
+
+		commons-configuration-1.9-sources.jar
+		commons-configuration-1.9.jar
+			Apache Commons Java Configurations
+			http://commons.apache.org/configuration/
 			
 
 	jars without a well described pedigree:
-		commons-configuration-1.6.jar
 		commons-lang-2.4.jar
 		commons-logging-1.1.1.jar
 		json.jar
