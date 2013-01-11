@@ -75,3 +75,6 @@ cacophony/lib/libjkyotocabinet.1.dylib
 cacophony/lib/libjkyotocabinet.dylib
 cacophony/lib/libjkyotocabinet.jnilib
 
+utility/libs/commons-lang-2.6
+utility/libs/commons-logging-1.1.1
+
