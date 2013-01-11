@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
@@ -30,6 +31,7 @@ public class MySQL extends NodeListLoader{
 	private String namespace = null;
 	private PreparedStatement listViewQueryPS = null;
 	private PreparedStatement mapViewQueryPS = null;
+	private PreparedStatement configurationQueryPS = null;
 	private LUCIDBConnectionPool pool = null;
 	private boolean error = false;
 	
@@ -121,7 +123,7 @@ public class MySQL extends NodeListLoader{
 			mapViewQuery = options.getString("mapViewQuery");
 		} catch (JSONException e) {
 		}
-		if(listViewQuery == null){
+		if(mapViewQuery == null){
 			getLog().error("Unable to get the \"mapViewQuery\"");
 			error = true;
 		}
@@ -148,6 +150,28 @@ public class MySQL extends NodeListLoader{
 			}
 		}
 		
+
+		String configurationQuery=null;
+		try {
+			configurationQuery = options.getString("configurationQuery");
+		} catch (JSONException e) {
+		}
+		if(configurationQuery == null){
+			getLog().error("Unable to get the \"configurationQuery\"");
+			error = true;
+		}
+		else{
+			if(!configurationQuery.toUpperCase().contains("SELECT ")){
+				getLog().error("Query (configurationQuery) does not contain \"SELECT\"");
+				error = true;
+			}
+			if(!configurationQuery.contains("AS CONFIGURATION")){
+				getLog().error("Query (configurationQuery) does not contain as selector for \"CONFIGURATION\"");
+				error = true;
+			}
+			configurationQuery = configurationQuery.replaceAll("_NODE_ID_","?");
+		}
+		
 		if(!error){
 			pool = new LUCIDBConnectionPool(databaseDomain, database, username, password,1,1);
 			connection = pool.getConnection();
@@ -166,6 +190,12 @@ public class MySQL extends NodeListLoader{
 					mapViewQueryPS = connection.prepareStatement(mapViewQuery);
 				} catch (SQLException e) {
 					getLog().error("Query failed:"+mapViewQuery+"\n"+e);
+					error=true;
+				}
+				try {
+					configurationQueryPS = connection.prepareStatement(configurationQuery);
+				} catch (SQLException e) {
+					getLog().error("Query failed:"+configurationQuery+"\n"+e);
 					error=true;
 				}
 			}
@@ -254,16 +284,48 @@ public class MySQL extends NodeListLoader{
 					}
 				}
 				
-				for(MetaCNode c:nodes.values()){
-					c.setConfiguration(super.getConfiguration(c.getGuid()));
-					ret.add(c);
-					/*if(c.getId() != null) good_Id++;
-					if(c.getName() != null) good_Name++;
-					if(c.getCallCount() != null) good_CallCount++;
-					if(c.getConfiguration() != null) good_Configuration++;
-					if(c.getLatitude() != null) good_Latitude++;
-					if(c.getLongitude() != null) good_Longitude++;
-					if(c.getMapWeight() != null) good_MapWeight++;*/
+				boolean multipleConfigurations = true;
+				JSONObject configurationJSON = null;
+				for(Entry<String, MetaCNode> es:nodes.entrySet()){
+					try{
+						configurationQueryPS.setString(1,es.getKey());
+					}
+					catch(SQLException e){
+						//probably due to not have any parameters
+						multipleConfigurations = false;
+					}
+					
+					if(multipleConfigurations || (configurationJSON == null)){
+						try{
+							rs = configurationQueryPS.executeQuery();
+							while(rs.next()){
+								String configuration = null;
+								try {
+									configuration = rs.getString("CONFIGURATION");
+									configurationJSON = new JSONObject(configuration);
+								} catch (SQLException e) {
+									getLog().error("Query failed to return good results\n"+e);
+								} catch (JSONException e) {
+									getLog().error("Failed to convert configuration to JSON\n"+configuration+"\n"+e);
+								}
+							}
+						} catch (SQLException e1) {
+							getLog().error("Query failed to execute\n"+e1);
+						}
+						finally{
+							try{
+								if(rs != null){
+									rs.close();
+								}
+							} catch (SQLException e) {
+							}
+							finally{
+								rs = null;
+							}
+						}
+					}
+					es.getValue().setConfiguration(configurationJSON);
+					ret.add(es.getValue());
 				}
 				
 			}
@@ -285,6 +347,15 @@ public class MySQL extends NodeListLoader{
 				}
 				finally{
 					mapViewQueryPS = null;
+				}
+			}
+			if(configurationQueryPS != null){
+				try {
+					configurationQueryPS.close();
+				} catch (SQLException e) {
+				}
+				finally{
+					configurationQueryPS = null;
 				}
 			}
 			if(connection != null){

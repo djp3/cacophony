@@ -204,20 +204,26 @@ public class CNode implements Quittable,Serializable{
 					this.setNodeName(response.getString("name"));
 			    	InstanceQuery trainingQuery;
 			    	JSONObject configuration = response.getJSONObject("node_configuration");
-					String zid = null;
-					try {
-			    		trainingQuery = new InstanceQuery();
-			    		trainingQuery.setUsername(configuration.getString("username"));
-			    		trainingQuery.setPassword(configuration.getString("password"));
-			    		trainingQuery.setDatabaseURL("jdbc:mysql://"+configuration.getString("databaseDomain")+"/"+configuration.getString("database"));
-			    		String trainingQueryString = configuration.getString("trainingQuery");
-			    		zid = configuration.getString("node_id");
-			    		trainingQuery.setQuery(trainingQueryString.replaceAll("_NODE_ID_", zid));
-			    		this.setTrainingQuery(trainingQuery);
-					} catch (Exception e) {
-						getLog().error("Unable to load cnode training using: "+zid);
-					}
+			    	if(configuration.getBoolean("doTraining")){
+			    		String zid = null;
+			    		try {
+			    			trainingQuery = new InstanceQuery();
+			    			trainingQuery.setUsername(configuration.getString("username"));
+			    			trainingQuery.setPassword(configuration.getString("password"));
+			    			trainingQuery.setDatabaseURL("jdbc:mysql://"+configuration.getString("databaseDomain")+"/"+configuration.getString("database"));
+			    			String trainingQueryString = configuration.getString("trainingQuery");
+			    			zid = configuration.getString("node_id");
+			    			trainingQuery.setQuery(trainingQueryString.replaceAll("_NODE_ID_", zid));
+			    			this.setTrainingQuery(trainingQuery);
+			    		} catch (Exception e) {
+			    			getLog().error("Unable to load cnode training using: "+zid);
+			    		}
+			    	}
+			    	else{
+		    			this.setTrainingQuery(null);
+			    	}
 				}
+				
 			} catch (JSONException e) {
 				getLog().error("Problem getting configuration:"+e);
 			}
