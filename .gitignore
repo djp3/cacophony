@@ -55,8 +55,6 @@ directory.cloud3.config.properties
 
 jar-in-jar-loader.zip
 
-weka
-
 #These should be built or downloaded locally
 cacophony/lib/apache-cassandra-1.1.8-SNAPSHOT.jar
 cacophony/lib/apache-cassandra-clientutil-1.1.8-SNAPSHOT.jar
