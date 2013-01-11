@@ -13,6 +13,12 @@ This is what is in this directory on a working distribution
 		hector-core-1.1-2-sources.jar -> ../../external/hector/core/target/hector-core-1.1-2-sources.jar
 		hector-object-mapper-3.1-07.jar -> ../../external/hector/object-mapper/target/hector-object-mapper-3.1-07.jar
 
+		kyotocabinet.jar -> ../../external/kyotocabinet-java-install/lib/kyotocabinet.jar
+		libjkyotocabinet.1.1.0.dylib -> ../../external/kyotocabinet-java-install/lib/libjkyotocabinet.1.1.0.dylib*
+		libjkyotocabinet.1.dylib -> ../../external/kyotocabinet-java-install/lib/libjkyotocabinet.1.dylib*
+		libjkyotocabinet.dylib -> ../../external/kyotocabinet-java-install/lib/libjkyotocabinet.dylib*
+		libjkyotocabinet.jnilib -> ../../external/kyotocabinet-java-install/lib/libjkyotocabinet.jnilib*
+
 	jars from other places:
 		JSAP-2.1.jar
 			Java Simple Argument Parser
@@ -37,4 +43,3 @@ This is what is in this directory on a working distribution
 		jsr305.jar
 		log4j-1.2.14.jar
 		mysql-connector-java-5.1.7-bin.jar
-
