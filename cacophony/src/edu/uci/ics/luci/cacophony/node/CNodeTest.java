@@ -137,7 +137,7 @@ public class CNodeTest {
 		urls.add(p);
 			
 		/* Start reporting heartbeats */
-		String namespace = "test.waitscout.com";
+		String namespace = "edu.uci.ics.luci.cacophony";
 		d.setDirectoryNamespace(namespace);
 		d.startHeartbeat(directoryGUID,urls);
 		return(d);

@@ -1,24 +1,26 @@
 package edu.uci.ics.luci.cacophony.node;
 
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import weka.core.Instances;
-import weka.experiment.InstanceQuery;
 import edu.uci.ics.luci.util.FailoverFetch;
 import edu.uci.ics.luci.utility.Globals;
+import edu.uci.ics.luci.utility.database.DBConnection;
+import edu.uci.ics.luci.utility.database.LUCIDBConnectionPool;
 import edu.uci.ics.luci.utility.datastructure.Pair;
 
 public class MySQL extends CNodeLoader{
 	
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -30178893631678570L;
 	private transient volatile Logger log = null;
 	public Logger getLog(){
 		if(log == null){
@@ -27,13 +29,11 @@ public class MySQL extends CNodeLoader{
 		return log;
 	}
 
-	private InstanceQuery idQuery;
-	private String username;
-	private String password;
-	private String databaseDomain;
-	private String database;
-	private String trainingQueryString;
-	private boolean error;
+	private DBConnection connection = null;
+	private PreparedStatement nodeQueryPS = null;
+	private PreparedStatement configurationQueryPS = null;
+	private LUCIDBConnectionPool pool = null;
+	private boolean error = false;
 	
 	public MySQL(){
 		super();
@@ -41,22 +41,25 @@ public class MySQL extends CNodeLoader{
 
 	@Override
 	public void init(JSONObject options){
-		error = false;
+		
 		Globals g = Globals.getGlobals();
 		if(g == null){
 			getLog().error("Globals is null");
 			error = true;
 		}
 		
+		String databaseDomain = null;
 		try {
 			databaseDomain = options.getString("server_address");
 		} catch (JSONException e) {
 		}
+		
 		if(databaseDomain == null){
 			getLog().error("Unable to get the \"server_address\"");
 			error = true;
 		}
 		
+		String database = null;
 		try {
 			database = options.getString("database");
 		} catch (JSONException e) {
@@ -66,6 +69,7 @@ public class MySQL extends CNodeLoader{
 			error = true;
 		}
 		
+		String username=null;
 		try {
 			username = options.getString("user");
 		} catch (JSONException e) {
@@ -75,6 +79,7 @@ public class MySQL extends CNodeLoader{
 			error = true;
 		}
 		
+		String password=null;
 		try {
 			password = options.getString("password");
 		} catch (JSONException e) {
@@ -84,37 +89,57 @@ public class MySQL extends CNodeLoader{
 			error = true;
 		}
 		
-		String nodeQueryString=null;
+		String nodeQuery=null;
 		try {
-			nodeQueryString = options.getString("nodeQuery");
+			nodeQuery = options.getString("nodeQuery");
 		} catch (JSONException e) {
 		}
-		if(nodeQueryString == null){
+		if(nodeQuery == null){
 			getLog().error("Unable to get the \"nodeQuery\"");
 			error = true;
 		}
 		
+		String configurationQuery=null;
 		try {
-			trainingQueryString = options.getString("trainingQuery");
+			configurationQuery = options.getString("configurationQuery");
 		} catch (JSONException e) {
 		}
-		if(trainingQueryString == null){
-			getLog().error("Unable to get the \"trainingQuery\"");
+		if(configurationQuery == null){
+			getLog().error("Unable to get the \"configurationQuery\"");
 			error = true;
+		}
+		else{
+			if(!configurationQuery.toUpperCase().contains("SELECT ")){
+				getLog().error("Query (configurationQuery) does not contain \"SELECT\"");
+				error = true;
+			}
+			if(!configurationQuery.contains("AS CONFIGURATION")){
+				getLog().error("Query (configurationQuery) does not contain as selector for \"CONFIGURATION\"");
+				error = true;
+			}
+			configurationQuery = configurationQuery.replaceAll("_NODE_ID_","?");
 		}
 		
 		if(!error){
-			try {
-				idQuery = new InstanceQuery();
-				idQuery.setUsername(username);
-				idQuery.setPassword(password);
-				idQuery.setDatabaseURL("jdbc:mysql://"+databaseDomain+"/"+database);
-				idQuery.setQuery(nodeQueryString);
-			} catch (Exception e) {
+			pool = new LUCIDBConnectionPool(databaseDomain, database, username, password,1,1);
+			connection = pool.getConnection();
+			if(connection == null){
+				getLog().error("Query failed, couldn't connect to database");
+				error=true;
+			}
+			else{
 				try {
-					getLog().error("Unable to load cnodes using: "+options.toString(1));
-				} catch (JSONException e1) {
-					getLog().error("Unable to load cnodes in "+this.getClass().getCanonicalName());
+					nodeQueryPS = connection.prepareStatement(nodeQuery);
+				} catch (SQLException e) {
+					getLog().error("Query failed:"+nodeQuery+"\n"+e);
+					error=true;
+				}
+				
+				try {
+					configurationQueryPS = connection.prepareStatement(configurationQuery);
+				} catch (SQLException e) {
+					getLog().error("Query failed:"+configurationQuery+"\n"+e);
+					error=true;
 				}
 			}
 		}
@@ -123,36 +148,127 @@ public class MySQL extends CNodeLoader{
 
 	@Override
 	public List<CNode> loadCNodes(CNodePool parent, FailoverFetch failoverFetch, List<Pair<Long, String>> baseUrls) {
+		Map<String,CNode> nodes = new TreeMap<String,CNode>();
 		List<CNode> ret = new ArrayList<CNode>();
-		Instances data = null;
-		try {
-			data = idQuery.retrieveInstances();
-			for(int i = 0; i< data.numInstances(); i++){
-		    	String zid = data.instance(i).attributeSparse(0).value((int) Math.round(data.instance(i).value(0)));
-		    	String name = data.instance(i).attributeSparse(1).value((int) Math.round(data.instance(i).value(1)));
-		    	CNode c = new CNode();
-		    	c.setFailoverFetch(failoverFetch);
-		    	c.setParentPool(parent);
-		    	c.setBaseUrls(baseUrls);
-		    	c.setMetaCNodeGUID(zid);
-		    	c.setNodeName(name);
-		    	
-		    	InstanceQuery trainingQuery;
+		ResultSet rs = null;
+		
+		try{
+			if(error == false){
 				try {
-		    		trainingQuery = new InstanceQuery();
-		    		trainingQuery.setUsername(username);
-		    		trainingQuery.setPassword(password);
-		    		trainingQuery.setDatabaseURL("jdbc:mysql://"+databaseDomain+"/"+database);
-		    		trainingQuery.setQuery(trainingQueryString.replaceAll("_NODE_ID_", zid));
-		    		c.setTrainingQuery(trainingQuery);
-				} catch (Exception e) {
-					getLog().error("Unable to load cnode training using: "+zid);
+					rs = nodeQueryPS.executeQuery();
+					while(rs.next()){
+						try {
+							CNode c = new CNode();
+							c.setFailoverFetch(failoverFetch);
+							c.setParentPool(parent);
+							c.setBaseUrls(baseUrls);
+							
+							String id = rs.getString("ID");
+							c.setMetaCNodeGUID(id.trim());
+							
+							String name = rs.getString("NAME");
+							c.setNodeName(name);
+							
+							nodes.put(id,c);
+						} catch (SQLException e) {
+							getLog().error("Query failed to return good results\n"+e);
+						}
+					}
+				} catch (SQLException e1) {
+					getLog().error("Query failed to execute\n"+e1);
 				}
-				ret.add(c);
+				finally{
+					try{
+						if(rs != null){
+							rs.close();
+						}
+					} catch (SQLException e) {
+					}
+					finally{
+						rs = null;
+					}
+				}
+				
+				boolean multipleConfigurations = true;
+				String configuration = null;
+				for(Entry<String, CNode> es:nodes.entrySet()){
+					try{
+						configurationQueryPS.setString(1,es.getKey());
+					}
+					catch(SQLException e){
+						//probably due to not have any parameters
+						multipleConfigurations = false;
+					}
+					
+					if(multipleConfigurations || (configuration == null)){
+						try{
+							rs = configurationQueryPS.executeQuery();
+							while(rs.next()){
+								try {
+									configuration = rs.getString("CONFIGURATION");
+								} catch (SQLException e) {
+									getLog().error("Query failed to return good results\n"+e);
+								}
+							}
+						} catch (SQLException e1) {
+							getLog().error("Query failed to execute\n"+e1);
+						}
+						finally{
+							try{
+								if(rs != null){
+									rs.close();
+								}
+							} catch (SQLException e) {
+							}
+							finally{
+								rs = null;
+							}
+						}
+					}
+					es.getValue().setConfiguration(configuration);
+					ret.add(es.getValue());
+				}
+				
 			}
-		} catch (Exception e) {
-			getLog().error("Unable to get training instances from database\n"+e);
 		}
-		return ret;
+		finally{
+			if(nodeQueryPS != null){
+				try {
+					nodeQueryPS.close();
+				} catch (SQLException e) {
+				}
+				finally{
+					nodeQueryPS = null;
+				}
+			}
+			if(configurationQueryPS != null){
+				try {
+					configurationQueryPS.close();
+				} catch (SQLException e) {
+				}
+				finally{
+					configurationQueryPS = null;
+				}
+			}
+			if(connection != null){
+				try {
+					connection.close();
+				} catch (SQLException e) {
+				}
+				finally{
+					connection = null;
+				}
+			}
+			if(pool != null){
+				try{
+					pool.setQuitting(true);
+				}
+				finally{
+					pool = null;
+				}
+			}
+		}
+		
+		return(ret);
 	}
 }

@@ -202,8 +202,9 @@ public class MySQL extends NodeListLoader{
 		}
 	}
 
-	
-	private List<MetaCNode> executeQuery() {
+
+	@Override
+	public List<MetaCNode> loadNodeList() {
 		Map<String,MetaCNode> nodes = new TreeMap<String,MetaCNode>();
 		List<MetaCNode> ret = new ArrayList<MetaCNode>();
 		ResultSet rs = null;
@@ -379,10 +380,4 @@ public class MySQL extends NodeListLoader{
 		
 		return(ret);
 	}
-	
-	@Override
-	public List<MetaCNode> loadNodeList() {
-		return executeQuery();
-	}
-
 }

@@ -43,12 +43,10 @@ import edu.uci.ics.luci.utility.datastructure.Pair;
 
 public class CNode implements Quittable,Serializable{
 	
-	
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 6251847680422827405L;
-	
+	private static final long serialVersionUID = -1502750151783007623L;
 	private static transient volatile Logger log = null;
 	public static Logger getLog(){
 		if(log == null){
@@ -89,7 +87,9 @@ public class CNode implements Quittable,Serializable{
 	/*Warning this needs to be set when deserialized! */
 	private transient CNodePool parentPool = null;  
 	private List<Pair<Long, String>> baseUrls = null;
-	//private String config;
+	
+	private String configurationString = null;
+	transient private JSONObject configuration = null;
 	
 	public String cNodeGuid = null;
 	private Random random = null;
@@ -172,6 +172,26 @@ public class CNode implements Quittable,Serializable{
 		this.baseUrls = baseUrls;
 	}
 
+
+	public synchronized JSONObject getConfiguration() {
+		if(configuration == null){
+			if(configurationString != null){
+				try {
+					configuration = new JSONObject(configurationString);
+				} catch (JSONException e) {
+				}
+			}
+		}
+		return configuration;
+	}
+
+	public synchronized void setConfiguration(String configurationString) {
+		this.configurationString = configurationString;
+		try {
+			configuration = new JSONObject(configurationString);
+		} catch (JSONException e) {
+		}
+	}
 
 	private void setLastTrainingSetHash(int hashCode) {
 		this.lastTrainingSetHash = hashCode;
