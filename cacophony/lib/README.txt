@@ -38,10 +38,14 @@ This is what is in this directory on a working distribution
 		commons-configuration-1.9.jar
 			Apache Commons Java Configurations
 			http://commons.apache.org/configuration/
+
+		commons-lang-2.6-sources.jar
+		commons-lang-2.6.jar
+			Apache Commons Lang
+			http://commons.apache.org/lang/
 			
 
 	jars without a well described pedigree:
-		commons-lang-2.4.jar
 		commons-logging-1.1.1.jar
 		json.jar
 		jsr305.jar

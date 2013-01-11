@@ -66,6 +66,7 @@ cacophony/lib/libthrift-0.7.0.jar
 cacophony/lib/slf4j-api-1.6.1.jar
 cacophony/lib/slf4j-log4j12-1.6.1.jar
 cacophony/lib/commons-codec-1.7
+cacophony/lib/commons-lang-2.6
 cacophony/lib/commons-collections-3.2.1
 cacophony/lib/commons-configuration-1.9
 cacophony/lib/kyotocabinet.jar
