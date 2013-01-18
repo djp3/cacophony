@@ -88,6 +88,10 @@ utility/lib/commons-collections-3.2.1
 utility/lib/commons-configuration-1.9
 utility/lib/commons-io-2.4
 utility/lib/log4j-1.2.14.jar
+utility/lib/annotations.jar
+utility/lib/json.jar
+utility/lib/mail.jar
+utility/lib/mysql-connector-java-5.1.7-bin.jar
 
 #local build files
 ant_directory.xml
