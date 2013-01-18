@@ -55,3 +55,5 @@ This is what is in this directory on a working distribution
 		json.jar
 		log4j-1.2.14.jar
 		mysql-connector-java-5.1.7-bin.jar
+
+		annotations.jar (From FindBugs)

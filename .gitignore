@@ -54,6 +54,7 @@ directory.cloud2.config.properties
 directory.cloud3.config.properties
 
 #These should be built or downloaded locally
+cacophony/lib/annotations.jar
 cacophony/lib/apache-cassandra-1.1.8-SNAPSHOT.jar
 cacophony/lib/apache-cassandra-clientutil-1.1.8-SNAPSHOT.jar
 cacophony/lib/apache-cassandra-thrift-1.1.8-SNAPSHOT.jar
@@ -82,6 +83,11 @@ cacophony/lib/mysql-connector-java-5.1.7-bin.jar
 
 utility/libs/commons-lang-2.6
 utility/libs/commons-logging-1.1.1
+utility/libs/commons-codec-1.7
+utility/libs/commons-collections-3.2.1
+utility/libs/commons-configuration-1.9
+utility/libs/commons-io-2.4
+utility/libs/log4j-1.2.14.jar
 
 #local build files
 ant_directory.xml

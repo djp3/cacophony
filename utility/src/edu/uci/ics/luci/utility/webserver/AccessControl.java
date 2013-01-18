@@ -3,6 +3,7 @@ package edu.uci.ics.luci.utility.webserver;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -116,12 +117,11 @@ public class AccessControl {
 		this.lastLoad = lastLoad;
 	}
 
-	@SuppressWarnings("unchecked")
 	protected synchronized void loadConfiguration() throws ConfigurationException{
 		
 		setConfig(new PropertiesConfiguration(defaultFilename));
 		
-		allowedConnections = getConfig().getList("allowed_clients");
+		allowedConnections = Arrays.asList(getConfig().getStringArray("allowed_clients"));
 		lastLoad = System.currentTimeMillis();
 		
 		/*Sanity check on allowedConnections*/
