@@ -138,7 +138,7 @@ public class DirectoryTest {
 	public void testOpenProperties() {
 	
 		/* Get Directory properties */
-		String directoryPropertiesLocation = "directory.cloud2.config.properties";
+		String directoryPropertiesLocation = "src/edu/uci/ics/luci/cacophony/DirectoryTest.cacophony.directory.properties";
 		try {
 			XMLPropertiesConfiguration config;
 			config = new XMLPropertiesConfiguration(directoryPropertiesLocation);
