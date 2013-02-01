@@ -15,6 +15,7 @@ cacophony/luci.log4j.properties
 
 external/cassandra
 external/cassandra_config/trash
+external/cassandra_config/cloud
 external/cassandra_tmp
 
 external/hector
