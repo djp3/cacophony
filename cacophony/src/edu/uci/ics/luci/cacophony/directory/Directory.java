@@ -168,10 +168,10 @@ public class Directory implements Quittable{
 		}
 		
 		if((g == null) || (g.isTesting())){
-			KEYSPACE = "CacophonyKeyspaceV1_0s";
+			KEYSPACE = "CacophonyKeyspaceV1_0_test";
 		}
 		else{
-			KEYSPACE = "CacophonyKeyspaceV1_0r";
+			KEYSPACE = "CacophonyKeyspaceV1_0";
 		}
 		
 		ksp = HFactory.createKeyspace(KEYSPACE, cluster);
