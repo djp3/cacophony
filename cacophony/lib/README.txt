@@ -1,13 +1,18 @@
 This is what is in this directory on a working distribution
 
 	Symbolic links to locally built libraries in the external directory
-		libthrift-0.7.0.jar -> ../../external/cassandra/build/dist/lib/libthrift-0.7.0.jar
+
+		apache-cassandra-SNAPSHOT.jar -> ../../external/cassandra/build/apache-cassandra-1.2.1-SNAPSHOT.jar
+		apache-cassandra-clientutil-SNAPSHOT.jar -> ../../external/cassandra/build/apache-cassandra-clientutil-1.2.1-SNAPSHOT.jar
+		apache-cassandra-thrift-SNAPSHOT.jar -> ../../external/cassandra/build/apache-cassandra-thrift-1.2.1-SNAPSHOT.jar
+
+		libthrift.jar -> ../../external/cassandra/lib/libthrift-0.7.0.jar
+
+		slf4j-api.jar -> ../../external/cassandra/lib/slf4j-api-1.7.2.jar
+		slf4j-log4j12.jar -> ../../external/cassandra/lib/slf4j-log4j12-1.7.2.jar
+
 		slf4j-api-1.6.1.jar -> ../../external/cassandra/build/dist/lib/slf4j-api-1.6.1.jar
 		slf4j-log4j12-1.6.1.jar -> ../../external/cassandra/build/dist/lib/slf4j-log4j12-1.6.1.jar
-
-		apache-cassandra-1.1.8-SNAPSHOT.jar -> ../../external/cassandra/build/apache-cassandra-1.1.8-SNAPSHOT.jar
-		apache-cassandra-clientutil-1.1.8-SNAPSHOT.jar -> ../../external/cassandra/build/apache-cassandra-clientutil-1.1.8-SNAPSHOT.jar
-		apache-cassandra-thrift-1.1.8-SNAPSHOT.jar -> ../../external/cassandra/build/apache-cassandra-thrift-1.1.8-SNAPSHOT.jar
 
 		hector-core-1.1-2.jar -> ../../external/hector/core/target/hector-core-1.1-2.jar
 		hector-core-1.1-2-sources.jar -> ../../external/hector/core/target/hector-core-1.1-2-sources.jar

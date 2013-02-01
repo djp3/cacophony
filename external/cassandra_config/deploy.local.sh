@@ -23,6 +23,8 @@ cp -v /Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/cassandra_c
 
 cp -v /Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/cassandra_config/local.djp3.single.topology.properties /Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/cassandra/conf/cassandra-topology.properties
 
+cp -v /Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/cassandra_config/local.djp3.single.rackdc.properties /Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/cassandra/conf/cassandra-rackdc.properties
+
 pushd .
 
 cd /Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/cassandra

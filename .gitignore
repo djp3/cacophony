@@ -55,13 +55,13 @@ directory.cloud3.config.properties
 
 #These should be built or downloaded locally
 cacophony/lib/annotations.jar
-cacophony/lib/apache-cassandra-1.1.8-SNAPSHOT.jar
-cacophony/lib/apache-cassandra-clientutil-1.1.8-SNAPSHOT.jar
-cacophony/lib/apache-cassandra-thrift-1.1.8-SNAPSHOT.jar
+cacophony/lib/apache-cassandra-SNAPSHOT.jar
+cacophony/lib/apache-cassandra-clientutil-SNAPSHOT.jar
+cacophony/lib/apache-cassandra-thrift-SNAPSHOT.jar
 cacophony/lib/hector-core-1.1-2-sources.jar
-cacophony/lib/libthrift-0.7.0.jar
-cacophony/lib/slf4j-api-1.6.1.jar
-cacophony/lib/slf4j-log4j12-1.6.1.jar
+cacophony/lib/libthrift.jar
+cacophony/lib/slf4j-api.jar
+cacophony/lib/slf4j-log4j12.jar
 cacophony/lib/JSAP-2.1.jar
 cacophony/lib/commons-codec-1.7
 cacophony/lib/commons-lang-2.6
