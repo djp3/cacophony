@@ -1,6 +1,6 @@
 #! /bin/bash
 
-read -p "Stottttttttttt Process (Y|n)?"
+read -p "Stop Cassandra Process (Y|n)?"
 if [ ! -z "$REPLY" ] && [[ "$REPLY" != "y" ]] && [[ "$REPLY" != "Y" ]]
 	then
 		exit 1
