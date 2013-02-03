@@ -13,11 +13,11 @@ if [ ! -z "$REPLY" ] && [[ "$REPLY" != "y" ]] && [[ "$REPLY" != "Y" ]]
 		exit 1
 fi
 
-cp -v $CASSANDRA_LOCAL_CONF/local.djp3.single.yaml $CASSANDRA_CONF/cassandra.yaml
+cp -v $MY_YAML $CASSANDRA_CONF/cassandra.yaml
 
-cp -v $CASSANDRA_LOCAL_CONF/local.djp3.single.topology.properties $CASSANDRA_CONF/cassandra-topology.properties
+cp -v $MY_TOPOLOGY $CASSANDRA_CONF/cassandra-topology.properties
 
-cp -v $CASSANDRA_LOCAL_CONF/local.djp3.single.rackdc.properties $CASSANDRA_CONF/cassandra-rackdc.properties
+cp -v $MY_RACKDC $CASSANDRA_CONF/cassandra-rackdc.properties
 
 pushd .
 
