@@ -13,6 +13,8 @@ cacophony/luci.log4j.properties
 *.log.*
 *.DS_Store
 
+tmp
+
 external/cassandra
 external/cassandra_config/trash
 external/cassandra_config/cloud
