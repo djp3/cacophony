@@ -3,7 +3,10 @@
 #Adjust the following 
 CACOPHONY_BASE=/Users/djp3/Development/Mac/EclipseWorkspaceCacophony
 LOCAL_HOSTNAME=localmac.djp3
-CASSANDRA_HOST_IP=128.195.59.254
+
+#Try and figure out ipaddress, if this doesn't work, then set it manually
+#CASSANDRA_HOST_IP=127.0.0.1
+CASSANDRA_HOST_IP=`ifconfig | grep "\<inet\>" | grep broadcast | cut -d" " -f2 | head -n1`
 CASSANDRA_PORT=9160
 
 #Adjust the following paths, if necessary.  The default is the expected file structure

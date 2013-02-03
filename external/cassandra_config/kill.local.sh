@@ -1,38 +1,35 @@
 #! /bin/bash
 
-ECHO=/bin/echo
-ID=/usr/bin/id
+read -p "Stottttttttttt Process (Y|n)?"
+if [ ! -z "$REPLY" ] && [[ "$REPLY" != "y" ]] && [[ "$REPLY" != "Y" ]]
+	then
+		exit 1
+fi
 
-S1=localmac.djp3
+source ./env.local.sh
 
-if [ -z "$1" ]
-   then
-	FORMAT=""
-   else
-	FORMAT="$1"
+$ECHO "    Stopping cassandra single"
+if [ -e $CACOPHONY_TMP/cassandra.single.pid ]
+    then
+		if [ ! -z $CACOPHONY_TMP/cassandra.single.pid ]
+			then
+				PID=`cat $CACOPHONY_TMP/cassandra.single.pid`
+				echo "        Killing job: $PID"
+				kill $PID
+				sleep 5
+		fi
+	else
+		echo "        Cassandra is not running"
 fi
 
 
-$ECHO "$FORMAT" "Stopping cassandra single"
-PID=`cat /Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/cassandra_tmp/cassandra.single.pid`
+$ECHO "    Checking for running instances of cassandra that we couldn't kill (please kill manually if they are listed below)"
+$ECHO ""
 
-if [ -z "$PID" ]
-   then
-		echo "Cassandra is not running"
-   else
-		echo "killing job: $PID"
-		kill $PID
-fi
+ps auxwww | grep org.apache.cassandra.service.CassandraDaemon | grep -v grep
 
-sleep 5
+$ECHO ""
+$ECHO "    Done checking"
 
-$ECHO "$FORMAT" ""
-
-ps auxwww | grep cass
-
-$ECHO "$FORMAT" ""
-$ECHO "$FORMAT" ""
-$ECHO "$FORMAT" ""
-exit 0
 
 

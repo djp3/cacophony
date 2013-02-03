@@ -1,63 +1,44 @@
 #! /bin/bash
 
-ECHO=/bin/echo
-ID=/usr/bin/id
+source ./env.local.sh
 
-S1=localmac.djp3
+$ECHO "First, stopping old instances of cassandra"
 
-if [ -z "$1" ]
-   then
-	FORMAT=""
-   else
-	FORMAT="$1"
+source ./kill.local.sh
+
+
+read -p "Start a new Cassandra process (Y|n)?"
+if [ ! -z "$REPLY" ] && [[ "$REPLY" != "y" ]] && [[ "$REPLY" != "Y" ]]
+	then
+		exit 1
 fi
 
+cp -v $CASSANDRA_LOCAL_CONF/local.djp3.single.yaml $CASSANDRA_CONF/cassandra.yaml
 
-./kill.local.sh
+cp -v $CASSANDRA_LOCAL_CONF/local.djp3.single.topology.properties $CASSANDRA_CONF/cassandra-topology.properties
 
-sleep 2
-
-$ECHO "$FORMAT" "Starting cassandra on single local machine"
-
-cp -v /Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/cassandra_config/local.djp3.single.yaml /Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/cassandra/conf/cassandra.yaml
-
-cp -v /Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/cassandra_config/local.djp3.single.topology.properties /Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/cassandra/conf/cassandra-topology.properties
-
-cp -v /Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/cassandra_config/local.djp3.single.rackdc.properties /Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/cassandra/conf/cassandra-rackdc.properties
+cp -v $CASSANDRA_LOCAL_CONF/local.djp3.single.rackdc.properties $CASSANDRA_CONF/cassandra-rackdc.properties
 
 pushd .
 
-cd /Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/cassandra
-
-cassandra_home=/Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/cassandra
-
-# The directory where Cassandra's configs live (required)
-CASSANDRA_CONF=$cassandra_home/conf
-
-# This can be the path to a jar file, or a directory containing the 
-# compiled classes. NOTE: This isn't needed by the startup script,
-# it's just used here in constructing the classpath.
-cassandra_bin=$cassandra_home/build/classes/main
-cassandra_bin=$cassandra_bin:$cassandra_home/build/classes/thrift
-#cassandra_bin=$cassandra_home/build/cassandra.jar
-
+cd $CASSANDRA_BASE
 
 # The java classpath (required)
-CLASSPATH=$CASSANDRA_CONF:$cassandra_bin
+CLASSPATH=$CASSANDRA_CONF:$CASSANDRA_BASE/build/classes/main:$CASSANDRA_BASE/build/classes/thrift
 
-for jar in $cassandra_home/lib/*.jar $cassandra_home/build/lib/jars/*.jar; do
+for jar in $CASSANDRA_BASE/lib/*.jar $CASSANDRA_BASE/build/lib/jars/*.jar; do
     CLASSPATH=$CLASSPATH:$jar
 done
 
 
-bin/cassandra -p /Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/cassandra_tmp/cassandra.single.pid > /Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/cassandra_tmp/cassandra.$S1.single.output &
+bin/cassandra -p $CACOPHONY_TMP/cassandra.single.pid > $CACOPHONY_TMP/cassandra.$S1.single.output &
 
-$ECHO "$FORMAT" ""
+$ECHO ""
 
 popd
 
-$ECHO "$FORMAT" "Output"
-$ECHO "$FORMAT" ""
+$ECHO "Tailing output, hit CTRL-C to stop tail (cassandra will continue to run)"
+$ECHO ""
 sleep 2
 
-tail -n 500 -F /Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/cassandra_tmp/cassandra.$S1.single.output 
+tail -n 500 -F $CACOPHONY_TMP/cassandra.$S1.single.output 
