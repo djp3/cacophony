@@ -1,3 +1,12 @@
+Version 0.0.2
+(Feb. 14, 2013)
+
+New features and enhancements:
+	* Made the following public and Serializable 
+		* MapComparable
+		* ListComparable 
+
+
 Version 0.0.1
 (Feb. 14, 2013)
 
