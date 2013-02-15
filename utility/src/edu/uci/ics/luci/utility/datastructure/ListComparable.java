@@ -21,6 +21,7 @@
 
 package edu.uci.ics.luci.utility.datastructure;
 
+import java.io.Serializable;
 import java.util.AbstractList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -29,7 +30,12 @@ import java.util.ListIterator;
 
 import org.apache.log4j.Logger;
 
-public class ListComparable<T extends Comparable<? super T>> implements List<T>, Comparable<ListComparable<T>> {
+public class ListComparable<T extends Comparable<? super T>> implements List<T>, Comparable<ListComparable<T>>,Serializable {
+	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -723364735661202960L;
 	
 	private static transient volatile Logger log = null;
 	public static Logger getLog(){
@@ -41,6 +47,7 @@ public class ListComparable<T extends Comparable<? super T>> implements List<T>,
 	
 	private AbstractList<T> list;
 
+	/** Consider whether you should be using a SortedList **/
 	public ListComparable(AbstractList<T> list) {
 		super();
 		if(list == null){

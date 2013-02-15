@@ -21,6 +21,7 @@
 
 package edu.uci.ics.luci.utility.datastructure;
 
+import java.io.Serializable;
 import java.util.AbstractMap;
 import java.util.Collection;
 import java.util.Map;
@@ -28,7 +29,12 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
-public class MapComparable<K extends Comparable<? super K>,V extends Comparable<? super V>> implements Map<K, V>, Comparable<MapComparable<K,V>>{
+public class MapComparable<K extends Comparable<? super K>,V extends Comparable<? super V>> implements Map<K, V>, Comparable<MapComparable<K,V>>,Serializable{
+	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 3411359654904301481L;
 	
 	private static transient volatile Logger log = null;
 	public static Logger getLog(){
@@ -40,7 +46,7 @@ public class MapComparable<K extends Comparable<? super K>,V extends Comparable<
 	
 	private AbstractMap<K, V> map;
 
-	MapComparable(AbstractMap<K,V> map){
+	public MapComparable(AbstractMap<K,V> map){
 		super();
 		if(map == null){
 			throw new NullPointerException("Can't initialize with null pointer");
