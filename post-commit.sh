@@ -1,5 +1,5 @@
 #!/bin/bash
-exit 0;
+exit 0
 git stash -q --keep-index
 
 VERSION=`git log -1 --pretty=format:%H`
