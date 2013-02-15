@@ -1,0 +1,10 @@
+Version 0.0.1
+(Feb. 14, 2013)
+
+First check-in with copyright
+
+New features and enhancements:
+	* Added datastructures for
+		* MapComparable
+		* ListComparable 
+	* Licensed the code under GPL v3
