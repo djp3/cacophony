@@ -1,3 +1,10 @@
+Version 0.0.4
+(Feb. 15, 2013)
+
+New features and enhancements:
+	* Upgraded database utilities to work with JVM 1.7
+
+
 Version 0.0.3
 (Feb. 14, 2013)
 

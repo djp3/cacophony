@@ -26,6 +26,7 @@ import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
@@ -108,5 +109,9 @@ public class DBConnectionDriver implements Driver{
     		}
     	}
     }
+
+	public java.util.logging.Logger getParentLogger() throws SQLFeatureNotSupportedException {
+		throw new SQLFeatureNotSupportedException("getParentLogger() not supported");
+	}
 }
 
