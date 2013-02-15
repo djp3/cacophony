@@ -65,6 +65,9 @@ SMALLINT=4
 #SHORT=4
 SHORT=5
 INTEGER=5
+#added by djp3 start
+INT=5
+#added by djp3 end
 BIGINT=6
 LONG=6
 REAL=7
