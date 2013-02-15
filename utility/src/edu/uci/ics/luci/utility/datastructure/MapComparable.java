@@ -169,4 +169,18 @@ public class MapComparable<K extends Comparable<? super K>,V extends Comparable<
 	public Collection<V> values() {
 		return map.values();
 	}
+	
+	public String toString(){
+		StringBuffer ret = new StringBuffer("{");
+		for(java.util.Map.Entry<K, V> e:this.entrySet()){
+			ret.append("\"");
+			ret.append(e.getKey().toString());
+			ret.append("\":\"");
+			ret.append(e.getValue().toString());
+			ret.append("\",");
+		}
+		ret.delete(ret.length()-1, ret.length());
+		ret.append("}");
+		return(ret.toString());
+	}
 }

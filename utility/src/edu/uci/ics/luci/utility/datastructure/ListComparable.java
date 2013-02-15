@@ -192,5 +192,17 @@ public class ListComparable<T extends Comparable<? super T>> implements List<T>,
 	public <T> T[] toArray(T[] arg0) {
 		return list.toArray(arg0);
 	}
+	
+	public String toString(){
+		StringBuffer ret = new StringBuffer("[");
+		for(T e:this){
+			ret.append("\"");
+			ret.append(e.toString());
+			ret.append("\",");
+		}
+		ret.delete(ret.length()-1, ret.length());
+		ret.append("]");
+		return(ret.toString());
+	}
 
 }
