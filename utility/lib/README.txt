@@ -33,7 +33,7 @@ This is what is in this directory on a working distribution
 		commons-logging-1.1.1/commons-logging-api-1.1.1.jar
 			Apache Commons Logging
 			http://commons.apache.org/logging/
-			
+
 	jars without a well described pedigree:
 		annotations.jar (From FindBugs)
 		json.jar
