@@ -13,8 +13,16 @@ public class GitRevision {
 }
 EOF
 
-cat > /Users/djp3/Development/Mac/EclipseWorkspaceCacophony/examples/sensorLibrary/src/java/edu/uci/ics/luci/cacophony << EOF
-package edu.uci.ics.luci.cacophony;
+cat > /Users/djp3/Development/Mac/EclipseWorkspaceCacophony/examples/sensorLibrary/src/java/edu/uci/ics/luci/cacophony/sensors/GitRevision.java << EOF
+package edu.uci.ics.luci.cacophony.sensors;
+
+public class GitRevision {
+	public static final String SYSTEM_REVISION = "$VERSION";
+}
+EOF
+
+cat > /Users/djp3/Development/Mac/EclipseWorkspaceCacophony/examples/sensorServer/src/edu/uci/ics/luci/cacophony/examples/sensorServer/GitRevision.java << EOF
+package edu.uci.ics.luci.cacophony.examples.sensorServer;
 
 public class GitRevision {
 	public static final String SYSTEM_REVISION = "$VERSION";
