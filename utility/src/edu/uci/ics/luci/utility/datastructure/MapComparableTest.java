@@ -167,7 +167,7 @@ public class MapComparableTest {
 		assertTrue(a.compareTo(b) == 0);
 		assertTrue(a.equals(b));
 		
-		a.put("Hello", 1.0d);
+		a.put(new Pair<String,Double>("Hello", 1.0d));
 		assertTrue(a.compareTo(b) != 0);
 		assertTrue(!a.equals(b));
 		

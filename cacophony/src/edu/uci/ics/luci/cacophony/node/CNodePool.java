@@ -75,7 +75,15 @@ public class CNodePool implements Quittable{
 	}
 	
 	
+	@Override
+	public boolean isQuitting(){
+		synchronized(shuttingDownLock){
+			return shuttingDown;
+		}
+	}
+	
 
+	@Override
 	public void setQuitting(boolean quitting) {
 		synchronized(shuttingDownLock){
 			if(getQuitting() == false){
@@ -526,7 +534,7 @@ public class CNodePool implements Quittable{
 		/* Warm up web server */
 		if(ws != null){
 			WebServerWarmUp.go(ws, Integer.valueOf((String) getConfig(clo,g.getConfig(),"port")),"http://localhost");
-			if(ws.getQuitting()){
+			if(ws.isQuitting()){
 				getLog().info("Warm-up failed, shutting down");
 				g.setQuitting(true);
 			}

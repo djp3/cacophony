@@ -1,0 +1,14 @@
+<project name="Cacophony native idle code" default="build_idle_sensor">
+
+	<target name="build_idle_sensor" depends="build_idle_mac"/>
+	<target name="clean" depends="clean_idle_mac"/>
+
+	<target name="build_idle_mac" if="os.mac">
+		<ant dir="mac" target="build" />
+	</target>
+
+	<target name="clean_idle_mac" >
+		<ant dir="mac" target="clean" />
+	</target>
+
+</project>

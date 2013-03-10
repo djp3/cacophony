@@ -1,0 +1,30 @@
+<project name="Cacophony native WiFi code for Mac" default="build_wifi_sensor_mac">
+
+	<target name="build" depends="build_wifi_mac_sensor"/>
+
+	<target name="clean">
+		<delete file="./jni.h"/>
+		<delete>
+			<fileset dir="." includes="*.jnilib"/> 
+		</delete> 
+		<delete file="./wifiExample"/>
+	</target>
+
+	<target name="build_wifi_mac_sensor">
+
+		<exec executable="${javah.exe}">
+			<arg line="-o jni.h -classpath ../../../../${build.classes.dir}:../../../../${build.lib.dir}/* edu.uci.ics.luci.cacophony.sensors.WiFiMac"/>
+		</exec>
+
+		<exec executable="${cc.exe}">
+			<arg line="-O3 -ObjC -bundle -Wall -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk -I${my.java.home}/include -I${my.java.home}/include/darwin -Wl,-syslibroot,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk -framework JavaVM -framework Foundation -framework CoreWLAN -o libwifi.jnilib wifi.m" />
+		</exec>
+
+		<copy file="libwifi.jnilib" todir="../../../../${build.native.dir}"/>
+
+		<exec executable="${cc.exe}">
+			<arg line="-g3 -ObjC -Wall -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk -I${my.java.home}/include -I${my.java.home}/include/darwin -Wl,-syslibroot,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk -framework JavaVM -framework Foundation -framework CoreWLAN -framework JavaVM -o wifi wifi.m" />
+		</exec>
+	</target>
+
+</project>

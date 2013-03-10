@@ -1,0 +1,30 @@
+<project name="Cacophony native process code for Mac" default="build">
+
+	<target name="build" depends="build_process_mac_sensor"/>
+
+	<target name="clean">
+		<delete file="./jni.h"/>
+		<delete>
+			<fileset dir="." includes="*.jnilib"/> 
+		</delete> 
+		<delete file="./processSensor"/>
+	</target>
+
+	<target name="build_process_mac_sensor">
+
+		<exec executable="${javah.exe}">
+			<arg line="-o jni.h -classpath ../../../../${build.classes.dir}:../../../../${build.lib.dir}/* edu.uci.ics.luci.cacophony.sensors.ProcessMac"/>
+		</exec>
+
+		<exec executable="${cc.exe}">
+			<arg line="-O3 -bundle -Wall -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk -I/Applications/Xcode.app//Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk/System/Library/Frameworks/JavaVM.framework/Headers -Wl,-syslibroot,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk -framework JavaVM -framework CoreFoundation -framework IOKit -framework Carbon -o libprocess.jnilib processSensor.c"/>
+		</exec>
+
+		<copy file="libprocess.jnilib" todir="../../../../${build.native.dir}"/>
+
+		<exec executable="${cc.exe}">
+			<arg line="-O3 -Wall -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk/System/Library/Frameworks/JavaVM.framework/Headers -Wl,-syslibroot,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk -framework JavaVM -framework CoreFoundation -framework IOKit -framework Carbon -o processsensor processSensor.c"/>
+		</exec>
+	</target>
+
+</project>

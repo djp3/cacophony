@@ -213,11 +213,16 @@ public class LUCIDBConnectionPool implements Quittable{
 		}
 	}
 
-	public void setQuitting(boolean quitting) {
-		if(quitting == true){
+	private boolean quitting = false;
+	public void setQuitting(boolean q) {
+		if(q == true){
+			quitting = true;
 			shutdown();
 		}
-		
+	}
+	
+	public boolean isQuitting(){
+		return(quitting);
 	}
 
 }

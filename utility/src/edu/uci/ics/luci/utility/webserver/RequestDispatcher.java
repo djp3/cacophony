@@ -526,7 +526,6 @@ public class RequestDispatcher implements Runnable{
 			
 			if((start >= 0) && (end >=0)){
 				request = request.substring(start+1, end).trim();
-				getLog().info("Request Handler #:"+(jobCounter)+" handling <"+request+">");
 				
 				/*Grab the parameters */
 				if(getMethod){
@@ -570,6 +569,7 @@ public class RequestDispatcher implements Runnable{
 					getLog().warn("Unhandled HTTP method from <"+source+"> url:<"+request+">");
 					requestParameters="";
 				}
+				getLog().info("Request Handler #:"+(jobCounter)+" handling <"+request+"("+requestParameters+")>");
 			
 				if(parameters != null){
 					getLog().debug("Parameters"+parameters.toString());

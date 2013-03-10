@@ -1,0 +1,22 @@
+############################################################
+#
+# Local Project settings
+#
+############################################################
+
+base.dir=../..
+
+############################################################
+#
+# Executable settings
+#
+############################################################
+
+my.java.home=/Library/Java/JavaVirtualMachines/jdk1.7.0_13.jdk/Contents/Home
+
+javac.exe=${my.java.home}/bin/javac
+javah.exe=${my.java.home}/bin/javah
+cc.exe=/usr/bin/cc
+pkg-config.exe=/sw/bin/pkg-config
+g++.exe=/usr/bin/g++
+

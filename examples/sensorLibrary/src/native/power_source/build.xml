@@ -1,0 +1,19 @@
+<project name="Nomatic native powersource status sensors" default="build_power_source_sensor">
+
+	<target name="build_power_source_sensor_win" if="os.windows">
+		<ant dir="win32" target="build" />
+	</target>
+
+	<target name="build_power_source_sensor_mac" if="os.mac">
+		<!-- All implemented in java -->
+	</target>
+
+	<target name="clean">
+		<ant dir="win32" target="clean" />
+		<ant dir="mac" target="clean" />
+	</target>
+
+	<target name="build_power_source_sensor" depends="build_power_source_sensor_win,build_power_source_sensor_mac"/>
+	
+	
+</project>

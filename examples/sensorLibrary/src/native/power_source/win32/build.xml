@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project default="build" name="powersourcesensor_windows">
+	<target name="clean">
+		<delete file="${build.native.dir}/PowerSourceSensor_Windows.h"/>
+		<delete file="${build.native.dir}/PowerSourceSensor_Windows.dll"/>
+	</target>
+
+	<target name="build">
+		<exec executable="${javah.exe}">
+      			<arg value="-classpath"/>
+			<arg value="../../../../../${build.classes.dir}"/>
+			<arg value="-o"/>
+			<arg value="../../../../../${build.native.dir}/PowerSourceSensor_Windows.h"/>
+			<arg value="edu.uci.ics.luci.nomatic.service.sensors.PowerSourceSensor_Windows"/>
+		</exec>
+
+		<exec executable="${g++.exe}">
+			<arg value="-mno-cygwin"/>
+			<arg value="-I${cygwin.prefix}${cygwin.java}/include"/>
+			<arg value="-I${cygwin.prefix}${cygwin.java}/include/win32"/>
+			<arg value="-I$../../../../../${build.native.dir}"/>
+			<arg value="-Wl,--add-stdcall-alias"/>
+			<arg value="-shared"/>
+			<arg value="-o"/>
+			<arg value="${cygwin.prefix}${build.native.dir}/PowerSourceSensor_Windows.dll"/>
+			<arg value="./PowerSourceSensor_Windows.cpp"/>
+		</exec>
+	</target>
+</project>

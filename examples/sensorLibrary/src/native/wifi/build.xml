@@ -1,0 +1,21 @@
+<project name="Cacophony native Wi-Fi code" default="build_wifi_sensor">
+	<target name="build_wifi_sensor" depends="build_wifi_sensor_mac,build_wifi_sensor_windows"/>
+	<target name="clean" depends="clean_wifi_mac,clean_wifi_windows"/>
+
+	<target name="build_wifi_sensor_mac" if="os.mac">
+		<ant dir="mac" target="build" />
+	</target>
+
+	<target name="build_wifi_sensor_windows" if="os.windows">
+		<ant dir="win32"/>
+	</target>
+
+	<target name="clean_wifi_windows">
+		<ant dir="win32" target="clean" />
+	</target>
+
+	<target name="clean_wifi_mac">
+		<ant dir="mac" target="clean" />
+	</target>
+
+</project>

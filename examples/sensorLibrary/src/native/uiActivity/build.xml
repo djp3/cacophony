@@ -1,0 +1,22 @@
+<project name="Cacophony native uiActivity code" default="build_uiactivity_sensor">
+
+	<target name="build_uiactivity_sensor" depends="build_uiactivity_mac,build_uiactivity_win32"/>
+	<target name="clean" depends="clean_uiactivity_mac,clean_uiactivity_win32"/>
+
+	<target name="build_uiactivity_mac" if="os.mac">
+		<ant dir="mac" target="build" />
+	</target>
+
+	<target name="clean_uiactivity_mac" >
+		<ant dir="mac" target="clean" />
+	</target>
+
+	<target name="build_uiactivity_win32" if="os.windows">
+		<ant dir="win32" target="build" />
+	</target>
+
+	<target name="clean_uiactivity_win32" >
+		<ant dir="win32" target="clean" />
+	</target>
+
+</project>

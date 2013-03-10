@@ -1,0 +1,22 @@
+<project name="Cacophony native process code" default="build_process_sensor">
+
+	<target name="build_process_sensor" depends="build_process_mac,build_process_windows"/>
+	<target name="clean" depends="clean_process_mac"/>
+
+	<target name="build_process_mac" if="os.mac">
+		<ant dir="mac" target="build" />
+	</target>
+
+	<target name="clean_process_mac" >
+		<ant dir="mac" target="clean" />
+	</target>
+
+	<target name="build_process_windows" if="os.windows">
+		<ant dir="win32" target="build" />
+	</target>
+
+	<target name="clean_process_windows" >
+		<ant dir="win32" target="clean" />
+	</target>
+
+</project>

@@ -640,6 +640,12 @@ public class CNode implements Quittable,Serializable{
 		}
 		return(ret);
 	}
+	
+	
+	@Override
+	public synchronized boolean isQuitting(){
+		return shuttingDown;
+	}
 
 	@Override
 	public synchronized void setQuitting(boolean quitting) {

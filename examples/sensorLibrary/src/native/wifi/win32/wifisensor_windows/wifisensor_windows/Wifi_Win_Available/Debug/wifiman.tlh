@@ -1,0 +1,861 @@
+﻿// Created by Microsoft (R) C/C++ Compiler Version 15.00.21022.08 (bedf6478).
+//
+// c:\documents and settings\justin tang\my documents\visual studio 2008\projects\wifi_win_available\wifi_win_available\debug\wifiman.tlh
+//
+// C++ source equivalent of Win32 type library WiFiMan.dll
+// compiler-generated file created 07/08/09 at 22:51:01 - DO NOT EDIT!
+
+#pragma once
+#pragma pack(push, 8)
+
+#include <comdef.h>
+
+namespace WiFiManLib {
+
+//
+// Forward references and typedefs
+//
+
+struct __declspec(uuid("5111cc4d-9384-47a0-a0a5-9e725440f86a"))
+/* LIBID */ __WiFiManLib;
+struct __declspec(uuid("663b0d70-973e-48fa-bab0-86925fcedd57"))
+/* dispinterface */ _IWiFiEvents;
+struct /* coclass */ WiFi;
+struct __declspec(uuid("9c9abafb-819e-4161-8a23-a512d7928686"))
+/* dual interface */ IWiFi;
+
+//
+// Smart pointer typedef declarations
+//
+
+_COM_SMARTPTR_TYPEDEF(_IWiFiEvents, __uuidof(_IWiFiEvents));
+_COM_SMARTPTR_TYPEDEF(IWiFi, __uuidof(IWiFi));
+
+//
+// Type library items
+//
+
+struct __declspec(uuid("663b0d70-973e-48fa-bab0-86925fcedd57"))
+_IWiFiEvents : IDispatch
+{};
+
+struct __declspec(uuid("92e7dded-bbfe-4ddf-b717-074e3b602d1b"))
+WiFi;
+    // [ default ] interface IWiFi
+    // [ default, source ] dispinterface _IWiFiEvents
+
+struct __declspec(uuid("9c9abafb-819e-4161-8a23-a512d7928686"))
+IWiFi : IDispatch
+{
+    //
+    // Wrapper methods for error-handling
+    //
+
+    long EnumerateAdapters ( );
+    long GetAdapterGUID (
+        long AdapterInd,
+        BSTR * AdapterGuid,
+        long MaxCount );
+    long GetAdapterName (
+        long AdapterInd,
+        BSTR * AdapterName,
+        long MaxCount );
+    long CheckAdapterBusyStatus (
+        long AdapterInd,
+        long WaitTime );
+    long FreeAllResources ( );
+    long EnumerateAvailableNetworks (
+        long AdapterInd,
+        long Search );
+    long GetAvailableNetworkName (
+        long AdapterInd,
+        long NetworkInd,
+        BSTR * NetworkName,
+        long MaxCount );
+    long GetAvailableNetworkSignalQuality (
+        long AdapterInd,
+        long NetworkInd );
+    long GetAvailableNetworkType (
+        long AdapterInd,
+        long NetworkInd );
+    long IsAvailableNetworkSecure (
+        long AdapterInd,
+        long NetworkInd );
+    long GetAvailableNetworkAuthMode (
+        long AdapterInd,
+        long NetworkInd );
+    long GetAvailableNetworkCipherMode (
+        long AdapterInd,
+        long NetworkInd );
+    long EnumerateProfiles (
+        long AdapterInd );
+    long GetProfileName (
+        long AdapterInd,
+        long ProfileInd,
+        BSTR * ProfileName,
+        long MaxCount );
+    long GetCurrentNetworkName (
+        long AdapterInd,
+        BSTR * NetworkName,
+        long MaxCount );
+    long ConnectToNetwork (
+        long AdapterInd,
+        _bstr_t NetworkName );
+    long DisconnectFromNetwork (
+        long AdapterInd );
+    long MoveProfile (
+        long AdapterInd,
+        long ProfileInd,
+        long NewIndex );
+    long DeleteProfile (
+        long AdapterInd,
+        long ProfileInd );
+    long OpenProfilesUI (
+        long AdapterInd );
+    long EnableLog (
+        _bstr_t FileName,
+        long RemoveOld );
+    long DisableLog ( );
+    long GetCurrentNetworkSpeed (
+        long AdapterInd );
+    long GetCurrentNetworkChannel (
+        long AdapterInd );
+    long IsNativeWIFI ( );
+    long GetWIFIServiceStatus ( );
+    long SetWIFIServiceStatus (
+        long StartService );
+    long GetWIFIManagerVersion ( );
+    long GetAdapterIPInfo (
+        long AdapterInd,
+        BSTR * IP,
+        BSTR * Mask,
+        BSTR * Gateway,
+        long * DHCPEnabled,
+        long MaxCount );
+    long SetAdapterIPInfo (
+        long AdapterInd,
+        _bstr_t IP,
+        _bstr_t Mask,
+        _bstr_t Gateway,
+        long DHCPEnabled );
+    long CreateTmpProfile (
+        long Template );
+    long FreeTmpProfile (
+        long ProfileHandle );
+    long CloneTmpProfile (
+        long ProfileHandle );
+    long LoadTmpProfile (
+        _bstr_t FileName );
+    long GetTmpProfileFromAdapter (
+        long AdapterInd,
+        long ProfileInd );
+    long SetTmpProfileToAdapter (
+        long ProfileHandle,
+        long AdapterInd );
+    long SetTmpProfileOption (
+        long ProfileHandle,
+        _bstr_t OptionName,
+        _bstr_t Value );
+    long GetTmpProfileOption (
+        long ProfileHandle,
+        _bstr_t OptionName,
+        BSTR * Value,
+        long MaxCount );
+    long SaveTmpProfile (
+        long ProfileHandle,
+        _bstr_t FileName );
+    long GetAdapterOption (
+        long AdapterInd,
+        long OptionCode );
+    long SetAdapterOption (
+        long AdapterInd,
+        long OptionCode,
+        long Value );
+    long Ping (
+        _bstr_t Host,
+        long PingTimeout );
+    long GetAvailableNetworkMac (
+        long AdapterInd,
+        long NetworkInd,
+        long * d1,
+        long * d2,
+        long * d3,
+        long * d4,
+        long * d5,
+        long * d6 );
+    long GetCurrentNetworkMac (
+        long AdapterInd,
+        long * d1,
+        long * d2,
+        long * d3,
+        long * d4,
+        long * d5,
+        long * d6 );
+    long GetAvailableNetworkRSSI (
+        long AdapterInd,
+        long NetworkInd );
+    long GetAdapterFirewallState (
+        long AdapterInd );
+    long EnableAdapterFirewall (
+        long AdapterInd );
+    long DisableAdapterFirewall (
+        long AdapterInd );
+    long GetWindowsFirewallStatus (
+        long * ExceptionsNotAllowed,
+        long * NotificationsDisabled );
+    long EnableWindowsFirewall (
+        long ExceptionsNotAllowed,
+        long NotificationsDisabled );
+    long DisableWindowsFirewall ( );
+    long WriteLog (
+        _bstr_t Str );
+    long EnumerateAllNetAdapters ( );
+    long GetNetAdapterName (
+        long NetAdapterInd,
+        BSTR * NetAdapterName,
+        long MaxCount );
+    long GetNetAdapterGUID (
+        long NetAdapterInd,
+        BSTR * NetAdapterGuid,
+        long MaxCount );
+    long GetNetAdapterState (
+        long NetAdapterInd );
+    long EnableNetAdapter (
+        long NetAdapterInd );
+    long DisableNetAdapter (
+        long NetAdapterInd );
+    long RestartNetAdapter (
+        long NetAdapterInd );
+    long GetAdapterMac (
+        long AdapterInd,
+        long * d1,
+        long * d2,
+        long * d3,
+        long * d4,
+        long * d5,
+        long * d6 );
+    long GetAdapterCurrentIPInfo (
+        long AdapterInd,
+        BSTR * IP,
+        BSTR * Mask,
+        BSTR * Gateway,
+        long MaxCount );
+    long GetNetAdapterCurrentIPInfo (
+        long NetAdapterInd,
+        BSTR * IP,
+        BSTR * Mask,
+        BSTR * Gateway,
+        long MaxCount );
+    long GetNetAdapterIPInfo (
+        long NetAdapterInd,
+        BSTR * IP,
+        BSTR * Mask,
+        BSTR * Gateway,
+        long * DHCPEnabled,
+        long MaxCount );
+    long SetNetAdapterIPInfo (
+        long NetAdapterInd,
+        _bstr_t IP,
+        _bstr_t Mask,
+        _bstr_t Gateway,
+        long DHCPEnabled );
+    long GetNetAdapterMac (
+        long NetAdapterInd,
+        long * d1,
+        long * d2,
+        long * d3,
+        long * d4,
+        long * d5,
+        long * d6 );
+    long GetNetAdapterFirewallState (
+        long NetAdapterInd );
+    long EnableNetAdapterFirewall (
+        long NetAdapterInd );
+    long DisableNetAdapterFirewall (
+        long NetAdapterInd );
+    long LoadTmpProfileFromString (
+        _bstr_t Str );
+    long GetAvailableNetworkIndex (
+        long AdapterInd,
+        _bstr_t NetName );
+    long GetProfileNetworkIndex (
+        long AdapterInd,
+        _bstr_t NetName );
+    long ConnectToNetworkByMAC (
+        long AdapterInd,
+        long d1,
+        long d2,
+        long d3,
+        long d4,
+        long d5,
+        long d6 );
+    long SaveTmpProfileToString (
+        long ProfileHandle,
+        BSTR * Str,
+        long MaxCount );
+    long GetAvailableNetworkChannel (
+        long AdapterInd,
+        long NetworkInd );
+    long IsNetAdapterWiFi (
+        long NetAdapterInd );
+    long IsDirectWIFI ( );
+    long GetLibraryOption (
+        long OptionIndex );
+    long SetLibraryOption (
+        long OptionIndex,
+        long Value );
+    long SetStorageOptions (
+        _bstr_t FileName,
+        long Flags );
+    long SetStorageData (
+        _bstr_t StorageData,
+        long Length );
+    long GetStorageData (
+        BSTR * StorageData,
+        long MaxLength );
+    long InstallDriver (
+        _bstr_t FolderPath );
+    long UninstallDriver ( );
+    long CheckNdisAvailable (
+        long AdapterInd );
+    long SetDefaultEapConfig (
+        long ProfileHandle,
+        long EapEnabled,
+        long UseWindowsCredentials );
+    long DeleteTmpProfileOption (
+        long ProfileHandle,
+        _bstr_t OptionName );
+    long RepairAdapter (
+        long AdapterInd );
+    long IsInstalledDriver ( );
+    long IsAdapterNativeWIFI (
+        long AdapterInd );
+    long GetAdapterDNS (
+        long AdapterInd,
+        BSTR * DNS,
+        long MaxCount );
+    long SetAdapterDNS (
+        long AdapterInd,
+        _bstr_t DNS );
+    long GetNetAdapterDNS (
+        long NetAdapterInd,
+        BSTR * DNS,
+        long MaxCount );
+    long SetNetAdapterDNS (
+        long NetAdapterInd,
+        _bstr_t DNS );
+    long GetAdapterDefaultMac (
+        long AdapterInd,
+        long * d1,
+        long * d2,
+        long * d3,
+        long * d4,
+        long * d5,
+        long * d6 );
+    long SetAdapterMac (
+        long AdapterInd,
+        long d1,
+        long d2,
+        long d3,
+        long d4,
+        long d5,
+        long d6 );
+    long SetAdapterDefaultMac (
+        long AdapterInd );
+    long GetNetAdapterDefaultMac (
+        long NetAdapterInd,
+        long * d1,
+        long * d2,
+        long * d3,
+        long * d4,
+        long * d5,
+        long * d6 );
+    long SetNetAdapterMac (
+        long NetAdapterInd,
+        long d1,
+        long d2,
+        long d3,
+        long d4,
+        long d5,
+        long d6 );
+    long SetNetAdapterDefaultMac (
+        long NetAdapterInd );
+    long GetAdapterInfo (
+        long AdapterInd,
+        BSTR * Str,
+        long MaxCount );
+    long GetAdapterTraffic (
+        long AdapterInd,
+        long * InDataH,
+        long * InDataL,
+        long * OutDataH,
+        long * OutDataL );
+    long GetNetAdapterTraffic (
+        long NetAdapterInd,
+        long * InDataH,
+        long * InDataL,
+        long * OutDataH,
+        long * OutDataL );
+
+    //
+    // Raw methods provided by interface
+    //
+
+      virtual HRESULT __stdcall raw_EnumerateAdapters (
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_GetAdapterGUID (
+        /*[in]*/ long AdapterInd,
+        BSTR * AdapterGuid,
+        /*[in]*/ long MaxCount,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_GetAdapterName (
+        /*[in]*/ long AdapterInd,
+        BSTR * AdapterName,
+        /*[in]*/ long MaxCount,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_CheckAdapterBusyStatus (
+        /*[in]*/ long AdapterInd,
+        /*[in]*/ long WaitTime,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_FreeAllResources (
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_EnumerateAvailableNetworks (
+        /*[in]*/ long AdapterInd,
+        /*[in]*/ long Search,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_GetAvailableNetworkName (
+        /*[in]*/ long AdapterInd,
+        /*[in]*/ long NetworkInd,
+        BSTR * NetworkName,
+        /*[in]*/ long MaxCount,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_GetAvailableNetworkSignalQuality (
+        /*[in]*/ long AdapterInd,
+        /*[in]*/ long NetworkInd,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_GetAvailableNetworkType (
+        /*[in]*/ long AdapterInd,
+        /*[in]*/ long NetworkInd,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_IsAvailableNetworkSecure (
+        /*[in]*/ long AdapterInd,
+        /*[in]*/ long NetworkInd,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_GetAvailableNetworkAuthMode (
+        /*[in]*/ long AdapterInd,
+        /*[in]*/ long NetworkInd,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_GetAvailableNetworkCipherMode (
+        /*[in]*/ long AdapterInd,
+        /*[in]*/ long NetworkInd,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_EnumerateProfiles (
+        /*[in]*/ long AdapterInd,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_GetProfileName (
+        /*[in]*/ long AdapterInd,
+        /*[in]*/ long ProfileInd,
+        BSTR * ProfileName,
+        /*[in]*/ long MaxCount,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_GetCurrentNetworkName (
+        /*[in]*/ long AdapterInd,
+        BSTR * NetworkName,
+        /*[in]*/ long MaxCount,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_ConnectToNetwork (
+        /*[in]*/ long AdapterInd,
+        /*[in]*/ BSTR NetworkName,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_DisconnectFromNetwork (
+        /*[in]*/ long AdapterInd,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_MoveProfile (
+        /*[in]*/ long AdapterInd,
+        /*[in]*/ long ProfileInd,
+        /*[in]*/ long NewIndex,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_DeleteProfile (
+        /*[in]*/ long AdapterInd,
+        /*[in]*/ long ProfileInd,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_OpenProfilesUI (
+        /*[in]*/ long AdapterInd,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_EnableLog (
+        /*[in]*/ BSTR FileName,
+        /*[in]*/ long RemoveOld,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_DisableLog (
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_GetCurrentNetworkSpeed (
+        /*[in]*/ long AdapterInd,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_GetCurrentNetworkChannel (
+        /*[in]*/ long AdapterInd,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_IsNativeWIFI (
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_GetWIFIServiceStatus (
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_SetWIFIServiceStatus (
+        /*[in]*/ long StartService,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_GetWIFIManagerVersion (
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_GetAdapterIPInfo (
+        /*[in]*/ long AdapterInd,
+        BSTR * IP,
+        BSTR * Mask,
+        BSTR * Gateway,
+        /*[out]*/ long * DHCPEnabled,
+        /*[in]*/ long MaxCount,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_SetAdapterIPInfo (
+        /*[in]*/ long AdapterInd,
+        /*[in]*/ BSTR IP,
+        /*[in]*/ BSTR Mask,
+        /*[in]*/ BSTR Gateway,
+        /*[in]*/ long DHCPEnabled,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_CreateTmpProfile (
+        /*[in]*/ long Template,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_FreeTmpProfile (
+        /*[in]*/ long ProfileHandle,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_CloneTmpProfile (
+        /*[in]*/ long ProfileHandle,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_LoadTmpProfile (
+        /*[in]*/ BSTR FileName,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_GetTmpProfileFromAdapter (
+        /*[in]*/ long AdapterInd,
+        /*[in]*/ long ProfileInd,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_SetTmpProfileToAdapter (
+        /*[in]*/ long ProfileHandle,
+        /*[in]*/ long AdapterInd,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_SetTmpProfileOption (
+        /*[in]*/ long ProfileHandle,
+        /*[in]*/ BSTR OptionName,
+        /*[in]*/ BSTR Value,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_GetTmpProfileOption (
+        /*[in]*/ long ProfileHandle,
+        /*[in]*/ BSTR OptionName,
+        BSTR * Value,
+        /*[in]*/ long MaxCount,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_SaveTmpProfile (
+        /*[in]*/ long ProfileHandle,
+        /*[in]*/ BSTR FileName,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_GetAdapterOption (
+        /*[in]*/ long AdapterInd,
+        /*[in]*/ long OptionCode,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_SetAdapterOption (
+        /*[in]*/ long AdapterInd,
+        /*[in]*/ long OptionCode,
+        /*[in]*/ long Value,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_Ping (
+        /*[in]*/ BSTR Host,
+        /*[in]*/ long PingTimeout,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_GetAvailableNetworkMac (
+        /*[in]*/ long AdapterInd,
+        /*[in]*/ long NetworkInd,
+        /*[out]*/ long * d1,
+        /*[out]*/ long * d2,
+        /*[out]*/ long * d3,
+        /*[out]*/ long * d4,
+        /*[out]*/ long * d5,
+        /*[out]*/ long * d6,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_GetCurrentNetworkMac (
+        /*[in]*/ long AdapterInd,
+        /*[out]*/ long * d1,
+        /*[out]*/ long * d2,
+        /*[out]*/ long * d3,
+        /*[out]*/ long * d4,
+        /*[out]*/ long * d5,
+        /*[out]*/ long * d6,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_GetAvailableNetworkRSSI (
+        /*[in]*/ long AdapterInd,
+        /*[in]*/ long NetworkInd,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_GetAdapterFirewallState (
+        /*[in]*/ long AdapterInd,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_EnableAdapterFirewall (
+        /*[in]*/ long AdapterInd,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_DisableAdapterFirewall (
+        /*[in]*/ long AdapterInd,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_GetWindowsFirewallStatus (
+        /*[out]*/ long * ExceptionsNotAllowed,
+        /*[out]*/ long * NotificationsDisabled,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_EnableWindowsFirewall (
+        /*[in]*/ long ExceptionsNotAllowed,
+        /*[in]*/ long NotificationsDisabled,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_DisableWindowsFirewall (
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_WriteLog (
+        /*[in]*/ BSTR Str,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_EnumerateAllNetAdapters (
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_GetNetAdapterName (
+        /*[in]*/ long NetAdapterInd,
+        /*[in,out]*/ BSTR * NetAdapterName,
+        /*[in]*/ long MaxCount,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_GetNetAdapterGUID (
+        /*[in]*/ long NetAdapterInd,
+        /*[in,out]*/ BSTR * NetAdapterGuid,
+        /*[in]*/ long MaxCount,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_GetNetAdapterState (
+        /*[in]*/ long NetAdapterInd,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_EnableNetAdapter (
+        /*[in]*/ long NetAdapterInd,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_DisableNetAdapter (
+        /*[in]*/ long NetAdapterInd,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_RestartNetAdapter (
+        /*[in]*/ long NetAdapterInd,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_GetAdapterMac (
+        /*[in]*/ long AdapterInd,
+        /*[out]*/ long * d1,
+        /*[out]*/ long * d2,
+        /*[out]*/ long * d3,
+        /*[out]*/ long * d4,
+        /*[out]*/ long * d5,
+        /*[out]*/ long * d6,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_GetAdapterCurrentIPInfo (
+        /*[in]*/ long AdapterInd,
+        /*[in,out]*/ BSTR * IP,
+        /*[in,out]*/ BSTR * Mask,
+        /*[in,out]*/ BSTR * Gateway,
+        /*[in]*/ long MaxCount,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_GetNetAdapterCurrentIPInfo (
+        /*[in]*/ long NetAdapterInd,
+        /*[in,out]*/ BSTR * IP,
+        /*[in,out]*/ BSTR * Mask,
+        /*[in,out]*/ BSTR * Gateway,
+        /*[in]*/ long MaxCount,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_GetNetAdapterIPInfo (
+        /*[in]*/ long NetAdapterInd,
+        /*[in,out]*/ BSTR * IP,
+        /*[in,out]*/ BSTR * Mask,
+        /*[in,out]*/ BSTR * Gateway,
+        /*[out]*/ long * DHCPEnabled,
+        /*[in]*/ long MaxCount,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_SetNetAdapterIPInfo (
+        /*[in]*/ long NetAdapterInd,
+        /*[in]*/ BSTR IP,
+        /*[in]*/ BSTR Mask,
+        /*[in]*/ BSTR Gateway,
+        /*[in]*/ long DHCPEnabled,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_GetNetAdapterMac (
+        /*[in]*/ long NetAdapterInd,
+        /*[out]*/ long * d1,
+        /*[out]*/ long * d2,
+        /*[out]*/ long * d3,
+        /*[out]*/ long * d4,
+        /*[out]*/ long * d5,
+        /*[out]*/ long * d6,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_GetNetAdapterFirewallState (
+        /*[in]*/ long NetAdapterInd,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_EnableNetAdapterFirewall (
+        /*[in]*/ long NetAdapterInd,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_DisableNetAdapterFirewall (
+        /*[in]*/ long NetAdapterInd,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_LoadTmpProfileFromString (
+        /*[in]*/ BSTR Str,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_GetAvailableNetworkIndex (
+        /*[in]*/ long AdapterInd,
+        /*[in]*/ BSTR NetName,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_GetProfileNetworkIndex (
+        /*[in]*/ long AdapterInd,
+        /*[in]*/ BSTR NetName,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_ConnectToNetworkByMAC (
+        /*[in]*/ long AdapterInd,
+        /*[in]*/ long d1,
+        /*[in]*/ long d2,
+        /*[in]*/ long d3,
+        /*[in]*/ long d4,
+        /*[in]*/ long d5,
+        /*[in]*/ long d6,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_SaveTmpProfileToString (
+        /*[in]*/ long ProfileHandle,
+        /*[in,out]*/ BSTR * Str,
+        /*[in]*/ long MaxCount,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_GetAvailableNetworkChannel (
+        /*[in]*/ long AdapterInd,
+        /*[in]*/ long NetworkInd,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_IsNetAdapterWiFi (
+        /*[in]*/ long NetAdapterInd,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_IsDirectWIFI (
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_GetLibraryOption (
+        /*[in]*/ long OptionIndex,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_SetLibraryOption (
+        /*[in]*/ long OptionIndex,
+        /*[in]*/ long Value,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_SetStorageOptions (
+        /*[in]*/ BSTR FileName,
+        /*[in]*/ long Flags,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_SetStorageData (
+        /*[in]*/ BSTR StorageData,
+        /*[in]*/ long Length,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_GetStorageData (
+        /*[out]*/ BSTR * StorageData,
+        /*[in]*/ long MaxLength,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_InstallDriver (
+        /*[in]*/ BSTR FolderPath,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_UninstallDriver (
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_CheckNdisAvailable (
+        /*[in]*/ long AdapterInd,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_SetDefaultEapConfig (
+        /*[in]*/ long ProfileHandle,
+        /*[in]*/ long EapEnabled,
+        /*[in]*/ long UseWindowsCredentials,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_DeleteTmpProfileOption (
+        /*[in]*/ long ProfileHandle,
+        /*[in]*/ BSTR OptionName,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_RepairAdapter (
+        /*[in]*/ long AdapterInd,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_IsInstalledDriver (
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_IsAdapterNativeWIFI (
+        /*[in]*/ long AdapterInd,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_GetAdapterDNS (
+        /*[in]*/ long AdapterInd,
+        /*[in,out]*/ BSTR * DNS,
+        /*[in]*/ long MaxCount,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_SetAdapterDNS (
+        /*[in]*/ long AdapterInd,
+        /*[in]*/ BSTR DNS,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_GetNetAdapterDNS (
+        /*[in]*/ long NetAdapterInd,
+        /*[in,out]*/ BSTR * DNS,
+        /*[in]*/ long MaxCount,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_SetNetAdapterDNS (
+        /*[in]*/ long NetAdapterInd,
+        /*[in]*/ BSTR DNS,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_GetAdapterDefaultMac (
+        /*[in]*/ long AdapterInd,
+        /*[out]*/ long * d1,
+        /*[out]*/ long * d2,
+        /*[out]*/ long * d3,
+        /*[out]*/ long * d4,
+        /*[out]*/ long * d5,
+        /*[out]*/ long * d6,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_SetAdapterMac (
+        /*[in]*/ long AdapterInd,
+        /*[in]*/ long d1,
+        /*[in]*/ long d2,
+        /*[in]*/ long d3,
+        /*[in]*/ long d4,
+        /*[in]*/ long d5,
+        /*[in]*/ long d6,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_SetAdapterDefaultMac (
+        /*[in]*/ long AdapterInd,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_GetNetAdapterDefaultMac (
+        /*[in]*/ long NetAdapterInd,
+        /*[out]*/ long * d1,
+        /*[out]*/ long * d2,
+        /*[out]*/ long * d3,
+        /*[out]*/ long * d4,
+        /*[out]*/ long * d5,
+        /*[out]*/ long * d6,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_SetNetAdapterMac (
+        /*[in]*/ long NetAdapterInd,
+        /*[in]*/ long d1,
+        /*[in]*/ long d2,
+        /*[in]*/ long d3,
+        /*[in]*/ long d4,
+        /*[in]*/ long d5,
+        /*[in]*/ long d6,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_SetNetAdapterDefaultMac (
+        /*[in]*/ long NetAdapterInd,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_GetAdapterInfo (
+        /*[in]*/ long AdapterInd,
+        /*[in,out]*/ BSTR * Str,
+        /*[in]*/ long MaxCount,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_GetAdapterTraffic (
+        /*[in]*/ long AdapterInd,
+        /*[in,out]*/ long * InDataH,
+        /*[in,out]*/ long * InDataL,
+        /*[in,out]*/ long * OutDataH,
+        /*[in,out]*/ long * OutDataL,
+        /*[out,retval]*/ long * RetCode ) = 0;
+      virtual HRESULT __stdcall raw_GetNetAdapterTraffic (
+        /*[in]*/ long NetAdapterInd,
+        /*[in,out]*/ long * InDataH,
+        /*[in,out]*/ long * InDataL,
+        /*[in,out]*/ long * OutDataH,
+        /*[in,out]*/ long * OutDataL,
+        /*[out,retval]*/ long * RetCode ) = 0;
+};
+
+//
+// Wrapper method implementations
+//
+
+#include "c:\documents and settings\justin tang\my documents\visual studio 2008\projects\wifi_win_available\wifi_win_available\debug\wifiman.tli"
+
+} // namespace WiFiManLib
+
+#pragma pack(pop)

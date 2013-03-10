@@ -1,0 +1,19 @@
+<project name="Nomatic native process code for Mac" default="build">
+
+	<target name="build" depends="build_process_windows_sensor"/>
+
+	<target name="clean">
+		<delete file="./jni.h"/>
+		<delete file="./processSensor"/>
+		<delete file="./libprocesssensor_mac.jnilib"/>
+	</target>
+
+	<target name="build_process_windows_sensor">
+
+		<exec executable="${javah.exe}">
+			<arg line="-o ${build.native.dir}/processsensor_win32.h -classpath ../../../../../${build.classes.dir} edu.uci.ics.luci.nomatic.service.sensors.ProcessSensor_Windows"/>
+		</exec>
+
+		<copy file="${project.native.dir}/sensors/process/win32/processsensor_win32.dll" todir="../../../../../${build.native.dir}/"/>
+	</target>
+</project>

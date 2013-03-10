@@ -1,0 +1,726 @@
+﻿// Created by Microsoft (R) C/C++ Compiler Version 15.00.21022.08 (bedf6478).
+//
+// c:\documents and settings\justin tang\my documents\visual studio 2008\projects\wifi_win_available\wifi_win_available\debug\wifiman.tli
+//
+// Wrapper implementations for Win32 type library WiFiMan.dll
+// compiler-generated file created 07/08/09 at 22:51:01 - DO NOT EDIT!
+
+#pragma once
+
+//
+// interface IWiFi wrapper method implementations
+//
+
+inline long IWiFi::EnumerateAdapters ( ) {
+    long _result = 0;
+    HRESULT _hr = raw_EnumerateAdapters(&_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::GetAdapterGUID ( long AdapterInd, BSTR * AdapterGuid, long MaxCount ) {
+    long _result = 0;
+    HRESULT _hr = raw_GetAdapterGUID(AdapterInd, AdapterGuid, MaxCount, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::GetAdapterName ( long AdapterInd, BSTR * AdapterName, long MaxCount ) {
+    long _result = 0;
+    HRESULT _hr = raw_GetAdapterName(AdapterInd, AdapterName, MaxCount, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::CheckAdapterBusyStatus ( long AdapterInd, long WaitTime ) {
+    long _result = 0;
+    HRESULT _hr = raw_CheckAdapterBusyStatus(AdapterInd, WaitTime, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::FreeAllResources ( ) {
+    long _result = 0;
+    HRESULT _hr = raw_FreeAllResources(&_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::EnumerateAvailableNetworks ( long AdapterInd, long Search ) {
+    long _result = 0;
+    HRESULT _hr = raw_EnumerateAvailableNetworks(AdapterInd, Search, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::GetAvailableNetworkName ( long AdapterInd, long NetworkInd, BSTR * NetworkName, long MaxCount ) {
+    long _result = 0;
+    HRESULT _hr = raw_GetAvailableNetworkName(AdapterInd, NetworkInd, NetworkName, MaxCount, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::GetAvailableNetworkSignalQuality ( long AdapterInd, long NetworkInd ) {
+    long _result = 0;
+    HRESULT _hr = raw_GetAvailableNetworkSignalQuality(AdapterInd, NetworkInd, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::GetAvailableNetworkType ( long AdapterInd, long NetworkInd ) {
+    long _result = 0;
+    HRESULT _hr = raw_GetAvailableNetworkType(AdapterInd, NetworkInd, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::IsAvailableNetworkSecure ( long AdapterInd, long NetworkInd ) {
+    long _result = 0;
+    HRESULT _hr = raw_IsAvailableNetworkSecure(AdapterInd, NetworkInd, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::GetAvailableNetworkAuthMode ( long AdapterInd, long NetworkInd ) {
+    long _result = 0;
+    HRESULT _hr = raw_GetAvailableNetworkAuthMode(AdapterInd, NetworkInd, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::GetAvailableNetworkCipherMode ( long AdapterInd, long NetworkInd ) {
+    long _result = 0;
+    HRESULT _hr = raw_GetAvailableNetworkCipherMode(AdapterInd, NetworkInd, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::EnumerateProfiles ( long AdapterInd ) {
+    long _result = 0;
+    HRESULT _hr = raw_EnumerateProfiles(AdapterInd, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::GetProfileName ( long AdapterInd, long ProfileInd, BSTR * ProfileName, long MaxCount ) {
+    long _result = 0;
+    HRESULT _hr = raw_GetProfileName(AdapterInd, ProfileInd, ProfileName, MaxCount, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::GetCurrentNetworkName ( long AdapterInd, BSTR * NetworkName, long MaxCount ) {
+    long _result = 0;
+    HRESULT _hr = raw_GetCurrentNetworkName(AdapterInd, NetworkName, MaxCount, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::ConnectToNetwork ( long AdapterInd, _bstr_t NetworkName ) {
+    long _result = 0;
+    HRESULT _hr = raw_ConnectToNetwork(AdapterInd, NetworkName, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::DisconnectFromNetwork ( long AdapterInd ) {
+    long _result = 0;
+    HRESULT _hr = raw_DisconnectFromNetwork(AdapterInd, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::MoveProfile ( long AdapterInd, long ProfileInd, long NewIndex ) {
+    long _result = 0;
+    HRESULT _hr = raw_MoveProfile(AdapterInd, ProfileInd, NewIndex, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::DeleteProfile ( long AdapterInd, long ProfileInd ) {
+    long _result = 0;
+    HRESULT _hr = raw_DeleteProfile(AdapterInd, ProfileInd, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::OpenProfilesUI ( long AdapterInd ) {
+    long _result = 0;
+    HRESULT _hr = raw_OpenProfilesUI(AdapterInd, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::EnableLog ( _bstr_t FileName, long RemoveOld ) {
+    long _result = 0;
+    HRESULT _hr = raw_EnableLog(FileName, RemoveOld, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::DisableLog ( ) {
+    long _result = 0;
+    HRESULT _hr = raw_DisableLog(&_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::GetCurrentNetworkSpeed ( long AdapterInd ) {
+    long _result = 0;
+    HRESULT _hr = raw_GetCurrentNetworkSpeed(AdapterInd, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::GetCurrentNetworkChannel ( long AdapterInd ) {
+    long _result = 0;
+    HRESULT _hr = raw_GetCurrentNetworkChannel(AdapterInd, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::IsNativeWIFI ( ) {
+    long _result = 0;
+    HRESULT _hr = raw_IsNativeWIFI(&_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::GetWIFIServiceStatus ( ) {
+    long _result = 0;
+    HRESULT _hr = raw_GetWIFIServiceStatus(&_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::SetWIFIServiceStatus ( long StartService ) {
+    long _result = 0;
+    HRESULT _hr = raw_SetWIFIServiceStatus(StartService, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::GetWIFIManagerVersion ( ) {
+    long _result = 0;
+    HRESULT _hr = raw_GetWIFIManagerVersion(&_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::GetAdapterIPInfo ( long AdapterInd, BSTR * IP, BSTR * Mask, BSTR * Gateway, long * DHCPEnabled, long MaxCount ) {
+    long _result = 0;
+    HRESULT _hr = raw_GetAdapterIPInfo(AdapterInd, IP, Mask, Gateway, DHCPEnabled, MaxCount, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::SetAdapterIPInfo ( long AdapterInd, _bstr_t IP, _bstr_t Mask, _bstr_t Gateway, long DHCPEnabled ) {
+    long _result = 0;
+    HRESULT _hr = raw_SetAdapterIPInfo(AdapterInd, IP, Mask, Gateway, DHCPEnabled, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::CreateTmpProfile ( long Template ) {
+    long _result = 0;
+    HRESULT _hr = raw_CreateTmpProfile(Template, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::FreeTmpProfile ( long ProfileHandle ) {
+    long _result = 0;
+    HRESULT _hr = raw_FreeTmpProfile(ProfileHandle, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::CloneTmpProfile ( long ProfileHandle ) {
+    long _result = 0;
+    HRESULT _hr = raw_CloneTmpProfile(ProfileHandle, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::LoadTmpProfile ( _bstr_t FileName ) {
+    long _result = 0;
+    HRESULT _hr = raw_LoadTmpProfile(FileName, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::GetTmpProfileFromAdapter ( long AdapterInd, long ProfileInd ) {
+    long _result = 0;
+    HRESULT _hr = raw_GetTmpProfileFromAdapter(AdapterInd, ProfileInd, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::SetTmpProfileToAdapter ( long ProfileHandle, long AdapterInd ) {
+    long _result = 0;
+    HRESULT _hr = raw_SetTmpProfileToAdapter(ProfileHandle, AdapterInd, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::SetTmpProfileOption ( long ProfileHandle, _bstr_t OptionName, _bstr_t Value ) {
+    long _result = 0;
+    HRESULT _hr = raw_SetTmpProfileOption(ProfileHandle, OptionName, Value, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::GetTmpProfileOption ( long ProfileHandle, _bstr_t OptionName, BSTR * Value, long MaxCount ) {
+    long _result = 0;
+    HRESULT _hr = raw_GetTmpProfileOption(ProfileHandle, OptionName, Value, MaxCount, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::SaveTmpProfile ( long ProfileHandle, _bstr_t FileName ) {
+    long _result = 0;
+    HRESULT _hr = raw_SaveTmpProfile(ProfileHandle, FileName, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::GetAdapterOption ( long AdapterInd, long OptionCode ) {
+    long _result = 0;
+    HRESULT _hr = raw_GetAdapterOption(AdapterInd, OptionCode, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::SetAdapterOption ( long AdapterInd, long OptionCode, long Value ) {
+    long _result = 0;
+    HRESULT _hr = raw_SetAdapterOption(AdapterInd, OptionCode, Value, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::Ping ( _bstr_t Host, long PingTimeout ) {
+    long _result = 0;
+    HRESULT _hr = raw_Ping(Host, PingTimeout, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::GetAvailableNetworkMac ( long AdapterInd, long NetworkInd, long * d1, long * d2, long * d3, long * d4, long * d5, long * d6 ) {
+    long _result = 0;
+    HRESULT _hr = raw_GetAvailableNetworkMac(AdapterInd, NetworkInd, d1, d2, d3, d4, d5, d6, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::GetCurrentNetworkMac ( long AdapterInd, long * d1, long * d2, long * d3, long * d4, long * d5, long * d6 ) {
+    long _result = 0;
+    HRESULT _hr = raw_GetCurrentNetworkMac(AdapterInd, d1, d2, d3, d4, d5, d6, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::GetAvailableNetworkRSSI ( long AdapterInd, long NetworkInd ) {
+    long _result = 0;
+    HRESULT _hr = raw_GetAvailableNetworkRSSI(AdapterInd, NetworkInd, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::GetAdapterFirewallState ( long AdapterInd ) {
+    long _result = 0;
+    HRESULT _hr = raw_GetAdapterFirewallState(AdapterInd, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::EnableAdapterFirewall ( long AdapterInd ) {
+    long _result = 0;
+    HRESULT _hr = raw_EnableAdapterFirewall(AdapterInd, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::DisableAdapterFirewall ( long AdapterInd ) {
+    long _result = 0;
+    HRESULT _hr = raw_DisableAdapterFirewall(AdapterInd, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::GetWindowsFirewallStatus ( long * ExceptionsNotAllowed, long * NotificationsDisabled ) {
+    long _result = 0;
+    HRESULT _hr = raw_GetWindowsFirewallStatus(ExceptionsNotAllowed, NotificationsDisabled, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::EnableWindowsFirewall ( long ExceptionsNotAllowed, long NotificationsDisabled ) {
+    long _result = 0;
+    HRESULT _hr = raw_EnableWindowsFirewall(ExceptionsNotAllowed, NotificationsDisabled, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::DisableWindowsFirewall ( ) {
+    long _result = 0;
+    HRESULT _hr = raw_DisableWindowsFirewall(&_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::WriteLog ( _bstr_t Str ) {
+    long _result = 0;
+    HRESULT _hr = raw_WriteLog(Str, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::EnumerateAllNetAdapters ( ) {
+    long _result = 0;
+    HRESULT _hr = raw_EnumerateAllNetAdapters(&_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::GetNetAdapterName ( long NetAdapterInd, BSTR * NetAdapterName, long MaxCount ) {
+    long _result = 0;
+    HRESULT _hr = raw_GetNetAdapterName(NetAdapterInd, NetAdapterName, MaxCount, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::GetNetAdapterGUID ( long NetAdapterInd, BSTR * NetAdapterGuid, long MaxCount ) {
+    long _result = 0;
+    HRESULT _hr = raw_GetNetAdapterGUID(NetAdapterInd, NetAdapterGuid, MaxCount, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::GetNetAdapterState ( long NetAdapterInd ) {
+    long _result = 0;
+    HRESULT _hr = raw_GetNetAdapterState(NetAdapterInd, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::EnableNetAdapter ( long NetAdapterInd ) {
+    long _result = 0;
+    HRESULT _hr = raw_EnableNetAdapter(NetAdapterInd, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::DisableNetAdapter ( long NetAdapterInd ) {
+    long _result = 0;
+    HRESULT _hr = raw_DisableNetAdapter(NetAdapterInd, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::RestartNetAdapter ( long NetAdapterInd ) {
+    long _result = 0;
+    HRESULT _hr = raw_RestartNetAdapter(NetAdapterInd, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::GetAdapterMac ( long AdapterInd, long * d1, long * d2, long * d3, long * d4, long * d5, long * d6 ) {
+    long _result = 0;
+    HRESULT _hr = raw_GetAdapterMac(AdapterInd, d1, d2, d3, d4, d5, d6, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::GetAdapterCurrentIPInfo ( long AdapterInd, BSTR * IP, BSTR * Mask, BSTR * Gateway, long MaxCount ) {
+    long _result = 0;
+    HRESULT _hr = raw_GetAdapterCurrentIPInfo(AdapterInd, IP, Mask, Gateway, MaxCount, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::GetNetAdapterCurrentIPInfo ( long NetAdapterInd, BSTR * IP, BSTR * Mask, BSTR * Gateway, long MaxCount ) {
+    long _result = 0;
+    HRESULT _hr = raw_GetNetAdapterCurrentIPInfo(NetAdapterInd, IP, Mask, Gateway, MaxCount, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::GetNetAdapterIPInfo ( long NetAdapterInd, BSTR * IP, BSTR * Mask, BSTR * Gateway, long * DHCPEnabled, long MaxCount ) {
+    long _result = 0;
+    HRESULT _hr = raw_GetNetAdapterIPInfo(NetAdapterInd, IP, Mask, Gateway, DHCPEnabled, MaxCount, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::SetNetAdapterIPInfo ( long NetAdapterInd, _bstr_t IP, _bstr_t Mask, _bstr_t Gateway, long DHCPEnabled ) {
+    long _result = 0;
+    HRESULT _hr = raw_SetNetAdapterIPInfo(NetAdapterInd, IP, Mask, Gateway, DHCPEnabled, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::GetNetAdapterMac ( long NetAdapterInd, long * d1, long * d2, long * d3, long * d4, long * d5, long * d6 ) {
+    long _result = 0;
+    HRESULT _hr = raw_GetNetAdapterMac(NetAdapterInd, d1, d2, d3, d4, d5, d6, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::GetNetAdapterFirewallState ( long NetAdapterInd ) {
+    long _result = 0;
+    HRESULT _hr = raw_GetNetAdapterFirewallState(NetAdapterInd, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::EnableNetAdapterFirewall ( long NetAdapterInd ) {
+    long _result = 0;
+    HRESULT _hr = raw_EnableNetAdapterFirewall(NetAdapterInd, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::DisableNetAdapterFirewall ( long NetAdapterInd ) {
+    long _result = 0;
+    HRESULT _hr = raw_DisableNetAdapterFirewall(NetAdapterInd, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::LoadTmpProfileFromString ( _bstr_t Str ) {
+    long _result = 0;
+    HRESULT _hr = raw_LoadTmpProfileFromString(Str, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::GetAvailableNetworkIndex ( long AdapterInd, _bstr_t NetName ) {
+    long _result = 0;
+    HRESULT _hr = raw_GetAvailableNetworkIndex(AdapterInd, NetName, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::GetProfileNetworkIndex ( long AdapterInd, _bstr_t NetName ) {
+    long _result = 0;
+    HRESULT _hr = raw_GetProfileNetworkIndex(AdapterInd, NetName, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::ConnectToNetworkByMAC ( long AdapterInd, long d1, long d2, long d3, long d4, long d5, long d6 ) {
+    long _result = 0;
+    HRESULT _hr = raw_ConnectToNetworkByMAC(AdapterInd, d1, d2, d3, d4, d5, d6, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::SaveTmpProfileToString ( long ProfileHandle, BSTR * Str, long MaxCount ) {
+    long _result = 0;
+    HRESULT _hr = raw_SaveTmpProfileToString(ProfileHandle, Str, MaxCount, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::GetAvailableNetworkChannel ( long AdapterInd, long NetworkInd ) {
+    long _result = 0;
+    HRESULT _hr = raw_GetAvailableNetworkChannel(AdapterInd, NetworkInd, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::IsNetAdapterWiFi ( long NetAdapterInd ) {
+    long _result = 0;
+    HRESULT _hr = raw_IsNetAdapterWiFi(NetAdapterInd, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::IsDirectWIFI ( ) {
+    long _result = 0;
+    HRESULT _hr = raw_IsDirectWIFI(&_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::GetLibraryOption ( long OptionIndex ) {
+    long _result = 0;
+    HRESULT _hr = raw_GetLibraryOption(OptionIndex, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::SetLibraryOption ( long OptionIndex, long Value ) {
+    long _result = 0;
+    HRESULT _hr = raw_SetLibraryOption(OptionIndex, Value, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::SetStorageOptions ( _bstr_t FileName, long Flags ) {
+    long _result = 0;
+    HRESULT _hr = raw_SetStorageOptions(FileName, Flags, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::SetStorageData ( _bstr_t StorageData, long Length ) {
+    long _result = 0;
+    HRESULT _hr = raw_SetStorageData(StorageData, Length, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::GetStorageData ( BSTR * StorageData, long MaxLength ) {
+    long _result = 0;
+    HRESULT _hr = raw_GetStorageData(StorageData, MaxLength, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::InstallDriver ( _bstr_t FolderPath ) {
+    long _result = 0;
+    HRESULT _hr = raw_InstallDriver(FolderPath, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::UninstallDriver ( ) {
+    long _result = 0;
+    HRESULT _hr = raw_UninstallDriver(&_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::CheckNdisAvailable ( long AdapterInd ) {
+    long _result = 0;
+    HRESULT _hr = raw_CheckNdisAvailable(AdapterInd, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::SetDefaultEapConfig ( long ProfileHandle, long EapEnabled, long UseWindowsCredentials ) {
+    long _result = 0;
+    HRESULT _hr = raw_SetDefaultEapConfig(ProfileHandle, EapEnabled, UseWindowsCredentials, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::DeleteTmpProfileOption ( long ProfileHandle, _bstr_t OptionName ) {
+    long _result = 0;
+    HRESULT _hr = raw_DeleteTmpProfileOption(ProfileHandle, OptionName, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::RepairAdapter ( long AdapterInd ) {
+    long _result = 0;
+    HRESULT _hr = raw_RepairAdapter(AdapterInd, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::IsInstalledDriver ( ) {
+    long _result = 0;
+    HRESULT _hr = raw_IsInstalledDriver(&_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::IsAdapterNativeWIFI ( long AdapterInd ) {
+    long _result = 0;
+    HRESULT _hr = raw_IsAdapterNativeWIFI(AdapterInd, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::GetAdapterDNS ( long AdapterInd, BSTR * DNS, long MaxCount ) {
+    long _result = 0;
+    HRESULT _hr = raw_GetAdapterDNS(AdapterInd, DNS, MaxCount, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::SetAdapterDNS ( long AdapterInd, _bstr_t DNS ) {
+    long _result = 0;
+    HRESULT _hr = raw_SetAdapterDNS(AdapterInd, DNS, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::GetNetAdapterDNS ( long NetAdapterInd, BSTR * DNS, long MaxCount ) {
+    long _result = 0;
+    HRESULT _hr = raw_GetNetAdapterDNS(NetAdapterInd, DNS, MaxCount, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::SetNetAdapterDNS ( long NetAdapterInd, _bstr_t DNS ) {
+    long _result = 0;
+    HRESULT _hr = raw_SetNetAdapterDNS(NetAdapterInd, DNS, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::GetAdapterDefaultMac ( long AdapterInd, long * d1, long * d2, long * d3, long * d4, long * d5, long * d6 ) {
+    long _result = 0;
+    HRESULT _hr = raw_GetAdapterDefaultMac(AdapterInd, d1, d2, d3, d4, d5, d6, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::SetAdapterMac ( long AdapterInd, long d1, long d2, long d3, long d4, long d5, long d6 ) {
+    long _result = 0;
+    HRESULT _hr = raw_SetAdapterMac(AdapterInd, d1, d2, d3, d4, d5, d6, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::SetAdapterDefaultMac ( long AdapterInd ) {
+    long _result = 0;
+    HRESULT _hr = raw_SetAdapterDefaultMac(AdapterInd, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::GetNetAdapterDefaultMac ( long NetAdapterInd, long * d1, long * d2, long * d3, long * d4, long * d5, long * d6 ) {
+    long _result = 0;
+    HRESULT _hr = raw_GetNetAdapterDefaultMac(NetAdapterInd, d1, d2, d3, d4, d5, d6, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::SetNetAdapterMac ( long NetAdapterInd, long d1, long d2, long d3, long d4, long d5, long d6 ) {
+    long _result = 0;
+    HRESULT _hr = raw_SetNetAdapterMac(NetAdapterInd, d1, d2, d3, d4, d5, d6, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::SetNetAdapterDefaultMac ( long NetAdapterInd ) {
+    long _result = 0;
+    HRESULT _hr = raw_SetNetAdapterDefaultMac(NetAdapterInd, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::GetAdapterInfo ( long AdapterInd, BSTR * Str, long MaxCount ) {
+    long _result = 0;
+    HRESULT _hr = raw_GetAdapterInfo(AdapterInd, Str, MaxCount, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::GetAdapterTraffic ( long AdapterInd, long * InDataH, long * InDataL, long * OutDataH, long * OutDataL ) {
+    long _result = 0;
+    HRESULT _hr = raw_GetAdapterTraffic(AdapterInd, InDataH, InDataL, OutDataH, OutDataL, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long IWiFi::GetNetAdapterTraffic ( long NetAdapterInd, long * InDataH, long * InDataL, long * OutDataH, long * OutDataL ) {
+    long _result = 0;
+    HRESULT _hr = raw_GetNetAdapterTraffic(NetAdapterInd, InDataH, InDataL, OutDataH, OutDataL, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}

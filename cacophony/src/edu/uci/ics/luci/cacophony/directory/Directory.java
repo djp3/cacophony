@@ -100,6 +100,13 @@ public class Directory implements Quittable{
 	
 	private boolean shuttingDown = false;
 	
+	
+	@Override
+	public synchronized boolean isQuitting(){
+		return shuttingDown;
+	}
+	
+	
 	public synchronized void setQuitting(boolean quitting) {
 		if(shuttingDown == false){
 			if(quitting == true){
@@ -952,7 +959,7 @@ public class Directory implements Quittable{
 		
 		if(ws != null){
 			WebServerWarmUp.go(ws, Integer.valueOf((String) getConfig(clo,g.getConfig(),"port")),"http://localhost");
-			if(ws.getQuitting()){
+			if(ws.isQuitting()){
 				getLog().info("Warm-up failed, shutting down");
 				g.setQuitting(true);
 			}

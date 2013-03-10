@@ -71,6 +71,7 @@ public class FailoverFetchTest {
 		Globals.getGlobals().setQuitting(true);
 		Globals.setGlobals(null);
 	}
+	
 
 	private int workingPort;
 

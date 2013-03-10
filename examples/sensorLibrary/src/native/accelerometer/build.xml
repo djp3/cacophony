@@ -1,0 +1,14 @@
+<project name="Cacophony native accelerometer code" default="build_accelerometer_sensor">
+
+	<target name="build_accelerometer_sensor" depends="build_accelerometer_mac"/>
+	<target name="clean" depends="clean_accelerometer_mac"/>
+
+	<target name="build_accelerometer_mac" if="os.mac">
+		<ant dir="mac" target="build" />
+	</target>
+
+	<target name="clean_accelerometer_mac" >
+		<ant dir="mac" target="clean" />
+	</target>
+
+</project>
