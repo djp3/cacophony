@@ -107,7 +107,7 @@ public class WebServer implements Runnable,Quittable{
 		}
 	}
 	
-	public boolean getQuitting() {
+	public boolean isQuitting() {
 		return quitting;
 	}
 

@@ -125,7 +125,7 @@ public class MapComparable<K extends Comparable<? super K>,V extends Comparable<
 		map.clear();
 	}
 	
-	public Set<java.util.Map.Entry<K, V>> entrySet() {
+	public Set<java.util.AbstractMap.Entry<K, V>> entrySet() {
 		return map.entrySet();
 	}
 
@@ -152,6 +152,10 @@ public class MapComparable<K extends Comparable<? super K>,V extends Comparable<
 	public V put(K arg0, V arg1) {
 		return map.put(arg0, arg1);
 	}
+	
+	public V put(Pair<K,V> p){
+		return map.put(p.getFirst(), p.getSecond());
+	}
 
 	public void putAll(Map<? extends K, ? extends V> arg0) {
 		map.putAll(arg0);
@@ -171,15 +175,32 @@ public class MapComparable<K extends Comparable<? super K>,V extends Comparable<
 	}
 	
 	public String toString(){
-		StringBuffer ret = new StringBuffer("{");
-		for(java.util.Map.Entry<K, V> e:this.entrySet()){
+		boolean hascontent = false;
+		StringBuffer ret = new StringBuffer();
+		ret.append("{");
+		for(java.util.AbstractMap.Entry<K, V> e:this.entrySet()){
+			hascontent=true;
 			ret.append("\"");
-			ret.append(e.getKey().toString());
+			K k = e.getKey();
+			if(k != null){
+				ret.append(k.toString());
+			}
+			else{
+				ret.append("null");
+			}
 			ret.append("\":\"");
-			ret.append(e.getValue().toString());
+			V v = e.getValue();
+			if(v!= null){
+				ret.append(v.toString());
+			}
+			else{
+				ret.append("null");
+			}
 			ret.append("\",");
 		}
-		ret.delete(ret.length()-1, ret.length());
+		if(hascontent){
+			ret.delete(ret.length()-1, ret.length());
+		}
 		ret.append("}");
 		return(ret.toString());
 	}
