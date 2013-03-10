@@ -84,14 +84,14 @@ public class WebServerWarmUpTest {
 	@Test
 	public void testWebServer() {
 		WebServerWarmUp.go(ws,workingPort, "http://localhost");
-		assertTrue(!ws.getQuitting());
+		assertTrue(!ws.isQuitting());
 		
 		/* Try with out starting the webserver */
 		workingPort = testPortPlusPlus();
 		ws = new WebServer(new RequestDispatcher(requestHandlerRegistry), workingPort, false, new AccessControl());
 		Globals.getGlobals().addQuittables(ws);
 		WebServerWarmUp.go(ws, workingPort, "http://localhost",10*1000,0);
-		assertTrue(ws.getQuitting());
+		assertTrue(ws.isQuitting());
 	}
 
 }

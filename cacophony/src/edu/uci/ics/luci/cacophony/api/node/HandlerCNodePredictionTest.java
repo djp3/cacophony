@@ -207,7 +207,6 @@ public class HandlerCNodePredictionTest {
 		Globals.getGlobals().addQuittables(cNPool);
 		
 		/* Test with working case */
-		String responseString = null;
 		try {
 			HashMap<String, String> params = new HashMap<String, String>();
 			params.put("version", CacophonyRequestHandlerHelper.getAPIVersion());
@@ -217,7 +216,7 @@ public class HandlerCNodePredictionTest {
 			//params.put("node", cNPool.getFromPool(key).getGraphingTestSet().attribute(0).value(0)+"");
 			params.put("node", key);
 
-			responseString = WebUtil.fetchWebPage("http://localhost:" + workingPort + "/predict", false, params, 60 * 1000);
+			WebUtil.fetchWebPage("http://localhost:" + workingPort + "/predict", false, params, 60 * 1000);
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 			fail("Bad URL:"+e);

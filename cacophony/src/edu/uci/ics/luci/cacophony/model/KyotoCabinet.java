@@ -105,6 +105,11 @@ public class KyotoCabinet<K extends Serializable, V extends Serializable> extend
 	}
 	
 	@Override
+	public synchronized boolean isQuitting(){
+		return shuttingDown;
+	}
+	
+	@Override
 	public synchronized void setQuitting(boolean quitting) {
 		if(shuttingDown == false){
 			if(quitting == true){
