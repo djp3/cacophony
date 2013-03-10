@@ -1,0 +1,881 @@
+<!--
+/*
+	Copyright 2007-2013
+		University of California, Irvine (c/o Donald J. Patterson)
+*/
+/*
+	This file is part of the Laboratory for Ubiquitous Computing java Utility package, i.e. "Utilities"
+
+    Utilities is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Utilities is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Utilities.  If not, see <http://www.gnu.org/licenses/>.
+*/
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>SensorServer Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="http://luci.ics.uci.edu">
+
+	<link rel="stylesheet" href="http://code.jquery.com/ui/1.10.1/themes/base/jquery-ui.css" />
+    <link href="/assets/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/assets/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
+
+    <style>
+      body {
+        padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
+      }
+
+	 .slice text {
+			color:rgb(255,255,255);
+            font-size: 10pt;
+            font-family: Arial;
+        }  
+	  
+    </style>
+
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="/assets/bootstrap/js/html5shiv.js"></script>
+    <![endif]-->
+
+	
+	
+
+  </head>
+
+  <body>
+
+    <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+          </button>
+          <a class="brand" href="#">SensorServer Dashboard</a>
+
+		<div class="span4">
+			<div style="padding-top:20px;padding-left:10px;padding-right:10px">
+				<div id="slider"></div>
+			</div>
+			<div id="refreshTime">
+				<h4>15 seconds</h4>
+			</div>
+		</div>
+		<div class="span4">
+			<button type="button" class="btn" id="button_refresh" data-loading-text="Loading...">Manual Refresh</button>
+		</div>
+		
+        </div>
+      </div>
+    </div>
+
+    <div class="container-fluid">
+		<div class="row-fluid">
+			<div class="span3 pagination-centered">
+				<h4>IP Address:</h4>
+				<div id="ipaddress">
+				</div>
+			</div>
+			<div class="span3 pagination-centered">
+				<h4>WiFi:</h4>
+				<div id="wifi"></div>
+			</div>
+			<div class="span3 pagination-centered">
+				<h4>&nbsp;</h4>
+				<div id="wifi2"></div>
+			</div>
+			<div class="span3 pagination-centered">
+				<h4>Process:</h4>
+				<div id="process">
+				</div>
+			</div>
+		</div>
+		<div class="row-fluid">
+			<div class="span3 pagination-centered">
+				<h4>PowerSource:</h4>
+				<div id="powersource">
+				</div>
+			</div>
+			<div class="span3 pagination-centered">
+				<h4>Volume:</h4>
+				<div id="volume">
+				</div>
+			</div>
+			<div class="span3 pagination-centered">
+				<h4>Light:</h4>
+				<div id="light">
+				</div>
+			</div>
+			<div class="span3 pagination-centered">
+				<h4>UI Activity:</h4>
+				<div id="uiactivity">
+				</div>
+			</div>
+		</div>
+		<div class="row-fluid">
+			<div class="span3 pagination-centered">
+				<h4>idle:</h4>
+				<div id="idle">
+				</div>
+			</div>
+			<div class="span9 pagination-centered">
+				<h4>Accelerometer:</h4>
+				<div id="accelerometer">
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+    <!-- Le javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+	<script src="http://d3js.org/d3.v3.js" charset="utf-8"></script>
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+	<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.1/jquery-ui.min.js"></script>
+    <script src="/assets/bootstrap/js/bootstrap.min.js"></script>
+	
+	<script>
+		var myEscape = document.createElement('textarea');
+		function escapeHTML(html) {
+			myEscape.innerHTML = html;
+			return myEscape.innerHTML;
+		}
+			
+		function unescapeHTML(html) {
+			myEscape.innerHTML = html;
+			return myEscape.value;
+		}
+
+		function reduceData(data,width){
+			var howmuch = data.length - width;
+			if(howmuch > 0){
+				data.splice(0,data.length - width);
+			}
+		}
+
+
+		var refreshTime = 15000;
+		var myRefreshTimer = null;
+
+		// Ajax request 
+		var request = new Object();
+		// Data History
+		var data = new Object();
+		// Visualization functions
+		var draw = new Object();
+
+		var globalPadding = 4;
+
+		draw['accelerometer'] = function(){
+
+			var w = 800;
+			reduceData(data['accelerometer'],w);
+
+			var splitMe = function(d){
+					//console.log("d1:"+d+":"+Number(d.substring(d.indexOf("[")+1,d.indexOf(","))));
+					//console.log("d2:"+d+":"+Number(d.substring(d.indexOf(",")+1,d.lastIndexOf(","))));
+					//console.log("d3:"+d+":"+Number(d.substring(d.lastIndexOf(",")+1,d.indexOf("]"))));
+					var ret = new Array();
+					ret[0] = Number(d.substring(d.indexOf("[")+1,d.indexOf(",")));
+					ret[1] = Number(d.substring(d.indexOf(",")+1,d.lastIndexOf(",")));
+					ret[2] = Number(d.substring(d.lastIndexOf(",")+1,d.indexOf("]")));
+					//console.log(d+":"+ret);
+					return ret;
+			};
+
+			var myX=new Array();
+			var myY=new Array();
+			var myZ=new Array();
+
+			for(var i=0;i< data['accelerometer'].length;i++){
+				var a = splitMe(data['accelerometer'][i]);
+				if((a != null) && (a.length == 3) && (!isNaN(a[0])) && (!isNaN(a[1])) && (!isNaN(a[2]))){
+					myX.push(a[0]);
+					myY.push(a[1]);
+					myZ.push(a[2]);
+				}
+			}
+
+			var max=256, min=-256, len=0;
+			len = myX.length;
+
+			//console.log("min:"+min+",max:"+max+",length:"+len);
+
+			var h = 50, 
+				p = globalPadding,
+				fill = d3.scale.category10()
+				x = d3.scale.linear().domain([0, len]).range([p, w - p]),
+   				y = d3.scale.linear().domain([min, max]).range([h - p, p]),
+				line = d3.svg.line()
+                     .x(function(d, i) { return x(i); })
+                     .y(function(d, i) { return y(d); });
+
+			d3.select("#accelerometer").text("");
+			var svg = d3.select("#accelerometer")
+                .append("svg:svg")
+                .attr("height", h)
+                .attr("width", w);
+
+			var g = svg.append("svg:g");
+			g.append("svg:path")
+				.attr("d", line(myX))
+				.attr("stroke", fill(0))
+				.attr("fill", "transparent");
+			g.append("svg:title")
+				.text('accelerometer');
+
+			var g = svg.append("svg:g");
+			g.append("svg:path")
+				.attr("d", line(myY))
+				.attr("stroke", fill(1))
+				.attr("fill", "transparent")
+			g.append("svg:title")
+				.text('accelerometer');
+
+			var g = svg.append("svg:g");
+			g.append("svg:path")
+				.attr("d", line(myZ))
+				.attr("stroke", fill(2))
+				.attr("fill", "transparent")
+			g.append("svg:title")
+				.text('accelerometer');
+
+		}
+
+
+		draw['uiactivity'] = function(){
+
+			var w = 250;
+			reduceData(data['uiactivity'],w);
+
+			for(var i=0;i< data['uiactivity'].length;i++){
+				var x = data['uiactivity'][i];
+				if(isNaN(Number(x))){
+					console.log("Rejecting this uiactivity: "+x);
+					data['uiactivity'].splice(i,1);
+					i--;
+				}
+			}
+			var max=0, min=0, len=0;
+			min = d3.min(data['uiactivity'],function(x){return Number(x)});
+			max = d3.max(data['uiactivity'],function(x){return Number(x)});
+			len = data['uiactivity'].length;
+
+			//console.log("min:"+min+",max:"+max+",length:"+len);
+
+			var h = 50, 
+				p = globalPadding,
+				fill = d3.scale.category10()
+				x = d3.scale.linear().domain([0, len]).range([p, w - p]),
+   				y = d3.scale.linear().domain([min, max]).range([h - p, p]),
+				line = d3.svg.line()
+                     .x(function(d, i) { return x(i); })
+                     .y(function(d, i) { return y(d); });
+
+			d3.select("#uiactivity").text("");
+			var svg = d3.select("#uiactivity")
+                .append("svg:svg")
+                .attr("height", h)
+                .attr("width", w);
+
+			var g = svg.append("svg:g");
+			g.append("svg:path")
+				.attr("d", line(data['uiactivity']))
+				.attr("stroke", fill(0))
+				.attr("fill", "transparent")
+				g.append("svg:title")
+				.text('uiactivity');
+		}
+
+		draw['volume'] = function(){
+
+			var w = 250;
+			reduceData(data['volume'],w);
+
+			for(var i=0;i< data['volume'].length;i++){
+				var x = data['volume'][i];
+				if(isNaN(Number(x))){
+					console.log("Rejecting this volume: "+x);
+					data['volume'].splice(i,1);
+					i--;
+				}
+			}
+
+			var max=0, min=0, len=0;
+			min = d3.min(data['volume'],function(x){return Number(x)});
+			max = d3.max(data['volume'],function(x){return Number(x)});
+			len = data['volume'].length;
+
+			//console.log("min:"+min+",max:"+max+",length:"+len);
+
+			var h = 50, 
+				p = globalPadding,
+				fill = d3.scale.category10()
+				x = d3.scale.linear().domain([0, len]).range([p, w - p]),
+   				y = d3.scale.linear().domain([min, max]).range([h - p, p]),
+				line = d3.svg.line()
+                     .x(function(d, i) { return x(i); })
+                     .y(function(d, i) { return y(d); });
+
+			d3.select("#volume").text("");
+			var svg = d3.select("#volume")
+                .append("svg:svg")
+                .attr("height", h)
+                .attr("width", w);
+
+			var g = svg.append("svg:g");
+			g.append("svg:path")
+				.attr("d", line(data['volume']))
+				.attr("stroke", fill(0))
+				.attr("fill", "transparent")
+				g.append("svg:title")
+				.text('volume');
+		}
+
+
+		draw['idle'] = function(){
+
+			var w = 250;
+			reduceData(data['idle'],w);
+
+			for(var i=0;i< data['idle'].length;i++){
+				var x = data['idle'][i];
+				if(isNaN(Number(x))){
+					console.log("Rejecting this idle: "+x);
+					data['idle'].splice(i,1);
+					i--;
+				}
+			}
+
+			var max=0, min=0, len=0;
+			min = d3.min(data['idle'],function(x){return Number(x)});
+			max = d3.max(data['idle'],function(x){return Number(x)});
+			len = data['idle'].length;
+
+			//console.log("min:"+min+",max:"+max+",length:"+len);
+
+			var h = 50, 
+				p = globalPadding,
+				fill = d3.scale.category10()
+				x = d3.scale.linear().domain([0, len]).range([p, w - p]),
+   				y = d3.scale.linear().domain([min, max]).range([h - p, p]),
+				line = d3.svg.line()
+                     .x(function(d, i) { return x(i); })
+                     .y(function(d, i) { return y(d); });
+
+			d3.select("#idle").text("");
+			var svg = d3.select("#idle")
+                .append("svg:svg")
+                .attr("height", h)
+                .attr("width", w);
+
+			var g = svg.append("svg:g");
+			g.append("svg:path")
+				.attr("d", line(data['idle']))
+				.attr("stroke", fill(0))
+				.attr("fill", "transparent")
+				g.append("svg:title")
+				.text('idle');
+		}
+
+		draw['light'] = function(){
+
+			var w = 250;
+			reduceData(data['light'],w);
+
+			for(var i=0;i< data['light'].length;i++){
+				var x = data['light'][i];
+				if(isNaN(Number(x))){
+					console.log("Rejecting this light: "+x);
+					data['light'].splice(i,1);
+					i--;
+				}
+			}
+
+
+			var max=0, min=0, len=0;
+			min = d3.min(data['light'],function(x){return Number(x)});
+			max = d3.max(data['light'],function(x){return Number(x)});
+			len = data['light'].length;
+
+			//console.log("min:"+min+",max:"+max+",length:"+len);
+
+			var h = 50, 
+				p = globalPadding,
+				fill = d3.scale.category10(),
+				x = d3.scale.linear().domain([0, len]).range([p, w - p]),
+   				y = d3.scale.linear().domain([min, max]).range([h - p, p]),
+				line = d3.svg.line()
+                     .x(function(d, i) { return x(i); })
+                     .y(function(d, i) { return y(d); });
+
+			d3.select("#light").text("");
+			var svg = d3.select("#light")
+                .append("svg:svg")
+                .attr("height", h)
+                .attr("width", w);
+
+			var g = svg.append("svg:g");
+			g.append("svg:path")
+				.attr("d", line(data['light']))
+				.attr("stroke", fill(0))
+				.attr("fill", "transparent")
+				g.append("svg:title")
+				.text('light');
+		}
+
+		draw['ipaddress'] = function(){
+			var w = 201;
+			reduceData(data['ipaddress'],w);
+
+			var h = 201,                            //height
+				r = 100,                            //radius
+				color = d3.scale.category20c();     //builtin range of colors
+
+			//console.log("Hello world"+data['ipaddress']); 
+
+ 			var pieData = new Object();
+			for(var i = 0; i< data['ipaddress'].length;i++){
+				var key = ""+data['ipaddress'][i];
+				if(pieData[key] == null){
+					pieData[key] = new Object();
+					pieData[key].label=key;
+					pieData[key].value=0;
+				}
+				pieData[key].value++;
+			}
+			//for(key in pieData){
+			//	console.log(pieData[key]);
+			//}
+
+			var pieDataArray = d3.entries(pieData);
+
+			d3.select("#ipaddress").text("");
+			var vis = d3.select("#ipaddress")
+					.append("svg:svg")              //create the SVG element inside the <body>
+					.data([pieDataArray])                   //associate our data with the document
+					.attr("width", w)           //set the width and height of our visualization (these will be attributes of the <svg> tag
+					.attr("height", h)
+					.append("svg:g")                //make a group to hold our pie chart
+					.attr("transform", "translate(" + r + "," + r + ")")    //move the center of the pie chart from 0, 0 to radius, radius
+ 
+			var arc = d3.svg.arc()              //this will create <path> elements for us using arc data
+					.outerRadius(r);
+ 
+			var pie = d3.layout.pie()           //this will create arc data for us given a list of values
+					.value(function(d) { return d.value.value; });    //we must tell it out to access the value of each element in our data array
+ 
+			var arcs = vis.selectAll("g.slice")     //this selects all <g> elements with class slice (there aren't any yet)
+						.data(pie)                          //associate the generated pie data (an array of arcs, each having startAngle, endAngle and value properties) 
+						.enter()                            //this will create <g> elements for every "extra" data element that should be associated with a selection. The result is creating a <g> for every object in the data array
+						.append("svg:g")                //create a group to hold each slice (we will have a <path> and a <text> element associated with each slice)
+						.attr("class", "slice");    //allow us to style things in the slices (like text)
+ 
+			arcs.append("svg:path")
+				.attr("fill", function(d, i) { return color(i); } ) //set the color for each slice to be chosen from the color function defined above
+                .attr("d", arc);                                    //this creates the actual SVG path using the associated data (pie) with the arc drawing function
+ 
+			arcs.append("svg:text")                                     //add a label to each slice
+                .attr("transform", function(d) {                    //set the label's origin to the center of the arc
+					//we have to make sure to set these before calling arc.centroid
+					d.innerRadius = 0;
+					d.outerRadius = r;
+					return "translate(" + arc.centroid(d) + ")";        //this gives us a pair of coordinates like [50, 50]
+				})
+				.attr("text-anchor", "middle")                          //center the text on it's origin
+				.text(function(d, i) { return pieDataArray[i].value.label; });        //get the label from our original data array
+        
+		}
+
+		draw['powersource'] = function(){
+
+			var w = 201;
+			reduceData(data['powersource'],w);
+
+			var h = 201,                            //height
+				r = 100,                            //radius
+				color = d3.scale.category20c();     //builtin range of colors
+
+			//console.log("Hello world"+data['ipaddress']); 
+
+ 			var pieData = new Object();
+			for(var i = 0; i< data['powersource'].length;i++){
+				var key = ""+data['powersource'][i];
+				if(pieData[key] == null){
+					pieData[key] = new Object();
+					pieData[key].label=key;
+					pieData[key].value=0;
+				}
+				pieData[key].value++;
+			}
+			//for(key in pieData){
+			//	console.log(pieData[key]);
+			//}
+
+			var pieDataArray = d3.entries(pieData);
+
+			d3.select("#powersource").text("");
+			var vis = d3.select("#powersource")
+					.append("svg:svg")              //create the SVG element inside the <body>
+					.data([pieDataArray])                   //associate our data with the document
+					.attr("width", w)           //set the width and height of our visualization (these will be attributes of the <svg> tag
+					.attr("height", h)
+					.append("svg:g")                //make a group to hold our pie chart
+					.attr("transform", "translate(" + r + "," + r + ")")    //move the center of the pie chart from 0, 0 to radius, radius
+ 
+			var arc = d3.svg.arc()              //this will create <path> elements for us using arc data
+					.outerRadius(r);
+ 
+			var pie = d3.layout.pie()           //this will create arc data for us given a list of values
+					.value(function(d) { return d.value.value; });    //we must tell it out to access the value of each element in our data array
+ 
+			var arcs = vis.selectAll("g.slice")     //this selects all <g> elements with class slice (there aren't any yet)
+						.data(pie)                          //associate the generated pie data (an array of arcs, each having startAngle, endAngle and value properties) 
+						.enter()                            //this will create <g> elements for every "extra" data element that should be associated with a selection. The result is creating a <g> for every object in the data array
+						.append("svg:g")                //create a group to hold each slice (we will have a <path> and a <text> element associated with each slice)
+						.attr("class", "slice");    //allow us to style things in the slices (like text)
+ 
+			arcs.append("svg:path")
+				.attr("fill", function(d, i) { return color(i); } ) //set the color for each slice to be chosen from the color function defined above
+                .attr("d", arc);                                    //this creates the actual SVG path using the associated data (pie) with the arc drawing function
+ 
+			arcs.append("svg:text")                                     //add a label to each slice
+                .attr("transform", function(d) {                    //set the label's origin to the center of the arc
+					//we have to make sure to set these before calling arc.centroid
+					d.innerRadius = 0;
+					d.outerRadius = r;
+					return "translate(" + arc.centroid(d) + ")";        //this gives us a pair of coordinates like [50, 50]
+				})
+				.attr("text-anchor", "middle")                          //center the text on it's origin
+				.text(function(d, i) { return pieDataArray[i].value.label; });        //get the label from our original data array
+        
+		}
+
+
+
+		draw['process'] = function(){
+
+			var w = 201;
+			reduceData(data['process'],w);
+
+			for(var i=0;i< data['process'].length;i++){
+				var x = data['process'][i];
+				if(!isNaN(Number(x))){
+					data['process'].splice(i,1);
+					i--;
+				}
+			}
+
+			var h = 201,                            //height
+				r = 100,                            //radius
+				color = d3.scale.category20c();     //builtin range of colors
+
+			//console.log("Hello world"+data['ipaddress']); 
+
+ 			var pieData = new Object();
+			for(var i = 0; i< data['process'].length;i++){
+				var key = ""+data['process'][i];
+				if(pieData[key] == null){
+					pieData[key] = new Object();
+					pieData[key].label=key;
+					pieData[key].value=0;
+				}
+				pieData[key].value++;
+			}
+			//for(key in pieData){
+		//		console.log(pieData[key]);
+		//	}
+
+			var pieDataArray = d3.entries(pieData);
+
+			d3.select("#process").text("");
+			var vis = d3.select("#process")
+					.append("svg:svg")              //create the SVG element inside the <body>
+					.data([pieDataArray])                   //associate our data with the document
+					.attr("width", w)           //set the width and height of our visualization (these will be attributes of the <svg> tag
+					.attr("height", h)
+					.append("svg:g")                //make a group to hold our pie chart
+					.attr("transform", "translate(" + r + "," + r + ")")    //move the center of the pie chart from 0, 0 to radius, radius
+ 
+			var arc = d3.svg.arc()              //this will create <path> elements for us using arc data
+					.outerRadius(r);
+ 
+			var pie = d3.layout.pie()           //this will create arc data for us given a list of values
+					.value(function(d) { return d.value.value; });    //we must tell it out to access the value of each element in our data array
+ 
+			var arcs = vis.selectAll("g.slice")     //this selects all <g> elements with class slice (there aren't any yet)
+						.data(pie)                          //associate the generated pie data (an array of arcs, each having startAngle, endAngle and value properties) 
+						.enter()                            //this will create <g> elements for every "extra" data element that should be associated with a selection. The result is creating a <g> for every object in the data array
+						.append("svg:g")                //create a group to hold each slice (we will have a <path> and a <text> element associated with each slice)
+						.attr("class", "slice");    //allow us to style things in the slices (like text)
+ 
+			arcs.append("svg:path")
+				.attr("fill", function(d, i) { return color(i); } ) //set the color for each slice to be chosen from the color function defined above
+                .attr("d", arc);                                    //this creates the actual SVG path using the associated data (pie) with the arc drawing function
+ 
+			arcs.append("svg:text")                                     //add a label to each slice
+                .attr("transform", function(d) {                    //set the label's origin to the center of the arc
+					//we have to make sure to set these before calling arc.centroid
+					d.innerRadius = 0;
+					d.outerRadius = r;
+					return "translate(" + arc.centroid(d) + ")";        //this gives us a pair of coordinates like [50, 50]
+				})
+				.attr("text-anchor", "middle")                          //center the text on it's origin
+				.text(function(d, i) { return pieDataArray[i].value.label; });        //get the label from our original data array
+        
+		}
+
+		draw['wifi'] = function(){
+			var w = 201;
+			reduceData(data['wifi'],w);
+
+			var h = 201,                            //height
+				r = 100,                            //radius
+				color = d3.scale.category20c();     //builtin range of colors
+
+			//console.log("Hello world"+data['ipaddress']); 
+
+ 			var pieData = new Object();
+			for(var i = 0; i< data['wifi'].length;i++){
+				var raw = data['wifi'][i];
+				var key = raw.substring(raw.lastIndexOf("<<")+2,raw.indexOf(":"));
+				if(pieData[key] == null){
+					pieData[key] = new Object();
+					pieData[key].label=key;
+					pieData[key].value=0;
+				}
+				pieData[key].value++;
+			}
+			//for(key in pieData){
+			//	console.log(pieData[key]);
+			//}
+
+			var pieDataArray = d3.entries(pieData);
+
+			d3.select("#wifi").text("");
+			var vis = d3.select("#wifi")
+					.append("svg:svg")              //create the SVG element inside the <body>
+					.data([pieDataArray])                   //associate our data with the document
+					.attr("width", w)           //set the width and height of our visualization (these will be attributes of the <svg> tag
+					.attr("height", h)
+					.append("svg:g")                //make a group to hold our pie chart
+					.attr("transform", "translate(" + r + "," + r + ")")    //move the center of the pie chart from 0, 0 to radius, radius
+ 
+			var arc = d3.svg.arc()              //this will create <path> elements for us using arc data
+					.outerRadius(r);
+ 
+			var pie = d3.layout.pie()           //this will create arc data for us given a list of values
+					.value(function(d) { return d.value.value; });    //we must tell it out to access the value of each element in our data array
+ 
+			var arcs = vis.selectAll("g.slice")     //this selects all <g> elements with class slice (there aren't any yet)
+						.data(pie)                          //associate the generated pie data (an array of arcs, each having startAngle, endAngle and value properties) 
+						.enter()                            //this will create <g> elements for every "extra" data element that should be associated with a selection. The result is creating a <g> for every object in the data array
+						.append("svg:g")                //create a group to hold each slice (we will have a <path> and a <text> element associated with each slice)
+						.attr("class", "slice");    //allow us to style things in the slices (like text)
+ 
+			arcs.append("svg:path")
+				.attr("fill", function(d, i) { return color(i); } ) //set the color for each slice to be chosen from the color function defined above
+                .attr("d", arc);                                    //this creates the actual SVG path using the associated data (pie) with the arc drawing function
+ 
+			arcs.append("svg:text")                                     //add a label to each slice
+                .attr("transform", function(d) {                    //set the label's origin to the center of the arc
+					//we have to make sure to set these before calling arc.centroid
+					d.innerRadius = 0;
+					d.outerRadius = r;
+					return "translate(" + arc.centroid(d) + ")";        //this gives us a pair of coordinates like [50, 50]
+				})
+				.attr("text-anchor", "middle")                          //center the text on it's origin
+				.text(function(d, i) { return pieDataArray[i].value.label; });        //get the label from our original data array
+
+
+
+			var pieData = new Object();
+			for(var i = 0; i< data['wifi'].length;i++){
+				var raw = data['wifi'][i];
+				var key = raw.substring(raw.indexOf(":")+1,raw.indexOf(">"));
+				if(pieData[key] == null){
+					pieData[key] = new Object();
+					pieData[key].label=key;
+					pieData[key].value=0;
+				}
+				pieData[key].value++;
+			}
+			//for(key in pieData){
+			//	console.log(pieData[key]);
+			//}
+
+			var pieDataArray = d3.entries(pieData);
+
+			d3.select("#wifi2").text("");
+			var vis = d3.select("#wifi2")
+					.append("svg:svg")              //create the SVG element inside the <body>
+					.data([pieDataArray])                   //associate our data with the document
+					.attr("width", w)           //set the width and height of our visualization (these will be attributes of the <svg> tag
+					.attr("height", h)
+					.append("svg:g")                //make a group to hold our pie chart
+					.attr("transform", "translate(" + r + "," + r + ")")    //move the center of the pie chart from 0, 0 to radius, radius
+ 
+			var arc = d3.svg.arc()              //this will create <path> elements for us using arc data
+					.outerRadius(r);
+ 
+			var pie = d3.layout.pie()           //this will create arc data for us given a list of values
+					.value(function(d) { return d.value.value; });    //we must tell it out to access the value of each element in our data array
+ 
+			var arcs = vis.selectAll("g.slice")     //this selects all <g> elements with class slice (there aren't any yet)
+						.data(pie)                          //associate the generated pie data (an array of arcs, each having startAngle, endAngle and value properties) 
+						.enter()                            //this will create <g> elements for every "extra" data element that should be associated with a selection. The result is creating a <g> for every object in the data array
+						.append("svg:g")                //create a group to hold each slice (we will have a <path> and a <text> element associated with each slice)
+						.attr("class", "slice");    //allow us to style things in the slices (like text)
+ 
+			arcs.append("svg:path")
+				.attr("fill", function(d, i) { return color(i); } ) //set the color for each slice to be chosen from the color function defined above
+                .attr("d", arc);                                    //this creates the actual SVG path using the associated data (pie) with the arc drawing function
+ 
+			arcs.append("svg:text")                                     //add a label to each slice
+                .attr("transform", function(d) {                    //set the label's origin to the center of the arc
+					//we have to make sure to set these before calling arc.centroid
+					d.innerRadius = 0;
+					d.outerRadius = r;
+					return "translate(" + arc.centroid(d) + ")";        //this gives us a pair of coordinates like [50, 50]
+				})
+				.attr("text-anchor", "middle")                          //center the text on it's origin
+				.text(function(d, i) { return pieDataArray[i].value.label; });        //get the label from our original data array
+
+        
+		}
+
+
+
+
+
+		function mkDoneFunctionWithCagedValue(localwhich){
+			return function(response,textStatus,jqXHR){
+				// log a message to the console
+				var x = response.value;
+				console.log("received "+localwhich+" : "+x);
+				data[localwhich].push(x);
+				if(draw[localwhich] != null){
+					draw[localwhich]();
+					$('#'+localwhich).append('<div class="sensor_reading">'+escapeHTML(x)+'</div>');
+				}
+				else{
+					$('#'+localwhich).append('<div class="sensor_reading">'+escapeHTML(x)+'</div>');
+				}
+				request[localwhich]=null;
+			};
+		}
+
+
+		
+
+		function refreshSensor(which){
+
+			if(data[which] == null){
+				//Create a place to store readings
+				data[which]= new Array();
+			}
+
+			// abort any pending request
+		    if ((request[which] != null)) {
+				request[which].abort();
+				request[which]=null;
+			}
+
+
+   			// fire off the request to /form.php
+			request[which] = $.ajax({
+				url: "/sense",
+				type: "get",
+				dataType: "jsonp",
+				async: "true",
+				timeout: 20000,
+				data: {sensor: which,
+						version: '1.0',
+						format: 'jsonp'}
+			})
+			.done(mkDoneFunctionWithCagedValue(which))
+			.fail(function (jqXHR, textStatus, errorThrown){
+				console.error( "The following error occured: "+ which +" " +textStatus, errorThrown);
+			})
+			.always(function () {
+				$('#button_refresh').button('reset');		
+			});
+		};
+
+		function refreshEverything(){
+			refreshSensor('ipaddress');
+			refreshSensor('wifi');
+			refreshSensor('powersource');
+			refreshSensor('volume');
+			refreshSensor('light');
+			refreshSensor('process');
+			refreshSensor('uiactivity');
+			refreshSensor('idle');
+			refreshSensor('accelerometer');
+		};
+
+		function updateSlider(x){
+			$('#refreshTime').html("<h4>"+x+" seconds</h4>");
+		}
+			
+
+		$(document).ready(function() {
+
+
+			$(function() {
+				$( "#slider" ).slider({
+						orientation:"horizontal",
+						range:"min",
+						min: 10,
+						max: 600,
+						value: 15,
+						slide: function(event,ui){
+								updateSlider(ui.value);
+						},
+						change:function(event,ui){
+								clearInterval(myRefreshTimer);
+								refreshTime = ui.value*1000;
+								updateSlider(ui.value);
+								myRefreshTimer = setInterval(refreshEverything,refreshTime);
+						}
+				});
+			});
+				
+
+			$('#button_refresh').button();
+
+			$('#button_refresh').click(function() {
+				$(this).button('loading');
+			});
+
+			refreshEverything();
+			myRefreshTimer = setInterval(refreshEverything,refreshTime);
+
+		});
+	</script>
+	<!--	
+
+
+
+    // prevent default posting of form
+    event.preventDefault();
+});-->
+
+
+
+  </body>
+</html>
+

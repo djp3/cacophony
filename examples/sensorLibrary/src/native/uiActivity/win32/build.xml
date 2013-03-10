@@ -1,0 +1,8 @@
+<project name="Nomatic native uiactivity code for Windows" default="build">
+
+	<target name="clean">
+	</target>
+
+	<target name="build">
+	</target>
+</project>

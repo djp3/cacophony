@@ -1,0 +1,14 @@
+<project name="Cacophony native light code" default="build_light_sensor">
+
+	<target name="build_light_sensor" depends="build_light_sensor_mac"/>
+	<target name="clean" depends="clean_light_mac"/>
+
+	<target name="build_light_sensor_mac" if="os.mac">
+		<ant dir="mac" target="build" />
+	</target>
+
+	<target name="clean_light_mac" >
+		<ant dir="mac" target="clean" />
+	</target>
+
+</project>

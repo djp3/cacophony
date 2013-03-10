@@ -1,0 +1,12 @@
+#djp3
+
+To build the native sensor modules, first get the project set up in Eclipse so
+that the java classes are being compiled. The source code is in src/java
+
+Then make sure that build.local.properties has the correct values in it.
+
+Then run "ant native-sensors" to create the native libraries.
+
+They will be put in ${build.native.dir} which was build/native/lib for
+don's installation
+

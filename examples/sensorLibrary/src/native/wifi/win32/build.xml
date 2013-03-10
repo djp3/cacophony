@@ -1,0 +1,18 @@
+<project name="Nomatic native WiFi code for Windows" default="build_wifi_sensor_windows">
+	<target name="clean">
+		<delete file="${build.native.dir}/WifiSensor_Windows_Nomatic.h"/>
+		<delete file="${build.native.dir}/wifisensor_windows.dll"/>
+	</target>
+
+	<target name="build_wifi_sensor_windows">
+		<exec executable="${javah.exe}">
+      			<arg value="-jni"/>
+      			<arg value="-classpath"/>
+			<arg value="../../../../../${build.classes.dir}"/>
+			<arg value="-o"/>
+			<arg value="../../../../../${build.native.dir}/WifiSensor_Windows_Nomatic.h"/>
+			<arg value="edu.uci.ics.luci.nomatic.service.sensors.WiFiSensor_Windows"/>
+		</exec>
+		<copy file="${project.native.dir}/sensors/wifi/win32/wifisensor_windows.dll" todir="../../../../../${build.native.dir}/"/>
+	</target>
+</project>

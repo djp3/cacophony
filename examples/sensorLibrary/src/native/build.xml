@@ -1,0 +1,43 @@
+<project name="Nomatic native code" default="build">
+
+	<target name="build_process_sensor">
+		<ant dir="process"/>
+	</target>
+
+	<target name="build_uiactivity_sensor">
+		<ant dir="uiactivity"/>
+	</target>
+
+	<target name="build_wifi_sensor">
+		<ant dir="wifi"/>
+	</target>
+
+	<target name="build_accelerometer_sensor">
+		<ant dir="accelerometer"/>
+	</target>
+
+	<target name="build_idle_sensor">
+		<ant dir="idle"/>
+	</target>
+
+	<target name="build_light_sensor">
+		<ant dir="light" />
+	</target>
+
+	<target name="build_power_source_sensor">
+		<ant dir="power_source"/>
+	</target>
+
+	<target name="build" depends="build_process_sensor,build_uiactivity_sensor,build_wifi_sensor,build_accelerometer_sensor,build_idle_sensor,build_light_sensor,build_power_source_sensor">
+	</target>
+
+	<target name="clean">
+		<ant dir="wifi" target="clean" />
+		<ant dir="accelerometer" target="clean" />
+		<ant dir="light" target="clean" />
+		<ant dir="process" target="clean" />
+		<ant dir="uiactivity" target="clean" />
+		<ant dir="idle" target="clean" />
+		<ant dir="power_source" target="clean" />
+	</target>
+</project>

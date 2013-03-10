@@ -1,0 +1,24 @@
+############################################################
+#
+# Local Project settings
+#
+############################################################
+
+base.drive=c:
+base.dir=/cygwin/nomatic
+
+
+############################################################
+#
+# Executable settings
+#
+############################################################
+
+javac.exe=/Program Files/Java/jdk1.6.0_12/bin/javac
+javah.exe=/Program Files/Java/jdk1.6.0_12/bin/javah
+cc.exe=/cygwin/usr/bin/cc
+pkg-config.exe=/cygwin/bin/pkg-config
+g++.exe=/cygwin/bin/g++-3
+java.home=/Program Files/Java/jdk1.6.0_12/jre
+cygwin.java=/Program Files/Java/jdk1.6.0_12
+cygwin.prefix=/cygdrive/c

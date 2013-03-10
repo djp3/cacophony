@@ -96,6 +96,22 @@ utility/lib/json.jar
 utility/lib/mail.jar
 utility/lib/mysql-connector-java-5.1.7-bin.jar
 
+examples/sensorLibrary/.settings
+examples/sensorLibrary/lib/commons-configuration-1.9
+examples/sensorLibrary/lib/log4j-1.2.14.jar
+examples/sensorLibrary/lib/annotations.jar
+examples/sensorLibrary/lib/jsr305.jar
+examples/sensorLibrary/lib/junit.jar
+
+examples/sensorServer/.settings
+examples/sensorServer/lib/commons-configuration-1.9
+examples/sensorServer/lib/commons-lang-2.6
+examples/sensorServer/lib/log4j-1.2.14.jar
+examples/sensorServer/lib/annotations.jar
+examples/sensorServer/lib/jsr305.jar
+examples/sensorServer/lib/junit.jar
+examples/sensorServer/lib/json.jar
+
 #local build files
 ant_directory.xml
 ant_node.xml

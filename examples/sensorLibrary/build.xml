@@ -1,0 +1,412 @@
+<?xml version="1.0"?>
+<project name="Cacophony SensorLibrary Example" default="build-release">
+
+	<target name="filecheck">
+		<tstamp/>
+    	<available file="${basedir}/build.local.properties" property="local.properties.available"/>
+    	<available file="${basedir}/build.global.properties" property="global.properties.available"/>
+	</target>
+
+	<target name="properties-local" if="local.properties.available" depends="filecheck">
+		<echo message="Loading local properties file"/>
+		<property file="${basedir}/build.local.properties"/>
+	</target>
+
+	<target name="properties-global" if="global.properties.available" depends="filecheck">
+		<echo message="Loading global properties file"/>
+		<property file="${basedir}/build.global.properties"/>
+
+		<condition property="os.mac"><os name="Mac OS X" /></condition>
+		<condition property="os.windows"><os family="winnt" /></condition>
+	</target>
+
+	<target name="properties" depends="properties-local,properties-global">
+		<echo message="Loading property files"/>
+	</target>
+
+	<target name="settings" depends="properties">
+
+		<echo message="******************************************"/>
+		<echo message="App Settings"/>
+		<echo message="******************************************"/>
+		<echo message=""/>
+		<echo message="build.type           ${build.type}"/>
+		<echo message="java target          ${ant.build.javac.target}"/>
+		<echo message="java.home            ${java.home}"/>
+		<echo message="cygwin.java (win)    ${cygwin.java}"/>
+		<echo message="cygwin.prefix (win)  ${cygwin.prefix}"/>
+		<echo message=""/>
+		<echo message="app.Name             ${app.Name}"/>
+		<echo message="app.name             ${app.name}"/>
+		<echo message="app.version          ${app.version.major}.${app.version.minor}.${app.version.revision}"/>
+		<echo message="app.packages         ${app.packages}"/>
+		<echo message=""/>
+		<echo message="base.drive (win)     ${base.drive}"/>
+		<echo message="base.dir             ${base.dir}"/>
+		<echo message="utility.base.dir     ${utility.base.dir}"/>
+		<echo message=""/>
+		
+		<echo message="******************************************"/>
+		<echo message="Release Settings"/>
+		<echo message="******************************************"/>
+		<echo message=""/>
+		<echo message="release.dir          ${release.dir}"/>
+		<echo message=""/>
+
+		<echo message="******************************************"/>
+		<echo message="Build Settings"/>
+		<echo message="******************************************"/>
+		<echo message=""/>
+		<echo message="build.dir            ${build.dir}"/>
+		<echo message="build.lib.dir        ${build.lib.dir}"/>
+		<echo message="build.native.dir     ${build.native.dir}"/>
+		<echo message="build.conf.dir       ${build.conf.dir}"/>
+		<echo message="build.src.dir        ${build.src.dir}"/>
+		<echo message="build.classes.dir    ${build.classes.dir}"/>
+		<echo message="build.apidocs.dir    ${build.apidocs.dir}"/>
+		<echo message="build.dist.dir       ${build.dist.dir}"/>
+		<echo message=""/>
+		<echo message="utility.build.lib.dir ${utility.build.lib.dir}"/>
+		<echo message=""/>
+                 
+		<echo message="******************************************"/>
+		<echo message="Project Settings"/>
+		<echo message="******************************************"/>
+
+		<echo message=""/>
+                                                                                           
+		<echo message="project.dir          ${project.dir}"/>
+		<echo message="project.src.dir      ${project.src.dir}"/>
+		<echo message="project.src.java.dir ${project.src.java.dir}"/>
+		<echo message="project.src.dist.dir ${project.src.dist.dir}"/>
+		<echo message="project.native.dir   ${project.native.dir}"/>
+		<echo message="project.lib.dir      ${project.lib.dir}"/>
+		<echo message="project.doc.dir      ${project.doc.dir}"/>
+		<echo message="project.conf.dir     ${project.conf.dir}"/>
+		<echo message="project.classes.dir  ${project.classes.dir}"/>
+		<echo message="project.python.dir   ${project.python.dir}"/>
+
+		<echo message=""/>
+
+		<echo message="******************************************"/>
+		<echo message="Utility Project Settings"/>
+		<echo message="******************************************"/>
+
+		<echo message=""/>
+                                                                                           
+		<echo message="utility.project.dir          ${utility.project.dir}"/>
+		<echo message="utility.project.src.dir      ${utility.project.src.dir}"/>
+		<echo message="utility.project.src.java.dir ${utility.project.src.java.dir}"/>
+		<echo message="utility.project.src.dist.dir ${utility.project.src.dist.dir}"/>
+		<echo message="utility.project.native.dir   ${utility.project.native.dir}"/>
+		<echo message="utility.project.lib.dir      ${utility.project.lib.dir}"/>
+		<echo message="utility.project.doc.dir      ${utility.project.doc.dir}"/>
+		<echo message="utility.project.conf.dir     ${utility.project.conf.dir}"/>
+		<echo message="utility.project.classes.dir  ${utility.project.classes.dir}"/>
+		<echo message="utility.project.python.dir   ${utility.project.python.dir}"/>
+
+		<echo message=""/>
+
+		<echo message="******************************************"/>
+		<echo message="Executable Settings"/>
+		<echo message="******************************************"/>
+		<echo message=""/>
+		<echo message="javac.exe            ${javac.exe}"/>
+		<echo message="javah.exe            ${javah.exe}"/>
+		<echo message="cc.exe               ${cc.exe}"/>
+		<echo message="g++.exe              ${g++.exe}"/>
+		<echo message="pkg-config.exe       ${pkg-config.exe}"/>
+
+	</target>
+
+	<target name="init" depends="settings">
+		<tstamp/>
+		<mkdir dir="${build.dir}"/>
+		<mkdir dir="${build.lib.dir}"/>
+		<mkdir dir="${build.classes.dir}"/>
+		<mkdir dir="${build.classes.dir}/test"/>
+		<mkdir dir="${build.conf.dir}"/>
+		<mkdir dir="${build.dist.dir}"/>
+		<mkdir dir="${build.native.dir}"/>
+	</target>
+
+	
+	<target name="build" depends="settings,init">
+
+		<javac sourcepath="" executable="${javac.exe}" srcdir="${project.src.java.dir}/edu/uci/ics/luci/cacophony/:${utility.project.src.dir}/edu/uci/ics/luci/utility/" destdir="${build.classes.dir}" deprecation="on">
+			<classpath>
+				<pathelement path="${project.src.java.dir}/"/>
+				<fileset dir="${project.lib.dir}">
+					<include name="**/*.jar"/>
+				</fileset>
+				<fileset dir="${utility.project.lib.dir}">
+					<include name="**/*.jar"/>
+					<include name="**/**/*.jar"/>
+				</fileset>
+				<!--
+				<pathelement location="${project.lib.dir}/mysql-connector-java-5.1.7-bin.jar"/>
+				<pathelement location="${project.lib.dir}/commons-configuration-1.9.jar"/>
+				<pathelement location="${project.lib.dir}/json.jar"/>
+				-->
+				<!--
+				<pathelement location="${project.lib.dir}/json/json.jar"/>
+				<pathelement location="${project.lib.dir}/processing/lib/core.jar"/>
+				<pathelement location="${project.lib.dir}/jdom/jdom.jar"/>
+				<pathelement location="${project.lib.dir}/rome/rome-0.9.jar"/>
+				<pathelement location="${project.lib.dir}/skype4java/skype.jar"/>
+				<pathelement location="${project.lib.dir}/sqlitejdbc/sqlitejdbc-v056.jar"/>
+				<pathelement location="${project.lib.dir}/quub4j/quub4j.jar"/>
+				-->
+				<pathelement location="${build.native.dir}"/>
+			</classpath>
+		</javac>
+
+		<!-- Some of these are used by the native sensor build process -->
+		<copy todir="${build.lib.dir}" failonerror="true">
+			<fileset dir="${project.lib.dir}" includes="*.jar"/>
+		</copy>
+
+		<jar destfile="${build.dist.dir}/CacophonySensorLibrary.jar" basedir="${build.classes.dir}">
+			<manifest>
+				<attribute name="Main-Class" value="edu.uci.ics.luci.cacophony.SensorLibraryService"/>
+			</manifest>
+		</jar>
+
+		<!--
+		<copy file="native/wifi/win32/bin/wapNative.dll" todir="bin/" failonerror="false" />
+		<copy file="native/battery/win32/bin/Win32BatteryTool.dll" todir="bin/" failonerror="false" />
+		-->
+	</target>
+
+	<target name="native-sensors" depends="settings,build">
+		<ant dir="${project.native.dir}" target="build"/>
+		<!-- 
+		<ant dir="${project.native.dir}" target="build"/>
+		-->
+	</target>
+
+	<target name="build-gui-win" depends="settings,native-sensors" if="os.windows">
+		<javac sourcepath="" executable="${javac.exe}" srcdir="${project.src.java.dir}/edu/uci/ics/luci/nomatic/service/gui/wingui" destdir="${build.classes.dir}" classpath="${build.dist.dir}/NomaticService.jar"/>
+		<copy file="${project.native.dir}/gui/win32/wingui_native.dll" todir="${build.native.dir}/"/>
+	</target>
+
+	<target name="build-gui-mac" depends="settings,native-sensors" if="os.mac">
+		<javac sourcepath="" executable="${javac.exe}" srcdir="${project.src.java.dir}/edu/uci/ics/luci/nomatic/service/gui/macgui" destdir="${build.classes.dir}" classpath="${build.dist.dir}/NomaticService.jar"/>
+	</target>
+
+	<target name="build-gui-test" depends="settings,native-sensors">
+		<javac sourcepath="" executable="${javac.exe}"
+		srcdir="${project.src.dist.dir}/Plugins/testgui/"
+		destdir="${build.classes.dir}"
+		classpath="${project.src.java.dir}:${project.lib.dir}/json/json.jar:${project.lib.dir}/processing/lib/core.jar:${project.lib.dir}/jdom/jdom.jar:${project.lib.dir}/rome/rome-0.9.jar:${project.lib.dir}/skype4java/skype.jar:${project.lib.dir}/sqlitejdbc/sqlitejdbc-v056.jar"/>
+	</target>
+
+	<target name="build-gui" depends="settings,build-gui-test,build-gui-win,build-gui-mac">
+		<ant dir="${project.native.dir}/gui" target="build"/>
+	</target>
+
+	<target name="build-app-win" depends="settings,build-gui" if="os.windows">
+		<chmod dir="${project.src.dist.dir}" file="RunNomatic.bat" perm="+x"/>
+		<mkdir dir="${build.classes.dir}/edu/uci/ics/luci/nomatic/service/gui/wingui/"/>
+		<copy file="${project.lib.dir}/rome/rome-0.9.jar" todir="${build.dist.dir}/"/>
+		<copy file="${project.lib.dir}/jdom/jdom.jar" todir="${build.dist.dir}/"/>
+		<copy file="${project.lib.dir}/json/json.jar" todir="${build.dist.dir}/"/>
+		<copy file="${project.lib.dir}/processing/lib/core.jar" todir="${build.dist.dir}/"/>
+		<copy todir="${build.dist.dir}/">
+			<fileset dir="${project.lib.dir}/skype4java" includes="*.jar" excludes="skype_osx.jar, skype_linux.jar"/>
+		</copy>
+		<copy file="${project.lib.dir}/sqlitejdbc/sqlitejdbc-v056.jar" todir="${build.dist.dir}/"/>
+		<copy file="${project.src.dist.dir}/RunNomatic.bat" todir="${build.dist.dir}/"/>
+		<copy file="${project.doc.dir}/graphics/logo/logo.png" todir="${build.dist.dir}/"/>
+		<copy file="${project.src.dist.dir}/wingui/wingui.xml" todir="${build.dist.dir}"/>
+
+		<copy file="${project.src.dist.dir}/Plugins/wingui/CPPJNITest.dll" todir="${build.dist.dir}"/>
+		<copy file="${project.src.dist.dir}/Plugins/wingui/chime.wav" todir="${build.dist.dir}"/>
+		<copy file="${project.src.dist.dir}/Plugins/wingui/logo.png" todir="${build.dist.dir}"/>
+		<copy file="${project.src.dist.dir}/Plugins/wingui/nomatic.ico" todir="${build.dist.dir}"/>
+		<copy file="${project.src.dist.dir}/Plugins/wingui/Smilie.cur" todir="${build.dist.dir}"/>
+		<copy file="${project.src.dist.dir}/Plugins/wingui/JNIDemo.h" todir="${build.dist.dir}"/>
+		<copy file="${project.src.dist.dir}/Plugins/wingui/CPPJNITest/Debug/CPPJNITest.dll" todir="${build.dist.dir}/CPPJNITest/Debug/"/>
+		<copy file="${project.src.dist.dir}/Plugins/wingui/JNITest/JNITest.cpp" todir="${build.dist.dir}/JNITest/"/>
+		<copy file="${project.src.dist.dir}/Plugins/wingui/JNITest/Form1.h" todir="${build.dist.dir}/JNITest/"/>
+		<copy file="${project.src.dist.dir}/Plugins/wingui/JNITest/MCPPJNITest.h" todir="${build.dist.dir}/JNITest/"/>
+		<copy file="${project.src.dist.dir}/Plugins/wingui/JNITest/mini_control.cpp" todir="${build.dist.dir}/JNITest/"/>
+		<copy file="${project.src.dist.dir}/Plugins/wingui/JNITest/mini_control.h" todir="${build.dist.dir}/JNITest/"/>
+		<copy file="${project.src.dist.dir}/Plugins/wingui/JNITest/Preference.cpp" todir="${build.dist.dir}/JNITest/"/>
+		<copy file="${project.src.dist.dir}/Plugins/wingui/JNITest/Preference.h" todir="${build.dist.dir}/JNITest/"/>
+		<copy file="${project.src.dist.dir}/Plugins/wingui/JNITest/resource.h" todir="${build.dist.dir}/JNITest/"/>
+		<copy file="${project.src.dist.dir}/Plugins/wingui/JNITest/stdafx.cpp" todir="${build.dist.dir}/JNITest/"/>
+		<copy file="${project.src.dist.dir}/Plugins/wingui/JNITest/stdafx.h" todir="${build.dist.dir}/JNITest/"/>
+		<copy file="${project.src.dist.dir}/Plugins/wingui/JNITest/logo.png" todir="${build.dist.dir}/JNITest/"/>
+
+		<taskdef name="jsmoothgen" classname="net.charabia.jsmoothgen.ant.JSmoothGen" classpath="${project.src.dist.dir}/jsmooth/jsmoothgen-ant.jar"/>
+		<jsmoothgen project="${project.src.dist.dir}/jsmooth/nomaticim.jsmooth" skeletonroot="${project.src.dist.dir}/dist/jsmooth/skeletons"/>
+		<move file="${project.src.dist.dir}/jsmooth/NomaticIM.exe" todir="${build.dist.dir}/"/>
+		<!-- 
+			Note that you must have NSIS installed to the default location 
+			(C:\Program Files\NSIS) for this to work.
+			Download NSIS from http://nsis.sourceforge.net
+		-->
+		<taskdef name="nsis" classname="net.sf.nsisant.Task" classpath="${project.src.dist.dir}/nsisant-1.2.jar"/>
+		<nsis script="${project.src.dist.dir}/setup.nsi" verbosity="1" path="C:\Program Files\NSIS"/>
+		<move file="${project.src.dist.dir}/setup.exe" todir="${build.dist.dir}/"/>
+	</target>
+
+
+	<target name="build-app-mac" depends="settings,build-gui" if="os.mac">
+		<delete dir="${build.dist.dir}/Nomatic*IM.app" verbose="true"/>
+		<mkdir dir="${build.dist.dir}/Nomatic*IM.app"/>
+		<mkdir dir="${build.dist.dir}/Nomatic*IM.app/Contents"/>
+		<mkdir dir="${build.dist.dir}/Nomatic*IM.app/Contents/MacOS"/>
+		<mkdir dir="${build.dist.dir}/Nomatic*IM.app/Contents/Resources"/>
+		<mkdir dir="${build.dist.dir}/Nomatic*IM.app/Contents/Resources/Java"/>
+		<mkdir dir="${build.dist.dir}/Nomatic*IM.app/Contents/Resources/Plugins"/>
+		<mkdir dir="${build.dist.dir}/Nomatic*IM.app/Contents/Resources/Plugins/testgui"/>
+		<mkdir dir="${build.dist.dir}/Nomatic*IM.app/Contents/Resources/Plugins/edu"/>
+		<mkdir dir="${build.dist.dir}/Nomatic*IM.app/Contents/Resources/Plugins/edu/uci"/>
+		<mkdir dir="${build.dist.dir}/Nomatic*IM.app/Contents/Resources/Plugins/edu/uci/ics"/>
+		<mkdir dir="${build.dist.dir}/Nomatic*IM.app/Contents/Resources/Plugins/edu/uci/ics/luci"/>
+		<mkdir dir="${build.dist.dir}/Nomatic*IM.app/Contents/Resources/Plugins/edu/uci/ics/luci/nomatic"/>
+		<mkdir dir="${build.dist.dir}/Nomatic*IM.app/Contents/Resources/Plugins/edu/uci/ics/luci/nomatic/service"/>
+		<mkdir dir="${build.dist.dir}/Nomatic*IM.app/Contents/Resources/Plugins/edu/uci/ics/luci/nomatic/service/gui"/>
+		<mkdir dir="${build.dist.dir}/Nomatic*IM.app/Contents/Resources/Plugins/edu/uci/ics/luci/nomatic/service/gui/macgui"/>
+
+		<copy file="${project.src.dist.dir}/JavaApplicationStub" todir="${build.dist.dir}/Nomatic*IM.app/Contents/MacOS"/>
+		<chmod file="${build.dist.dir}/Nomatic*IM.app/Contents/MacOS/JavaApplicationStub" perm="u=rwx,go=rx"/>
+		<copy file="${project.doc.dir}/graphics/Mac/MacAppIcon/NomaticIM.icns" todir="${build.dist.dir}/Nomatic*IM.app/Contents/Resources"/>
+		<copy file="${project.doc.dir}/graphics/logo/logo.png" todir="${build.dist.dir}/Nomatic*IM.app"/>
+		<copy file="${project.src.dist.dir}/Info.plist" todir="${build.dist.dir}/Nomatic*IM.app/Contents"/>
+		<copy file="${project.src.dist.dir}/PkgInfo" todir="${build.dist.dir}/Nomatic*IM.app/Contents"/>
+		<copy file="${build.dist.dir}/NomaticService.jar" todir="${build.dist.dir}/Nomatic*IM.app/Contents/Resources/Java"/>
+		<copy file="${project.lib.dir}/jdom/jdom.jar" todir="${build.dist.dir}/Nomatic*IM.app/Contents/Resources/Java"/>
+		<copy file="${project.lib.dir}/json/json.jar" todir="${build.dist.dir}/Nomatic*IM.app/Contents/Resources/Java"/>
+		<copy file="${project.lib.dir}/processing/lib/core.jar" todir="${build.dist.dir}/Nomatic*IM.app/Contents/Resources/Java"/>
+		<copy file="${project.lib.dir}/rome/rome-0.9.jar" todir="${build.dist.dir}/Nomatic*IM.app/Contents/Resources/Java"/>
+		<copy file="${project.lib.dir}/skype4java/skype.jar" todir="${build.dist.dir}/Nomatic*IM.app/Contents/Resources/Java"/>
+		<copy file="${project.lib.dir}/skype4java/skype_osx.jar" todir="${build.dist.dir}/Nomatic*IM.app/Contents/Resources/Java"/>
+		<copy file="${project.lib.dir}/sqlitejdbc/sqlitejdbc-v056.jar" todir="${build.dist.dir}/Nomatic*IM.app/Contents/Resources/Java"/>
+		<copy file="${build.native.dir}/libaccsensor_mac.jnilib" todir="${build.dist.dir}/Nomatic*IM.app/Contents/Resources/Java"/>
+		<copy file="${build.native.dir}/liblightsensor_mac.jnilib" todir="${build.dist.dir}/Nomatic*IM.app/Contents/Resources/Java"/>
+		<copy file="${build.native.dir}/libwifisensor_mac.jnilib" todir="${build.dist.dir}/Nomatic*IM.app/Contents/Resources/Java"/>
+		<copy file="${build.native.dir}/libprocesssensor_mac.jnilib" todir="${build.dist.dir}/Nomatic*IM.app/Contents/Resources/Java"/>
+		<copy file="${build.native.dir}/libidlesensor_mac.jnilib" todir="${build.dist.dir}/Nomatic*IM.app/Contents/Resources/Java"/>
+		<copy file="${build.native.dir}/libuiactivitysensor_mac.jnilib" todir="${build.dist.dir}/Nomatic*IM.app/Contents/Resources/Java"/>
+		<copy file="${project.src.dist.dir}/Plugins/defaultguis.xml" todir="${build.dist.dir}/Nomatic*IM.app/Contents/Resources/Plugins"/>
+		<copy file="${project.src.dist.dir}/macgui/macgui.xml" todir="${build.dist.dir}/Nomatic*IM.app/Contents/Resources/Plugins"/>
+		<copy file="${build.classes.dir}/edu/uci/ics/luci/nomatic/service/gui/macgui/MacSwingGUI.class" todir="${build.dist.dir}/Nomatic*IM.app/Contents/Resources/Plugins/edu/uci/ics/luci/nomatic/service/gui/macgui"/>
+		<copy file="${build.classes.dir}/dist/Plugins/testgui/TestGUI.class" todir="${build.dist.dir}/Nomatic*IM.app/Contents/Resources/Plugins/testgui"/>
+		<exec executable="/Developer/Tools/SetFile">
+			<arg line="-a B ${build.dist.dir}/Nomatic*IM.app"/>
+		</exec>
+	</target>
+
+	<target name="build-app" depends="settings,build-app-mac,build-app-win"/>
+
+	<target name="build-release-win" depends="settings,build-app" if="os.windows">  
+	</target>
+
+	<target name="build-release-mac" depends="settings,build-app" if="os.mac">  
+		<mkdir dir="${release.dir}/Mac/packageMe"/>
+		<mkdir dir="${release.dir}/Mac/packageMeScripts"/>
+		<!-- I don't know why the native ant copy task isn't working but it won't keep the Nomatic*IM.app bundle as executable
+		<copy todir="./release/Mac/packageMe/" overwrite="true">
+    		<fileset dir="./${build.dist.dir}"/>
+		</copy> -->
+		<exec executable="cp">
+			<arg line="-R ${build.dist.dir}/Nomatic*IM.app ${release.dir}/Mac/packageMe"/>
+		</exec>
+		<exec executable="cp">
+			<arg line="${release.dir}/Mac/postflight ${release.dir}/Mac/packageMeScripts/"/>
+		</exec>
+
+		<delete file="${release.dir}/Mac/packageMe/NomaticService.jar"/>
+		<delete dir="${release.dir}/Mac/packageMe/classes"/>
+		<exec executable="/usr/bin/open">
+			<arg line="${release.dir}/Mac/NomaticIM.pmdoc"/>
+		</exec>
+	</target>
+
+	<target name="build-release" depends="settings,clean-release,build-release-mac,build-release-win"/>
+
+	<target name="run-mac" depends="settings,build-gui" if="os.mac">
+		<!--classpath=".:${project.lib.dir}/json/json.jar:${project.lib.dir}/processing/lib/core.jar:${project.lib.dir}/jdom/jdom.jar:${project.lib.dir}/rome/rome-0.9.jar:${project.lib.dir}/skype4java/skype.jar:${project.lib.dir}/sqlitejdbc/sqlitejdbc-v056.jar:${build.dist.dir}/NomaticService.jar">-->
+		<java classname="edu.uci.ics.luci.nomatic.service.NomaticService" fork="true">
+			<classpath>
+				<fileset dir="${project.lib.dir}/external-libs">
+					<include name="**/*.jar"/>
+				</fileset>
+				<pathelement location="${project.lib.dir}/json/json.jar"/>
+				<pathelement location="${project.lib.dir}/processing/lib/core.jar"/>
+				<pathelement location="${project.lib.dir}/jdom/jdom.jar"/>
+				<pathelement location="${project.lib.dir}/rome/rome-0.9.jar"/>
+				<pathelement location="${project.lib.dir}/skype4java/skype.jar"/>
+				<pathelement location="${project.lib.dir}/sqlitejdbc/sqlitejdbc-v056.jar"/>
+				<pathelement location="${project.lib.dir}/quub4j/quub4j.jar"/>
+				<pathelement location="${build.native.dir}"/>
+				<pathelement location="${build.dist.dir}/NomaticService.jar"/>
+			</classpath>
+			<jvmarg value="-Djava.library.path=${build.native.dir}"/>
+			<jvmarg value="-Dedu.uci.ics.luci.nomatic.service.gui.pluginsdir=${project.src.dist.dir}/macgui"/>
+			<jvmarg value="-Dedu.uci.ics.luci.nomatic.service.gui.classesdir=${build.classes.dir}"/>
+			<jvmarg value="-Dbuild.type=${build.type}"/>
+			<jvmarg value="-Dapp.version.major=${app.version.major}"/>
+			<jvmarg value="-Dapp.version.minor=${app.version.minor}"/>
+			<jvmarg value="-Dapp.version.revision=${app.version.revision}"/>
+		</java>
+	</target>
+
+	<target name="run-win" depends="settings,build-gui" if="os.windows">
+		<java classname="edu.uci.ics.luci.nomatic.service.NomaticService" fork="true">
+			<classpath>
+				<fileset dir="${project.lib.dir}/external-libs">
+					<include name="**/*.jar"/>
+				</fileset>
+				<pathelement location="${project.lib.dir}/json/json.jar"/>
+				<pathelement location="${project.lib.dir}/processing/lib/core.jar"/>
+				<pathelement location="${project.lib.dir}/jdom/jdom.jar"/>
+				<pathelement location="${project.lib.dir}/rome/rome-0.9.jar"/>
+				<pathelement location="${project.lib.dir}/skype4java/skype.jar"/>
+				<pathelement location="${project.lib.dir}/sqlitejdbc/sqlitejdbc-v056.jar"/>
+				<pathelement location="${project.lib.dir}/quub4j/quub4j.jar"/>
+				<pathelement location="${build.native.dir}"/>
+				<pathelement location="${build.dist.dir}/NomaticService.jar"/>
+			</classpath>
+			<jvmarg value="-Djava.library.path=${base.drive}${build.native.dir}" />
+			<jvmarg value="-Dedu.uci.ics.luci.nomatic.service.gui.pluginsdir=${project.src.dist.dir}/wingui"/>
+			<jvmarg value="-Dedu.uci.ics.luci.nomatic.service.gui.classesdir=${build.classes.dir}"/>
+			<jvmarg value="-Dbuild.type=${build.type}"/>
+			<jvmarg value="-Dapp.version.major=${app.version.major}"/>
+			<jvmarg value="-Dapp.version.minor=${app.version.minor}"/>
+			<jvmarg value="-Dapp.version.revision=${app.version.revision}"/>
+		</java>
+	</target>
+
+	<target name="run" depends="settings,run-mac,run-win"/>
+
+	<target name="clean-release-win" depends="settings" if="os.windows">
+		<delete>
+			<fileset dir="." includes="etilqs_*"/>
+		</delete>
+	</target>
+
+	<target name="clean-release-mac" depends="settings" if="os.mac">  
+		<delete dir="./release/Mac/packageMe"/>
+		<delete dir="./release/Mac/packageMeScripts"/>
+		<delete dir="./release/Mac/NomaticIM.pkg"/>
+	</target>
+
+	<target name="clean-release" depends="settings, clean-release-mac,clean-release-win"/>
+
+	<target name="clean" depends="settings, clean-release">
+		<delete dir="${build.lib.dir}"/>
+		<delete dir="${build.dir}"/>
+		<delete dir="${build.classes.dir}"/>
+		<delete dir="${build.classes.dir}/test"/>
+		<delete dir="${build.conf.dir}"/>
+		<delete dir="${build.dist.dir}"/>
+		<delete dir="${build.native.dir}"/>
+		<delete dir="${project.src.java.dir}/dist"/>
+		<delete file="${project.src.java.dir}/edu/uci/ics/luci/nomatic/service/SubversionRevision.java"/>
+		<ant dir="${project.native.dir}" target="clean"/>
+	</target>
+</project>
