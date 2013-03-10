@@ -26,27 +26,26 @@ kyotocabinet-java-1.24
   		./configure --prefix="/Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/kyotocabinet-java-install" CPPFLAGS="-I/Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/kyotocabinet-install/include  -I/System/Library/Frameworks/JavaVM.framework/Versions/A/Headers" PKG_CONFIG_PATH="/Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/kyotocabinet-install/lib/pkgconfig"
 
 	Then I editted the Makefile to change < from ---- > to:
-	< JAVAC = /bin/javac
-	---
-	> JAVAC = /System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/bin/javac
+		< JAVAC = /bin/javac
+			---
+		> JAVAC = /Library/Java/JavaVirtualMachines/jdk1.7.0_13.jdk/Contents/Home/bin/javac
 
-	< JAR = /bin/jar
-	< JAVAH = /bin/javah
-	< JAVADOC = /bin/javadoc
-		---
-	> JAR = /System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/bin/jar
-	> JAVAH = /System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/bin/javah
-	> JAVADOC = /System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/bin/javadoc
+		< JAR = /bin/jar
+		< JAVAH = /bin/javah
+		< JAVADOC = /bin/javadoc
+			---
+		> JAR = /Library/Java/JavaVirtualMachines/jdk1.7.0_13.jdk/Contents/Home/bin/jar
+		> JAVAH = /Library/Java/JavaVirtualMachines/jdk1.7.0_13.jdk/Contents/Home/bin/javah
+		> JAVADOC = /Library/Java/JavaVirtualMachines/jdk1.7.0_13.jdk/Contents/Home/bin/javadoc
 
-	< JAVARUN = /bin/java
-	---
-	> JAVARUN = /System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/bin/java
+		< JAVARUN = /bin/java
+			---
+		> JAVARUN = /Library/Java/JavaVirtualMachines/jdk1.7.0_13.jdk/Contents/Home/bin/java
 
-	< CPPFLAGS = -I. -I$(INCLUDEDIR) -I/Users/djp3/include -I/usr/local/include -DNDEBUG -I/include -I/include/mac -I/Headers -I/Headers/mac -I/Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/kyotocabinet-install/include
-	---
-	> CPPFLAGS = -I. -I$(INCLUDEDIR) -I/Users/djp3/include -I/usr/local/include -DNDEBUG -I/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/include -I/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/include/mac -I/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/Headers -I/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/Headers/mac -I/Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/kyotocabinet-install/include
+		< CPPFLAGS = -I. -I$(INCLUDEDIR) -I/Users/djp3/include -I/usr/local/include -DNDEBUG -I/include -I/include/mac -I/Headers -I/Headers/mac -I/Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/kyotocabinet-install/include
+			---
+		> CPPFLAGS = -I. -I$(INCLUDEDIR) -I/Users/djp3/include -I/usr/local/include -DNDEBUG -I/Library/Java/JavaVirtualMachines/jdk1.7.0_13.jdk/Contents/Home/include -I/Library/Java/JavaVirtualMachines/jdk1.7.0_13.jdk/Contents/Home/include/mac -I/Library/Java/JavaVirtualMachines/jdk1.7.0_13.jdk/Contents/Home/Headers -I/Library/Java/JavaVirtualMachines/jdk1.7.0_13.jdk/Contents/Home/Hearders/mac -I/Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/kyotocabinet-install/include
 	
-
 	to build:
 		make -j8 all CPPFLAGS="-I/Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/kyotocabinet-install/include -I/System/Library/Frameworks/JavaVM.framework/Versions/A/Headers" PKG_CONFIG_PATH="/Users/djp3/Development/Mac/EclipseWorkspaceCacophony/external/kyotocabinet-install/lib/pkgconfig"
 
