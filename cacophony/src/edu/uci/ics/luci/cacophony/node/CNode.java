@@ -218,41 +218,46 @@ public class CNode implements Quittable,Serializable{
 			params.put("namespace", parentPool.getNamespace());
 
 			JSONObject response = failoverFetch.fetchJSONObject("/node_assignment", false, params, 30 * 1000);
-			try {
-				if(response.getString("error").equals("false")){
-					this.setMetaCNodeGUID(response.getString("node_id"));
-					this.setNodeName(response.getString("name"));
-			    	InstanceQuery trainingQuery;
-			    	JSONObject configuration = response.getJSONObject("node_configuration");
-			    	if(configuration.getBoolean("doTraining")){
-			    		String zid = null;
-			    		try {
-			    			trainingQuery = new InstanceQuery();
-			    			trainingQuery.setUsername(configuration.getString("username"));
-			    			trainingQuery.setPassword(configuration.getString("password"));
-			    			trainingQuery.setDatabaseURL("jdbc:mysql://"+configuration.getString("databaseDomain")+"/"+configuration.getString("database"));
-			    			String trainingQueryString = configuration.getString("trainingQuery");
-			    			zid = configuration.getString("node_id");
-			    			trainingQuery.setQuery(trainingQueryString.replaceAll("_NODE_ID_", zid));
-			    			this.setTrainingQuery(trainingQuery);
-			    		} catch (Exception e) {
-			    			getLog().error("Unable to load cnode training using: "+zid);
-			    		}
-			    	}
-			    	else{
-		    			this.setTrainingQuery(null);
-			    	}
+			if(response == null){
+				getLog().error("Unable to get a node assignment!");
+			}
+			else if(response.getString("error") == null){
+				getLog().error("Bad node assignment format received!");
+			}
+			else{
+				try {
+					if(response.getString("error").equals("false")){
+						this.setMetaCNodeGUID(response.getString("node_id"));
+						this.setNodeName(response.getString("name"));
+						InstanceQuery trainingQuery;
+						JSONObject configuration = response.getJSONObject("node_configuration");
+						if(configuration.getBoolean("doTraining")){
+							String zid = null;
+							try {
+								trainingQuery = new InstanceQuery();
+								trainingQuery.setUsername(configuration.getString("username"));
+								trainingQuery.setPassword(configuration.getString("password"));
+								trainingQuery.setDatabaseURL("jdbc:mysql://"+configuration.getString("databaseDomain")+"/"+configuration.getString("database"));
+								String trainingQueryString = configuration.getString("trainingQuery");
+								zid = configuration.getString("node_id");
+								trainingQuery.setQuery(trainingQueryString.replaceAll("_NODE_ID_", zid));
+								this.setTrainingQuery(trainingQuery);
+							} catch (Exception e) {
+								getLog().error("Unable to load cnode training using: "+zid);
+							}
+						}
+						else{
+							this.setTrainingQuery(null);
+						}
+					}
+				} catch (JSONException e) {
+					getLog().error("Problem getting configuration:"+e);
 				}
-				
-			} catch (JSONException e) {
-				getLog().error("Problem getting configuration:"+e);
 			}
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
-			fail("Bad URL:"+e);
 		} catch (IOException e) {
 			e.printStackTrace();
-			fail("IO Exception:"+e);
 		} catch (JSONException e) {
 			getLog().error("Problem getting configuration:"+e);
 		}
