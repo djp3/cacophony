@@ -31,6 +31,7 @@ public class ServerTest {
 
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
+		Globals.setGlobals(null);
 	}
 
 	@Before

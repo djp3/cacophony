@@ -10,6 +10,7 @@ import java.util.HashMap;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -43,6 +44,11 @@ public class HandlerShutdownTest {
 			}
 		}
 		Globals.setGlobals(new SensorServerGlobals());
+	}
+	
+	@AfterClass
+	public static void tearDownAfterClass() throws Exception {
+		Globals.setGlobals(null);
 	}
 
 
