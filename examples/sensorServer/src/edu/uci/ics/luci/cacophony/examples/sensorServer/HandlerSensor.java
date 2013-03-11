@@ -153,20 +153,27 @@ public class HandlerSensor extends HandlerAbstract {
 		
 		String format = parameters.get("format");
 		Pair<byte[],byte[]> response;
+		String data = "null";
+		if(sensor != null){
+			Object sense = sensor.sense();
+			if(sense != null){
+				data = sense.toString();
+			}
+		}
 		if((format!= null) && format.equals("html")){
 			StringBuffer sb = new StringBuffer();
 			sb.append("<html>");
 			sb.append("<body>");
-			sb.append(escapeHtml(sensor.sense().toString()));
+			sb.append(escapeHtml(data));
 			sb.append("</body>");
 			sb.append("</html>");
 			response = new Pair<byte[],byte[]>(HandlerAbstract.getContentTypeHeader_HTML(),sb.toString().getBytes());
 		}
-		if((format!= null) && format.equals("jsonp")){
+		else if((sensor != null) && (format!= null) && format.equals("jsonp")){
 			JSONObject j = new JSONObject();
 			try {
 				j.put("error", "false");
-				j.put("value", sensor.sense().toString());
+				j.put("value", data);
 			} catch (JSONException e) {
 				try {
 					j.put("value", "Unable to parse:1");
@@ -180,7 +187,7 @@ public class HandlerSensor extends HandlerAbstract {
 			JSONObject j = new JSONObject();
 			try {
 				j.put("error", "false");
-				j.put("value", sensor.sense().toString());
+				j.put("value", data);
 			} catch (JSONException e) {
 				try {
 					j.put("value", "Unable to parse:1");
