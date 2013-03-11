@@ -49,8 +49,6 @@ public class ProcessMac extends Process{
 	private static final int NORMAL_INTERVAL = 1500;
 	private static final int END_INTERVAL = 50;
 	
-	static Object trackerThreadLock = new Object();
-	static Thread trackerThread = null;
 	private static String lastActiveProcess = null;
 	private static boolean quitting = false;
 	
@@ -66,79 +64,23 @@ public class ProcessMac extends Process{
 		String n = processName.trim();
 		return n.equals("JavaApplicationStub") || n.equals("java");
 	}
+	
+	private synchronized static void setLastActiveProcess(String ap){
+		lastActiveProcess = ap;
+	}
+	
+	private synchronized static String getLastActiveProcess(){
+		return lastActiveProcess;
+	}
 		
 	@Override
 	protected boolean initialize() {
-		synchronized(trackerThreadLock){
-			if(trackerThread == null){
-				trackerThread = new Thread() {
-					public void run() {
-						try {
-							while (!quitting) {
-								String ap = sampleActiveProcess();
-								if (!shouldIgnore(ap)){
-									lastActiveProcess = ap;
-								}
-								synchronized(trackerThreadLock){
-									if(!quitting){
-										try {
-											trackerThreadLock.wait(NORMAL_INTERVAL);
-										} catch (InterruptedException e) {
-										}
-									}
-								}
-							}
-						}
-						catch (RuntimeException e) {
-							getLog().log(Level.ERROR, "Failed to acquire the active process.", e);
-						}
-						synchronized(trackerThreadLock){
-							if(quitting){
-								trackerThreadLock.notifyAll();
-							}
-						}
-					}
-				};
-				trackerThread.setDaemon(false); /*Force a clean shutdown */
-				trackerThread.setName("ActiveProcessTrackerThread");
-				trackerThread.start();
-				
-				while (lastActiveProcess == null){
-					synchronized(trackerThreadLock){
-						trackerThreadLock.notifyAll();
-						try {
-							if(!quitting){
-								trackerThreadLock.wait(INITIAL_INTERVAL);
-							}
-						} catch (InterruptedException e) {
-						}
-					}
-				}
-			};
-		}
 		return true;
 	}
 	
 	@Override
 	protected void shutdown() {
 		super.shutdown();
-		
-		synchronized(trackerThreadLock){
-			quitting = true;
-		}
-		if (trackerThread != null){
-			while(trackerThread.isAlive()){
-				synchronized(trackerThreadLock){
-					if (trackerThread.isAlive()) {
-						trackerThreadLock.notifyAll();
-						try {
-							trackerThreadLock.wait(END_INTERVAL);
-						} catch (InterruptedException e) {
-						}
-					}
-				}
-			}
-		}
 	}
 	
 	private static native synchronized String sampleActiveProcess();
@@ -146,8 +88,12 @@ public class ProcessMac extends Process{
 
 
 	@Override
-	public String senseActiveProcess() {
-    	return(lastActiveProcess);
+	public synchronized String senseActiveProcess() {
+		String ap = sampleActiveProcess();
+		if (!shouldIgnore(ap)){
+			setLastActiveProcess(ap);
+		}
+    	return(getLastActiveProcess());
 	}
 
 
