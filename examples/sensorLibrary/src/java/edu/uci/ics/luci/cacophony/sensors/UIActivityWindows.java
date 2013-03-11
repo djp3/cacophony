@@ -21,7 +21,6 @@
 
 package edu.uci.ics.luci.cacophony.sensors;
 
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 public class UIActivityWindows extends UIActivity{
