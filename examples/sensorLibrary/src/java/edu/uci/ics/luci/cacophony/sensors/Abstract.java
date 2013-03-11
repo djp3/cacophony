@@ -139,7 +139,12 @@ public abstract class Abstract implements Quittable{
 				if(quitting){
 					synchronized(getSensingAvailableLock()){
 						this.quitting = true;
-						shutdown();
+						try{
+							shutdown();
+						}
+						catch(RuntimeException e){
+							getLog().error("shutdown caused an exception: "+e);
+						}
 						initialized = false;
 						setSensingAvailable(null);
 					}
