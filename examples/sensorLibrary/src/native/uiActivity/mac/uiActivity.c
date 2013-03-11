@@ -96,7 +96,12 @@ JNIEXPORT void JNICALL Java_edu_uci_ics_luci_cacophony_sensors_UIActivityMac_nat
 	CGEventTapEnable(eventTap, true);
 	//fprintf(stderr,"Starting2\n");
 	//Set it all running.
-	CFRunLoopRun();
+		dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 
+                                         (unsigned long)NULL), ^(void) {
+		CFRunLoopRun();
+	});
+	//CFRunLoopRun();
+
 }
 
 
@@ -134,9 +139,18 @@ JNIEXPORT void JNICALL Java_edu_uci_ics_luci_cacophony_sensors_UIActivityMac_nat
 		fprintf(stderr,"uiActivity jni waiting for initialization (so we can shutdown).  Maybe a double shutdown call?\n");
 		sleep(1);
 	}
+	fprintf(stderr,"native code: uiactivity: nativeShutdown trying to stop\n");
+	dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 
+                                         (unsigned long)NULL), ^(void) {
+		CFRunLoopRef localRunLoopReference = runLoopReference;
+		runLoopReference = NULL;
+		CFRunLoopStop(localRunLoopReference);
+	});
+	
 	//CFRunLoopStop(CFRunLoopGetCurrent());
+	/*
 	CFRunLoopStop(runLoopReference);
-	runLoopReference = NULL;
+	runLoopReference = NULL;*/
 	//fprintf(stderr,"Ending2\n");
 }
 

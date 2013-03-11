@@ -21,7 +21,6 @@
 
 package edu.uci.ics.luci.cacophony.sensors;
 
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 public class UIActivityMac extends UIActivity{
@@ -45,31 +44,15 @@ public class UIActivityMac extends UIActivity{
 	private static native void nativeInit();
 	private static native void nativeShutdown();
 	
-	static Object mouseWatcherThreadLock = new Object();
-	static Thread mouseWatcherThread = null;
-
 	@Override
 	protected boolean initialize() {
 		synchronized(nativeLock){
-			synchronized(mouseWatcherThreadLock){
-				if(mouseWatcherThread == null){
-					mouseWatcherThread = new Thread(){
-						public void run() {
-							try {
-								nativeInit(); //Doesn't return
-							}
-							catch (Exception e) {
-								getLog().log(Level.ERROR, "Mac UI Activity Sensor failed to initialize.", e);
-							}
-						}
-					};
-					mouseWatcherThread.setDaemon(false); /*Force a clean shutdown */
-					mouseWatcherThread.setName("UI Activity Watcher Thread");
-					mouseWatcherThread.start();
-					
-					/*The jni blocks until initialization is complete */
-					this.senseUIActivity();
-				};
+			try{
+				nativeInit();
+				this.senseUIActivity(); /*The jni blocks until initialization is complete */
+			}
+			catch(RuntimeException e){
+				return false;
 			}
 		}
 		return true;
@@ -81,15 +64,6 @@ public class UIActivityMac extends UIActivity{
 		synchronized(nativeLock){
 			super.shutdown();
 			nativeShutdown();
-			synchronized(mouseWatcherThreadLock){
-				while(mouseWatcherThread.isAlive()){
-					try {
-						mouseWatcherThread.join();
-					} catch (InterruptedException e) {
-					}
-				}
-				mouseWatcherThread = null;
-			}
 		}
 	}
 	
