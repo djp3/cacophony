@@ -213,11 +213,11 @@ public class RequestDispatcher implements Runnable{
 		this.webServer = webServer;
 	}
 	
-	public int getRequestHandlerRegistrySize(){
+	public synchronized int getRequestHandlerRegistrySize(){
 		return this.requestHandlerRegistry.size();
 	}
 	
-	public int getRequestHandlersSize(Class<? extends HandlerAbstract> key){
+	public synchronized int getRequestHandlersSize(Class<? extends HandlerAbstract> key){
 		return requestHandlers.get(key).size();
 	}
 	
@@ -241,11 +241,11 @@ public class RequestDispatcher implements Runnable{
 		requestHandlers = new HashMap<Class<? extends HandlerAbstract>,List<HandlerAbstract>>(); 
 	}
 	
-	public int getInstancesToStage() {
+	public synchronized int getInstancesToStage() {
 		return numInstancesToStage;
 	}
 
-	public void setInstancesToStage(int instancesToStage) {
+	public  synchronized void setInstancesToStage(int instancesToStage) {
 		this.numInstancesToStage = instancesToStage;
 	}
 
