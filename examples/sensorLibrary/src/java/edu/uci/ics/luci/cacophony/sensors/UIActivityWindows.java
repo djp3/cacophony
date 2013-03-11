@@ -40,31 +40,21 @@ public class UIActivityWindows extends UIActivity{
 		return "uiactivity";
 	}
 	
-	private static native synchronized double getAccumulatedMouseClicks();
-	private static native synchronized void nativeInit();
-	private static native synchronized void nativeShutdown();
+	private static Object nativeLock = new Object();
+	private static native double getAccumulatedMouseClicks();
+	private static native void nativeInit();
+	private static native void nativeShutdown();
 	
-	static Object mouseWatcherLock = new Object();
-	static Thread mouseWatcherThread = null;
-
 	@Override
 	protected boolean initialize() {
-		synchronized(mouseWatcherLock){
-			if(mouseWatcherThread == null){
-				mouseWatcherThread = new Thread(){
-					public void run() {
-						try {
-							nativeInit();
-						}
-						catch (Exception e) {
-							getLog().log(Level.ERROR, "Mac UI Activity Sensor failed to initialize.", e);
-						}
-					}
-				};
-			};
-			mouseWatcherThread.setDaemon(false); /*Force a clean shutdown */
-			mouseWatcherThread.setName("UI Activity Watcher Thread");
-			mouseWatcherThread.start();
+		synchronized(nativeLock){
+			try{
+				nativeInit();
+				this.senseUIActivity(); /*The jni blocks until initialization is complete */
+			}
+			catch(RuntimeException e){
+				return false;
+			}
 		}
 		return true;
 	}
@@ -72,13 +62,9 @@ public class UIActivityWindows extends UIActivity{
 		
 	@Override
 	protected void shutdown() {
-		super.shutdown();
-		nativeShutdown();
-		while(mouseWatcherThread.isAlive()){
-			try {
-				mouseWatcherThread.join();
-			} catch (InterruptedException e) {
-			}
+		synchronized(nativeLock){
+			super.shutdown();
+			nativeShutdown();
 		}
 	}
 	
@@ -88,8 +74,11 @@ public class UIActivityWindows extends UIActivity{
 	private double runningTotalTime=1.0;
 	
 	@Override
-	public synchronized Double senseUIActivity() {
-		double x = getAccumulatedMouseClicks();
+	public Double senseUIActivity() {
+		double x;
+		synchronized(nativeLock){
+			x = getAccumulatedMouseClicks();
+		}
 		long now = System.currentTimeMillis();
 		double elapsed = (now-lastTimeSensed);
 					
