@@ -238,7 +238,7 @@ public class IPAddress extends Abstract {
 			return getLastIp();
 		}
 		catch (IOException e) {
-			getLog().log(Level.WARN, "Couldn't get IP, so we're using: "+getLastIp(), e);
+			getLog().log(Level.WARN, "Couldn't get IP, so we're using: "+getLastIp()+" Network is down?");
 			return getLastIp();
 		} catch (RuntimeException e) {
 			getLog().log(Level.WARN, "Couldn't get IP, so we're using: "+getLastIp(), e);
