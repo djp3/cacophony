@@ -8,6 +8,7 @@
 			<fileset dir="." includes="*.jnilib"/> 
 		</delete> 
 		<delete file="./wifiExample"/>
+		<delete file="./wifi"/>
 	</target>
 
 	<target name="build_wifi_mac_sensor">

@@ -277,6 +277,7 @@ bool read_sms_raw(int type, int *x, int *y, int *z)
     int dataType;
     union motion_data data;
 	
+	fprintf(stderr,"native code: acclerometer: readSMS 5\n");
     if ( !set_values(type, &kernFunc, &servMatch, &dataType) )
         return false;
     if ( probe_sms(kernFunc, servMatch, dataType, &data) ) {
@@ -300,6 +301,7 @@ bool read_sms_raw(int type, int *x, int *y, int *z)
 
 bool read_sms(int type, int *x, int *y, int *z)
 {
+	fprintf(stderr,"native code: acclerometer: readSMS 6\n");
     int _x, _y, _z;
 
 	if(read_sms_raw(type, &_x, &_y, &_z)){
@@ -405,9 +407,10 @@ JNIEXPORT jintArray JNICALL Java_edu_uci_ics_luci_cacophony_sensors_Acceleromete
 		/*fprintf(stderr, "Nomatic*IM: Detected SMS type %d (%s)\n", type, * name);	*/
 		first = false;
 	}
-	
 
-	int size = 3;
+	fprintf(stderr,"native code: acclerometer: readSMS 2\n");
+
+	jsize size = 3;
 	jintArray jr = (*env)->NewIntArray(env, size);
 	if(jr == NULL){
 		return NULL; /* out of memory error */
@@ -415,11 +418,18 @@ JNIEXPORT jintArray JNICALL Java_edu_uci_ics_luci_cacophony_sensors_Acceleromete
 	else{
 		if(read_sms_raw(type, &x,&y,&z)){
 			jint data[size];
-			data[0] = x; data[1] = y; data[2] = z;
-			(*env)->SetIntArrayRegion(env,jr, 0, size,data);
+			data[0] = (jint)x; data[1] = (jint)y; data[2] = (jint)z;
+			(*env)->SetIntArrayRegion(env,jr, (jsize)0, size,data);
+			/* ArrayIndexOutofBoundsException */
+			if((*env)->ExceptionOccurred(env)) {
+				return NULL;
+			}
+			
+			fprintf(stderr,"native code: acclerometer: readSMS 3\n");
 			return jr;
 		}
 		else{
+			fprintf(stderr,"native code: acclerometer: readSMS 4\n");
 			return NULL;
 		}
 	}
