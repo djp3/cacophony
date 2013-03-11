@@ -283,7 +283,9 @@ public class CNodePool implements Quittable{
 				c.setParentPool(this);
 				c.setBaseUrls(accessRoutes);
 				c.getANewConfiguration();
-				c.synchronizeWithNetwork(true,true,true,false);
+				//Sending heartbeat even though the webserver isn't up yet, so that directory doesn't double assign nodes
+				//during the pool initialization
+				c.synchronizeWithNetwork(true,true,true,true); 
 				addToPool(c.getMetaCNodeGUID(),c);
 			}
 		}

@@ -36,6 +36,7 @@ import weka.filters.Filter;
 import edu.uci.ics.luci.cacophony.CacophonyGlobals;
 import edu.uci.ics.luci.cacophony.api.CacophonyRequestHandlerHelper;
 import edu.uci.ics.luci.cacophony.directory.nodelist.CNodeReference;
+import edu.uci.ics.luci.util.ExtractDataFromHTML;
 import edu.uci.ics.luci.util.FailoverFetch;
 import edu.uci.ics.luci.utility.CalendarCache;
 import edu.uci.ics.luci.utility.Quittable;
@@ -684,15 +685,37 @@ public class CNode implements Quittable,Serializable{
 	}
 	
 	public synchronized void synchronizeWithNetwork(boolean checkForNewData, boolean rebuildModelIfNecessary, boolean testAccuracyOnSelf, boolean sendHeartbeat){
+		Instances trainingSet = null;
 		if(checkForNewData){
-			Instances trainingSet = fetchTrainingSet();
+			
+			//Build feature vector
+			
+			JSONObject targetData = this.configuration.optJSONObject("target");
+			if(targetData != null){
+				String url = targetData.optString("URL");
+				String xpath = targetData.optString("XPath");
+				String regEx = targetData.optString("regEx");
+			
+				String data = ExtractDataFromHTML.fetchAndExtractData(url,xpath,regEx);
+				
+				/*
+				if(validateData(data)){
+					saveValidatedData();
+					getFeatureData();
+					addAllDataToDataStore();
+				}
+				*/
+			}
+			
+			//trainingSet = fetchTrainingSet();
+			
 			if(rebuildModelIfNecessary){
 				if(modelOutdated(trainingSet)){
 					buildModel(testAccuracyOnSelf,trainingSet);
 				}
 			}
 		}
-		if(getLastModelBuildTime() != null){
+		if((trainingSet == null) || (getLastModelBuildTime() != null)){
 			if(sendHeartbeat){
 				sendHeartbeat();
 			}
