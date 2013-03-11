@@ -1,7 +1,5 @@
 package edu.uci.ics.luci.cacophony.node;
 
-import static org.junit.Assert.fail;
-
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
