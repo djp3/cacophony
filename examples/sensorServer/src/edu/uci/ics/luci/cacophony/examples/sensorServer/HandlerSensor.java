@@ -152,7 +152,7 @@ public class HandlerSensor extends HandlerAbstract {
 		}
 		
 		String format = parameters.get("format");
-		Pair<byte[],byte[]> response;
+		Pair<byte[],byte[]> response = null;
 		String data = "null";
 		if(sensor != null){
 			Object sense = sensor.sense();
@@ -164,7 +164,9 @@ public class HandlerSensor extends HandlerAbstract {
 			StringBuffer sb = new StringBuffer();
 			sb.append("<html>");
 			sb.append("<body>");
+			sb.append("<div class=\"sensor_data\">");
 			sb.append(escapeHtml(data));
+			sb.append("</div>");
 			sb.append("</body>");
 			sb.append("</html>");
 			response = new Pair<byte[],byte[]>(HandlerAbstract.getContentTypeHeader_HTML(),sb.toString().getBytes());
@@ -174,28 +176,32 @@ public class HandlerSensor extends HandlerAbstract {
 			try {
 				j.put("error", "false");
 				j.put("value", data);
+				response = new Pair<byte[],byte[]>(HandlerAbstract.getContentTypeHeader_JSON(),wrapCallback(parameters,j.toString()).getBytes());
 			} catch (JSONException e) {
 				try {
+					j.put("error", "true");
 					j.put("value", "Unable to parse:1");
+					response = new Pair<byte[],byte[]>(HandlerAbstract.getContentTypeHeader_JSON(),wrapCallback(parameters,j.toString()).getBytes());
 				} catch (JSONException e1) {
-					response = new Pair<byte[],byte[]>(HandlerAbstract.getContentTypeHeader_JSON(),wrapCallback(parameters,"{\"value\",\"Unable to parse:2\"}").getBytes());
+					response = new Pair<byte[],byte[]>(HandlerAbstract.getContentTypeHeader_JSON(),wrapCallback(parameters,"{\"error\":true,\"value\":\"Unable to parse:2\"}").getBytes());
 				}
 			}
-			response = new Pair<byte[],byte[]>(HandlerAbstract.getContentTypeHeader_JSON(),wrapCallback(parameters,j.toString()).getBytes());
 		}
 		else{
 			JSONObject j = new JSONObject();
 			try {
 				j.put("error", "false");
 				j.put("value", data);
+				response = new Pair<byte[],byte[]>(HandlerAbstract.getContentTypeHeader_JSON(),j.toString().getBytes());
 			} catch (JSONException e) {
 				try {
+					j.put("error", "true");
 					j.put("value", "Unable to parse:1");
+					response = new Pair<byte[],byte[]>(HandlerAbstract.getContentTypeHeader_JSON(),j.toString().getBytes());
 				} catch (JSONException e1) {
-					response = new Pair<byte[],byte[]>(HandlerAbstract.getContentTypeHeader_JSON(),"{\"value\",\"Unable to parse:2\"}".getBytes());
+					response = new Pair<byte[],byte[]>(HandlerAbstract.getContentTypeHeader_JSON(),"{\"error\":true,\"value\":\"Unable to parse:2\"}".getBytes());
 				}
 			}
-			response = new Pair<byte[],byte[]>(HandlerAbstract.getContentTypeHeader_JSON(),j.toString().getBytes());
 		}
 		
 		return response;
