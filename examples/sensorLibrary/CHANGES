@@ -1,3 +1,10 @@
+Version 0.0.2
+(03/11/2013)
+
+New features and enhancements:
+	* Made Mac UIActivity return on native init
+	* Removed constant polling from process sensor on mac
+
 Version 0.0.1
 (03/09/2013)
 
