@@ -769,10 +769,10 @@
 				data[localwhich].push(x);
 				if(draw[localwhich] != null){
 					draw[localwhich]();
-					$('#'+localwhich).append('<div class="sensor_reading">'+escapeHTML(x)+'</div>');
+					$('#'+localwhich).append('<div class="sensor_reading"><a href="/sense?sensor='+localwhich+'&version=1.0&format=html">'+escapeHTML(x)+'</a></div>');
 				}
 				else{
-					$('#'+localwhich).append('<div class="sensor_reading">'+escapeHTML(x)+'</div>');
+					$('#'+localwhich).append('<div class="sensor_reading"><a href="/sense?sensor='+localwhich+'&version=1.0&format=html">'+escapeHTML(x)+'</a></div>');
 				}
 				request[localwhich]=null;
 			};
