@@ -19,6 +19,8 @@ import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
 
+import javax.xml.xpath.XPathExpressionException;
+
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -694,7 +696,16 @@ public class CNode implements Quittable,Serializable{
 				String xpath = targetData.optString("XPath");
 				String regEx = targetData.optString("regEx");
 			
+				try {
 				String data = ExtractDataFromHTML.fetchAndExtractData(url,xpath,regEx);
+				} catch (MalformedURLException e) {
+					getLog().error("The URL '" + url + "' is invalid\n" + e);
+					return;
+				} catch (XPathExpressionException e) {
+					getLog().error("There was a problem with the XPath expression '" + xpath + "'\n" + e);
+				} catch (IOException e) {
+					getLog().error("There was a problem fetching and extracting data for the URL '" + url + "'\n" + e);
+				}
 				
 				/*
 				if(validateData(data)){
