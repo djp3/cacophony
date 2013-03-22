@@ -25,10 +25,6 @@ This is what is in this directory on a working distribution
 		libjkyotocabinet.jnilib -> ../../external/kyotocabinet-java-install/lib/libjkyotocabinet.jnilib*
 
 	jars from other places:
-		JSAP-2.1.jar
-			Java Simple Argument Parser
-			http://sourceforge.net/projects/jsap/
-
 		commons-codec-1.7/commons-codec-1.7-sources.jar
 		commons-codec-1.7//commons-codec-1.7.jar
 			Apache Commons Codec
@@ -55,6 +51,14 @@ This is what is in this directory on a working distribution
 		commons-logging-1.1.1/commons-logging-api-1.1.1.jar
 			Apache Commons Logging
 			http://commons.apache.org/logging/
+	
+		JSAP-2.1.jar
+			Java Simple Argument Parser
+			http://sourceforge.net/projects/jsap/
+	
+		jtidy-r938.jar
+			JTidy
+			http://jtidy.sourceforge.net
 			
 	jars without a well described pedigree:
 		json.jar
