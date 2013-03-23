@@ -30,6 +30,43 @@ public class ExtractDataFromHTMLTest {
 	@After
 	public void tearDown() throws Exception {
 	}
+	
+	@Test
+	public void testExtractDataDegenerative() {
+		String data = null;
+		String xpath = null;
+		try {
+			data = ExtractDataFromHTML.extractData(null,null,null);
+			assertTrue(data == null);
+			
+			xpath="/foo";
+			data = ExtractDataFromHTML.extractData(xpath,null,
+				"<html><body><div class=\"sensor_data\">&lt;&lt;UCInet Mobile Access:00:19:a9:54:59:ae&gt;:-62&gt;</div></body></html>");
+			assertTrue(data == null);
+			
+			xpath="/html/body/div";
+			data = ExtractDataFromHTML.extractData(xpath,null,
+				"<html><body><div class=\"sensor_data\">&lt;&lt;UCInet Mobile Access:00:19:a9:54:59:ae&gt;:-62&gt;</div></body></html>");
+			assertEquals(data,"<<UCInet Mobile Access:00:19:a9:54:59:ae>:-62>");
+			
+			xpath="/html/body/div";
+			data = ExtractDataFromHTML.extractData(xpath," ",
+				"<html><body><div class=\"sensor_data\">&lt;&lt;UCInet Mobile Access:00:19:a9:54:59:ae&gt;:-62&gt;</div></body></html>");
+			assertEquals(data,"<<UCInet Mobile Access:00:19:a9:54:59:ae>:-62>");
+		} catch (XPathExpressionException e) {
+			fail("There was a problem with the XPath expression '" + xpath + "'" + e);
+		}
+		
+		try{
+			xpath="=/html/body/div";
+			data = ExtractDataFromHTML.extractData(xpath," ",
+				"<html><body><div class=\"sensor_data\">&lt;&lt;UCInet Mobile Access:00:19:a9:54:59:ae&gt;:-62&gt;</div></body></html>");
+			assertEquals(data,"<<UCInet Mobile Access:00:19:a9:54:59:ae>:-62>");
+			fail("There was a problem with the XPath expression because it should have thrown an exception" + xpath);
+		} catch (XPathExpressionException e) {
+		}
+		
+	}
 
 	@Test
 	public void testExtractData() {
@@ -46,7 +83,7 @@ public class ExtractDataFromHTMLTest {
 			data = ExtractDataFromHTML.extractData(xpath,
 				"<<.*:([0-9a-f]*:[0-9a-f]*:[0-9a-f]*:[0-9a-f]*:[0-9a-f]*:[0-9a-f]*)>:[-]?[0-9][0-9]*>",
 				"<html><body><div class=\"sensor_data\">&lt;&lt;UCInet Mobile Access:00:19:a9:54:59:ae&gt;:-62&gt;</div></body></html>");
-		assertEquals(data,"00:19:a9:54:59:ae");
+			assertEquals(data,"00:19:a9:54:59:ae");
 		} catch (XPathExpressionException e) {
 			fail("There was a problem with the XPath expression '" + xpath + "'" + e);
 		}

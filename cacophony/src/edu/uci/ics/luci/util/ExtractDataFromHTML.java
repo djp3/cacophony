@@ -20,30 +20,39 @@ import edu.uci.ics.luci.utility.webserver.WebUtil;
 public class ExtractDataFromHTML {
 	
 	public static String extractData(String xPathString, String regEx, String htmlContent) throws XPathExpressionException {
-		Tidy tidy = new Tidy();
-		tidy.setXHTML(true);
-		tidy.setQuiet(true);
-		tidy.setXmlOut(true);
-		tidy.setShowWarnings(false);
-		tidy.setTrimEmptyElements(false);
 		
-		StringReader sr = new StringReader(htmlContent);
-		Document doc = tidy.parseDOM(sr, null);
-		XPath xPath = XPathFactory.newInstance().newXPath();
-		Node node = (Node)xPath.evaluate(xPathString, doc, XPathConstants.NODE);
-		if (node != null) {
-			// Text only appears at leaves in the DOM tree, so check if the node specified by the XPath is a leaf.
-			// If it's not a leaf, try getting text from its first child.
-			String nodeValue = (node.getFirstChild() == null ? node.getNodeValue() : node.getFirstChild().getNodeValue());
-			if (regEx == null || regEx.trim().equals("")) {
-				return nodeValue;
-			}
-			Matcher matcher = Pattern.compile(regEx).matcher(nodeValue);
-			if (matcher.find()) {
-				return matcher.group(1);
+		String ret = null;
+		if(htmlContent == null){
+			ret = null;
+		}
+		else{
+			Tidy tidy = new Tidy();
+			tidy.setXHTML(true);
+			tidy.setQuiet(true);
+			tidy.setXmlOut(true);
+			tidy.setShowWarnings(false);
+			tidy.setTrimEmptyElements(false);
+		
+			StringReader sr = new StringReader(htmlContent);
+			Document doc = tidy.parseDOM(sr, null);
+			XPath xPath = XPathFactory.newInstance().newXPath();
+			Node node = (Node)xPath.evaluate(xPathString, doc, XPathConstants.NODE);
+			if (node != null) {
+				// Text only appears at leaves in the DOM tree, so check if the node specified by the XPath is a leaf.
+				// If it's not a leaf, try getting text from its first child.
+				String nodeValue = (node.getFirstChild() == null ? node.getNodeValue() : node.getFirstChild().getNodeValue());
+				if (regEx == null || regEx.trim().equals("")) {
+					ret = nodeValue;
+				}
+				else{
+					Matcher matcher = Pattern.compile(regEx).matcher(nodeValue);
+					if (matcher.find()) {
+						ret = matcher.group(1);
+					}
+				}
 			}
 		}
-		return null; //TODO: Instead of returning null, should we throw an exception?
+		return ret;
 	}
 
 	public static String fetchAndExtractData(String url, String xPathString, String regEx) throws MalformedURLException, IOException, XPathExpressionException {

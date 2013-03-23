@@ -697,7 +697,7 @@ public class CNode implements Quittable,Serializable{
 				String regEx = targetData.optString("regEx");
 			
 				try {
-				String data = ExtractDataFromHTML.fetchAndExtractData(url,xpath,regEx);
+					String data = ExtractDataFromHTML.fetchAndExtractData(url,xpath,regEx);
 				} catch (MalformedURLException e) {
 					getLog().error("The URL '" + url + "' is invalid\n" + e);
 					return;

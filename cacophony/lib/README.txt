@@ -57,8 +57,11 @@ This is what is in this directory on a working distribution
 			http://sourceforge.net/projects/jsap/
 	
 		jtidy-r938.jar
-			JTidy
-			http://jtidy.sourceforge.net
+			JTidy: http://jtidy.sourceforge.net
+			 "JTidy is a Java port of HTML Tidy, a HTML syntax checker and
+			 pretty printer. Like its non-Java cousin, JTidy can be used as a
+			 tool for cleaning up malformed and faulty HTML. In addition, JTidy
+			 provides a DOM parser for real-world HTML." 
 			
 	jars without a well described pedigree:
 		json.jar

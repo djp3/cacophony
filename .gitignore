@@ -66,6 +66,7 @@ cacophony/lib/libthrift.jar
 cacophony/lib/slf4j-api.jar
 cacophony/lib/slf4j-log4j12.jar
 cacophony/lib/JSAP-2.1.jar
+cacophony/lib/jtidy-r938.jar
 cacophony/lib/commons-codec-1.7
 cacophony/lib/commons-lang-2.6
 cacophony/lib/commons-logging-1.1.1
@@ -102,6 +103,7 @@ examples/sensorLibrary/lib/log4j-1.2.14.jar
 examples/sensorLibrary/lib/annotations.jar
 examples/sensorLibrary/lib/jsr305.jar
 examples/sensorLibrary/lib/junit.jar
+examples/sensorLibrary/build
 
 examples/sensorServer/.settings
 examples/sensorServer/lib/commons-configuration-1.9
@@ -111,6 +113,7 @@ examples/sensorServer/lib/annotations.jar
 examples/sensorServer/lib/jsr305.jar
 examples/sensorServer/lib/junit.jar
 examples/sensorServer/lib/json.jar
+examples/sensorServer/bin
 
 #local build files
 ant_directory.xml
