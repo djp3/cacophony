@@ -817,6 +817,7 @@ public class CNode implements Quittable,Serializable{
 												value = pool.submit(new Callable<Object>(){
 													@Override
 													public Object call() throws Exception {
+														//TODO: This isn't getting the cnode data, this is using failoverFetch which connects to the directory.  There is another layer of indirection needed here.
 														return ExtractDataFromJSON.fetchAndExtractData(failoverFetch,"/api/cnode_data","$.data","(.*)",new TranslatorIdentity());
 													}
 												});
