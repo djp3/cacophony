@@ -15,6 +15,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.tidy.Tidy;
 
+import edu.uci.ics.luci.cacophony.node.Translator;
 import edu.uci.ics.luci.utility.webserver.WebUtil;
 
 public class ExtractDataFromHTML {
