@@ -106,6 +106,8 @@ examples/sensorLibrary/lib/junit.jar
 examples/sensorLibrary/build
 
 examples/sensorServer/.settings
+examples/sensorServer/sensorServer.jar
+examples/sensorServer/sensorServerJarDescription.jardesc
 examples/sensorServer/lib/commons-configuration-1.9
 examples/sensorServer/lib/commons-lang-2.6
 examples/sensorServer/lib/log4j-1.2.14.jar
