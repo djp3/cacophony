@@ -8,6 +8,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
@@ -58,10 +62,17 @@ public class CNodePool implements Quittable{
 	private boolean shuttingDown = false;
 	private boolean updatingActive = false;
 	private ModelStorage<String,CNode> db = null;
+	
 	private Thread updateThread = null;
+	
+	/* This maintains the next time that any of the CNodes needs to synchronize 
+	 * with the network. 
+	 */
+	private TreeMap<Long,Set<String>> updateHeap = null;
 	
 	public CNodePool(ModelStorage<String,CNode> db){
 		directoryList = new ArrayList<String>();
+		updateHeap = new TreeMap<Long,Set<String>>();
 		this.db = db;
 		db.open(Globals.getGlobals().isTesting(),Globals.getGlobals().isTesting());
 	}
@@ -192,28 +203,42 @@ public class CNodePool implements Quittable{
 			public void run() {
 				while(!getQuitting()){
 					me.setUpdatingActive(true);
-					Long now = System.currentTimeMillis();
 					
-					/* We don't use db.iterate here because it locks the db for any incoming REST request */
-					HashSet<String> poolKeySet = me.getPoolKeySet();
-					for(String key:poolKeySet){
-						CNode fromPool = me.getFromPool(key);
-						if(fromPool != null){
-							fromPool.synchronizeWithNetwork();
-							me.addToPool(key, fromPool);
+					/* Get all the CNodes that need to be updated*/
+					Long now = System.currentTimeMillis();
+					SortedMap<Long, Set<String>> headMap = updateHeap.headMap(now+1);
+					
+					/* If there are any that need updating... */
+					if(headMap.size() > 0){
+						/* Cycle through all the keys and update the CNodes */
+						for(Entry<Long, Set<String>> ess: headMap.entrySet()){
+							
+							updateHeap.remove(ess.getKey());
+							
+							for(String s: ess.getValue()){
+								/* Get the CNode */
+								CNode fromPool = me.getFromPool(s);
+								if(fromPool != null){
+									/* Update it */
+									fromPool.synchronizeWithNetwork();
+									/* Replace it in case the state has changed */
+									me.addToPool(s,fromPool);
+									/* Put the node back into the updateheap */
+									refreshUpdateTime(updateHeap,fromPool);
+								}
+							}
 						}
 					}
 					me.setUpdatingActive(false);
 					
-					
-					Long elapsed = System.currentTimeMillis() - now;
 					synchronized(updateThread){
-						while ((elapsed < CNode.ONE_HOUR) && (!getQuitting())){
+						Long firstKey = updateHeap.firstKey();
+						Long waitTime = firstKey - System.currentTimeMillis();
+						if((waitTime > 0) && (!getQuitting())){
 							try {
-								updateThread.wait(CNode.ONE_HOUR - elapsed);
+								updateThread.wait(waitTime);
 							} catch (InterruptedException e) {
 							}
-							elapsed = System.currentTimeMillis() - now;
 						}
 					}
 				}
@@ -279,13 +304,19 @@ public class CNodePool implements Quittable{
 				
 			for(int i = 0; i< getPoolSize(); i++){
 				CNode c = new CNode();
+				c.setSelfSynchronize(false);
 				c.setFailoverFetch(failoverFetch);
 				c.setParentPool(this);
 				c.setBaseUrls(accessRoutes);
 				c.getANewConfiguration();
+				c.launch();
+				
 				//Sending heartbeat even though the webserver isn't up yet, so that directory doesn't double assign nodes
 				//during the pool initialization
 				c.synchronizeWithNetwork(true,true,true,true); 
+				
+				refreshUpdateTime(updateHeap,c);
+				
 				addToPool(c.getMetaCNodeGUID(),c);
 			}
 		}
@@ -322,7 +353,12 @@ public class CNodePool implements Quittable{
 			
 			if(cNodes != null){
 				for(CNode c: cNodes){
+					c.setSelfSynchronize(false);
+					c.launch();
 					c.synchronizeWithNetwork(true,true,true,false);
+					
+					refreshUpdateTime(updateHeap,c);
+					
 					addToPool(c.getMetaCNodeGUID(),c);
 				}
 			}
@@ -337,6 +373,16 @@ public class CNodePool implements Quittable{
 		launchCNodePoolUpdateThread();
 		
 		return(this);
+	}
+
+	private static void refreshUpdateTime(TreeMap<Long,Set<String>> updateHeap,CNode c) {
+		Long t = c.getNextUpdateTime();
+		Set<String> thingsToUpdateAtTimeT = updateHeap.get(t);
+		if(thingsToUpdateAtTimeT == null){
+			thingsToUpdateAtTimeT = new HashSet<String>();
+		}
+		thingsToUpdateAtTimeT.add(c.getMetaCNodeGUID());
+		updateHeap.put(t,thingsToUpdateAtTimeT);
 	}
 	
 	

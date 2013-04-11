@@ -15,9 +15,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import javax.xml.xpath.XPathExpressionException;
 
@@ -37,6 +42,7 @@ import edu.uci.ics.luci.cacophony.CacophonyGlobals;
 import edu.uci.ics.luci.cacophony.api.CacophonyRequestHandlerHelper;
 import edu.uci.ics.luci.cacophony.directory.nodelist.CNodeReference;
 import edu.uci.ics.luci.util.ExtractDataFromHTML;
+import edu.uci.ics.luci.util.ExtractDataFromJSON;
 import edu.uci.ics.luci.util.FailoverFetch;
 import edu.uci.ics.luci.utility.CalendarCache;
 import edu.uci.ics.luci.utility.Quittable;
@@ -94,14 +100,45 @@ public class CNode implements Quittable,Serializable{
 	
 	public String cNodeGuid = null;
 	private Random random = null;
+	
+	/* Does the node manage synchronizing with the world itself? */
+	private boolean selfSynchronize = false;
 	TreeSet<String> heartbeatList = null;
 	private boolean shuttingDown = false;
+	
+	/* The last data that was retrieved by this CNode*/
+	private transient Object lastData = null;
+	private transient Long lastDataUpdateTime = null;
+	
+	/* A list of times between updates for calculating statistics */
+	private List<Long> durationTimes = null;
+	private int durationTimesMaxSize = 1000;
+	
+	/** Calculate the features that don't need a CNode to resolve them
+	 * 
+	 * @param feature
+	 * @return "time": milliseconds since epoch 
+	 * @return "weekend": boolean which is true if it is currently the weekend in Los Angeles 
+	 */
+	public static Object calculateFeature(String feature) {
+		if(feature.equals("time")){
+			return System.currentTimeMillis();
+		}
+		else if(feature.equals("weekend")){
+			return ((CalendarCache.C_LosAngeles.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY) || (CalendarCache.C_LosAngeles.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY));
+		}
+		else{
+			getLog().error("Unknown general feature:"+feature);
+		}
+		return null;
+	}
 
 	/**
 	 * setFailoverFetch,setParentPool, setBaseUrls, setNodeId, and setNodeName should be called before launching
 	 */
 	public CNode(){
 		this.random = new Random();
+		durationTimes = new ArrayList<Long>();
 	}
 	
 	public synchronized void setCNodeGuid(){
@@ -110,6 +147,14 @@ public class CNode implements Quittable,Serializable{
 	
 	public synchronized String getCNodeGuid() {
 		return cNodeGuid;
+	}
+	
+	public synchronized void setSelfSynchronize(boolean selfSynchronize){
+		this.selfSynchronize = selfSynchronize;
+	}
+	
+	public synchronized boolean getSelfSynchronize() {
+		return this.selfSynchronize;
 	}
 
 	public synchronized String getMetaCNodeGUID() {
@@ -232,23 +277,26 @@ public class CNode implements Quittable,Serializable{
 						this.setNodeName(response.getString("name"));
 						InstanceQuery trainingQuery;
 						JSONObject configuration = response.getJSONObject("node_configuration");
-						if(configuration.getBoolean("doTraining")){
-							String zid = null;
-							try {
-								trainingQuery = new InstanceQuery();
-								trainingQuery.setUsername(configuration.getString("username"));
-								trainingQuery.setPassword(configuration.getString("password"));
-								trainingQuery.setDatabaseURL("jdbc:mysql://"+configuration.getString("databaseDomain")+"/"+configuration.getString("database"));
-								String trainingQueryString = configuration.getString("trainingQuery");
-								zid = configuration.getString("node_id");
-								trainingQuery.setQuery(trainingQueryString.replaceAll("_NODE_ID_", zid));
-								this.setTrainingQuery(trainingQuery);
-							} catch (Exception e) {
-								getLog().error("Unable to load cnode training using: "+zid);
+						if(configuration != null){
+							this.setConfiguration(configuration.toString());
+							if(configuration.getBoolean("doTraining")){
+								String zid = null;
+								try {
+									trainingQuery = new InstanceQuery();
+									trainingQuery.setUsername(configuration.getString("username"));
+									trainingQuery.setPassword(configuration.getString("password"));
+									trainingQuery.setDatabaseURL("jdbc:mysql://"+configuration.getString("databaseDomain")+"/"+configuration.getString("database"));
+									String trainingQueryString = configuration.getString("trainingQuery");
+									zid = configuration.getString("node_id");
+									trainingQuery.setQuery(trainingQueryString.replaceAll("_NODE_ID_", zid));
+									this.setTrainingQuery(trainingQuery);
+								} catch (Exception e) {
+									getLog().error("Unable to load cnode training using: "+zid);
+								}
 							}
-						}
-						else{
-							this.setTrainingQuery(null);
+							else{
+								this.setTrainingQuery(null);
+							}
 						}
 					}
 				} catch (JSONException e) {
@@ -685,19 +733,109 @@ public class CNode implements Quittable,Serializable{
 	}
 	
 	public synchronized void synchronizeWithNetwork(boolean checkForNewData, boolean rebuildModelIfNecessary, boolean testAccuracyOnSelf, boolean sendHeartbeat){
+		
 		Instances trainingSet = null;
 		if(checkForNewData){
+			getLog().info("Synchronizing checking for new data: "+this.getMetaCNodeGUID());
 			
 			//Build feature vector
 			
-			JSONObject targetData = this.configuration.optJSONObject("target");
-			if(targetData != null){
-				String url = targetData.optString("URL");
-				String xpath = targetData.optString("XPath");
-				String regEx = targetData.optString("regEx");
-			
+			JSONObject targetInfo = this.configuration.optJSONObject("target");
+			if(targetInfo != null){
+				String format = targetInfo.optString("format").toLowerCase().trim();
+				String url = targetInfo.optString("url").trim();
+				String dataPath = targetInfo.optString("data_path").trim();
+				String regularExpression = targetInfo.optString("regular_expression").trim();
+				String translatorClass = targetInfo.optString("translator_class").trim();
+				Translator<?> translator = (Translator<?>) Class.forName(translatorClass).newInstance();
 				try {
-					String data = ExtractDataFromHTML.fetchAndExtractData(url,xpath,regEx);
+					Object targetData = null;
+					if(format.equals("html")){
+						//TODO: John implement this
+						targetData = ExtractDataFromHTML.fetchAndExtractData(url,dataPath,regularExpression,translator);
+					}
+					else if(format.equals("json")){
+						//TODO: John implement this
+						targetData = ExtractDataFromJSON.fetchAndExtractData(url,dataPath,regularExpression,translator);
+					}
+					else{
+						getLog().warn("Unrecognized CNode format: "+format);
+					}
+					
+					// Collect durations between changes
+					if(targetData != null){
+						if((lastData == null) || (!targetData.equals(lastData))){
+							Long now = System.currentTimeMillis();
+							if(lastDataUpdateTime != null){
+								Long duration = now - lastDataUpdateTime;
+								if(duration > 0){
+									durationTimes.add(duration);
+									if(durationTimes.size() > this.durationTimesMaxSize){
+										durationTimes.remove(0);
+									}
+								}
+							}
+							lastDataUpdateTime = now;
+						}
+						lastData = targetData;
+					}
+					
+					
+					/* Fetch features in parallel */
+					int poolSize = 20;
+					ExecutorService pool = Executors.newFixedThreadPool(poolSize);
+					/* maps from namespace,feature to future that fetched the value */
+					Map<Pair<String,String>,Future<?>> featureFutures = new HashMap<Pair<String,String>,Future<?>>();
+					Map<Pair<String,String>,Object> features = new HashMap<Pair<String,String>,Object>();
+					
+					JSONArray featureSets = this.configuration.optJSONArray("features");
+					if(featureSets != null){
+						for(int i = 0 ; i < featureSets.length(); i++){
+							String namespace = featureSets.getJSONObject(i).optString("namespace");
+							if(namespace != null){
+								namespace = featureSets.getJSONObject(i).optString("namespace");
+								/* Check to make sure we can handle namespace of feature */
+								if((namespace != null) && (!namespace.equals(this.getParentPool().getNamespace()))){
+									getLog().error("We can only handle null namespace and namespaces that are the same as the CNode for features");
+								}
+								else{
+									JSONArray names = featureSets.getJSONObject(i).optJSONArray("names");
+									if(featureFutures != null){
+										for(int j = 0; j< names.length(); j++){
+											final String feature = names.getString(j);
+											Pair<String, String> key = new Pair<String,String>(namespace,feature);
+											Future<?> value = null;
+											if(namespace == null){ //Internal functions
+												value = pool.submit(new Callable<Object>(){
+													@Override
+													public Object call() throws Exception {
+														return CNode.calculateFeature(feature);
+													}
+												});
+											}
+											else{ //fetch the feature
+												value = pool.submit(new Callable<Object>(){
+													@Override
+													public Object call() throws Exception {
+														return ExtractDataFromJSON.fetchAndExtractData(failoverFetch,"/api/cnode_data","$.data","(.*)",new TranslatorIdentity());
+													}
+												});
+											}
+											featureFutures.put(key,value);
+										}
+									}
+								}
+							}
+						}
+					}
+					/* Wait for features to arrive */
+					for(Entry<Pair<String, String>, Future<?>> f:featureFutures.entrySet()){
+						/* Block waiting for completion */
+						features.put(f.getKey(), f.getValue().get());
+					}
+
+					//TODO: Store the features and the data in a tokyocabinet
+					storeFeatures(features,targetData);
 				} catch (MalformedURLException e) {
 					getLog().error("The URL '" + url + "' is invalid\n" + e);
 					return;
@@ -706,20 +844,11 @@ public class CNode implements Quittable,Serializable{
 				} catch (IOException e) {
 					getLog().error("There was a problem fetching and extracting data for the URL '" + url + "'\n" + e);
 				}
-				
-				/*
-				if(validateData(data)){
-					saveValidatedData();
-					getFeatureData();
-					addAllDataToDataStore();
-				}
-				*/
 			}
-			
-			//trainingSet = fetchTrainingSet();
 			
 			if(rebuildModelIfNecessary){
 				if(modelOutdated(trainingSet)){
+					//TODO: Clean this up eventually
 					buildModel(testAccuracyOnSelf,trainingSet);
 				}
 			}
@@ -730,6 +859,8 @@ public class CNode implements Quittable,Serializable{
 			}
 		}
 	}
+
+	
 
 	public synchronized void buildModel(boolean selfEval,Instances trainingData) {
 		
@@ -966,5 +1097,24 @@ public class CNode implements Quittable,Serializable{
    		setLastTrainingSetHash(trainingData.hashCode());
    		setLastModelBuildTime(System.currentTimeMillis());
 	}	
+	
+	Long getNextUpdateTime(){
+		// TODO: Jeff: Make this dynamic based on the 95% confidence interval of when changes are observed
+		// You will need this data structure -> durationTimes
+		return (System.currentTimeMillis() + ONE_MINUTE);
+	}
+	
+	private void storeFeatures(Map<Pair<String, String>, Object> features, Object targetData) {
+		// TODO Auto-generated method stub
+	}
+	
+	void launch(){
+		if(getSelfSynchronize()){
+			/* TODO:Start a thread to self synchronize */
+		}
+		else{
+			/* The CNode Pool is causing the synchronization to happen */
+		}
+	}
 
 }
