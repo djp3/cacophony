@@ -20,6 +20,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -747,15 +748,20 @@ public class CNode implements Quittable,Serializable{
 				String dataPath = targetInfo.optString("data_path").trim();
 				String regularExpression = targetInfo.optString("regular_expression").trim();
 				String translatorClass = targetInfo.optString("translator_class").trim();
-				Translator<?> translator = (Translator<?>) Class.forName(translatorClass).newInstance();
+				Translator<?> translator;
+				try {
+					translator = (Translator<?>) Class.forName(translatorClass).newInstance();
+				}
+				catch (InstantiationException| IllegalAccessException | ClassNotFoundException e) {
+					getLog().error("Unable to synchronize. There was a problem creating a new instance of the class " + translatorClass + "\n" + e);
+					return;
+				}
 				try {
 					Object targetData = null;
 					if(format.equals("html")){
-						//TODO: John implement this
 						targetData = ExtractDataFromHTML.fetchAndExtractData(url,dataPath,regularExpression,translator);
 					}
 					else if(format.equals("json")){
-						//TODO: John implement this
 						targetData = ExtractDataFromJSON.fetchAndExtractData(url,dataPath,regularExpression,translator);
 					}
 					else{
@@ -817,7 +823,9 @@ public class CNode implements Quittable,Serializable{
 												value = pool.submit(new Callable<Object>(){
 													@Override
 													public Object call() throws Exception {
-														return ExtractDataFromJSON.fetchAndExtractData(failoverFetch,"/api/cnode_data","$.data","(.*)",new TranslatorIdentity());
+														// TODO: For Don: Not sure if failoverFetch should be passed to fetchAndExtractData or not. For now I'm commenting out the overload. -John
+														//return ExtractDataFromJSON.fetchAndExtractData(failoverFetch,"/api/cnode_data","$.data","(.*)",new TranslatorIdentity());
+														return ExtractDataFromJSON.fetchAndExtractData("/api/cnode_data","$.data","(.*)",new TranslatorIdentity());
 													}
 												});
 											}
@@ -829,9 +837,15 @@ public class CNode implements Quittable,Serializable{
 						}
 					}
 					/* Wait for features to arrive */
-					for(Entry<Pair<String, String>, Future<?>> f:featureFutures.entrySet()){
+					for(Entry<Pair<String, String>, Future<?>> pair:featureFutures.entrySet()){
 						/* Block waiting for completion */
-						features.put(f.getKey(), f.getValue().get());
+						Pair<String, String> key = pair.getKey();
+						Future<?> future = pair.getValue();
+						try {
+							features.put(key, future.get());
+						} catch (InterruptedException | ExecutionException e) {
+							getLog().error("There was a problem retrieving the feature value for the future '" + future + "'\n" + e);
+						}
 					}
 
 					//TODO: Store the features and the data in a tokyocabinet
@@ -840,9 +854,11 @@ public class CNode implements Quittable,Serializable{
 					getLog().error("The URL '" + url + "' is invalid\n" + e);
 					return;
 				} catch (XPathExpressionException e) {
-					getLog().error("There was a problem with the XPath expression '" + xpath + "'\n" + e);
+					getLog().error("There was a problem with the XPath expression '" + dataPath + "'\n" + e);
 				} catch (IOException e) {
 					getLog().error("There was a problem fetching and extracting data for the URL '" + url + "'\n" + e);
+				} catch (JSONException e) {
+					getLog().error("There was a problem parsing the JSON for the URL '" + url + "'\n" + e);
 				}
 			}
 			
