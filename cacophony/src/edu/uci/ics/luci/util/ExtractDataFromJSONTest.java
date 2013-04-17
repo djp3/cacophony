@@ -1,17 +1,19 @@
 package edu.uci.ics.luci.util;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-
-import javax.xml.xpath.XPathExpressionException;
 
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import com.jayway.jsonpath.InvalidPathException;
 
 public class ExtractDataFromJSONTest {
 
@@ -68,49 +70,52 @@ public class ExtractDataFromJSONTest {
 	@Test
 	public void testExtractDataDegenerative() {
 		String data = null;
-		String jsonpath = null;
-		try {
-			data = ExtractDataFromJSON.extractData(null,null,null);
-			assertTrue(data == null);
-			
-			jsonpath="$.error.book[*].author";
-			data = ExtractDataFromJSON.extractData(jsonpath,null,jsonData);
-			assertTrue(data == null);
-			
-			jsonpath="$.store.book[*].author";
-			data = ExtractDataFromJSON.extractData(jsonpath,null,jsonData);
-			assertEquals(data,"Nigel Rees");
-			
-			jsonpath="$.store.book[*].category";
-			data = ExtractDataFromJSON.extractData(jsonpath," ",jsonData);
-			assertEquals(data,"reference");
-		} catch (XPathExpressionException e) {
-			fail("There was a problem with the XPath expression '" + jsonpath + "'" + e);
-		}
+		String jsonPath = null;
+		data = ExtractDataFromJSON.extractData(null,null,null,null);
+		assertTrue(data == null);
+		
+		// TODO: The JsonPath library throws the same com.jayway.jsonpath.InvalidPathException for
+		// (1) jsonPaths that are poorly formed (bad syntax) and
+		// (2) for jsonPaths that are syntactically correct, but don't find anything in the json.
+		// This is different from the xPath behavior, where not finding anything with an XPath just gives back null.
+		// JsonPath's latest version looks like it may fix this behavior, but JARs aren't available for download, and building
+		// the code is non-trivial. Waiting on a reply from the library author. -John
 		
 		try{
-			jsonpath="=$.store.book[*].category";
-			ExtractDataFromJSON.extractData(jsonpath," ",jsonData);
-			fail("There was a problem with the method because it should have thrown an exception" + jsonpath);
-		} catch (XPathExpressionException e) {
+			jsonPath="$.error.book[*].author";
+			data = ExtractDataFromJSON.extractData(jsonPath,null,jsonData,null);
+			fail("This should thrown and exception");
+		}
+		catch(InvalidPathException e){
+			assertTrue(data == null);
 		}
 		
+		jsonPath="$.store.book[*].author";
+		data = ExtractDataFromJSON.extractData(jsonPath,null,jsonData,null);
+		assertEquals(data,"Nigel Rees");
+		
+		jsonPath="$.store.book[*].category";
+		data = ExtractDataFromJSON.extractData(jsonPath," ",jsonData,null);
+		assertEquals(data,"reference");
+		
+		try {
+			jsonPath="=$.store.book[*].category";
+			ExtractDataFromJSON.extractData(jsonPath," ",jsonData,null);
+			fail("There was a problem with the method because it should have thrown an exception" + jsonPath);
+		} catch (InvalidPathException e) {
+		}
 	}
 
 	@Test
 	public void testExtractData() {
 		
 		String data = null;
-		String jsonpath="$.store.book[*].isbn";
-		try {
-			data = ExtractDataFromJSON.extractData(jsonpath,"[^-]*-([0-9]*)-[0-9]*-[0-9]",jsonData);
-			assertEquals("553", data);
-			
-			data = ExtractDataFromJSON.extractData(jsonpath,"[^-]*-[0-9]*-([0-9]*)-[0-9]",jsonData);
-			assertEquals(data,"21311");
-		} catch (XPathExpressionException e) {
-			fail("There was a problem with the JSONPATT expression '" + jsonpath + "'" + e);
-		}
+		String jsonPath="$.store.book[*].isbn";
+		data = ExtractDataFromJSON.extractData(jsonPath,"[^-]*-([0-9]*)-[0-9]*-[0-9]",jsonData,null);
+		assertEquals("553", data);
+		
+		data = ExtractDataFromJSON.extractData(jsonPath,"[^-]*-[0-9]*-([0-9]*)-[0-9]",jsonData,null);
+		assertEquals("21311", data);
 	}
 
 	@Test
@@ -118,15 +123,12 @@ public class ExtractDataFromJSONTest {
 		String url = "http://data.mtgox.com/api/1/BTCUSD/ticker";
 		String jsonpath = "$.return.vol.currency";
 		try {
-			String data = ExtractDataFromJSON.fetchAndExtractData(url, jsonpath, "(.*)");
+			String data = ExtractDataFromJSON.fetchAndExtractData(url, jsonpath, "(.*)", null);
 			assertEquals("BTC", data);
 		} catch (MalformedURLException e) {
-			fail("The URL '" + url + "' is invalid" + e);
+			fail("The URL '" + url + "' is invalid\n" + e);
 		} catch (IOException e) {
-			fail("There was a problem fetching and extracting data for the URL '" + url + "'" + e);
-		} catch (XPathExpressionException e) {
-			fail("There was a problem with the JSONPath expression '" + jsonpath + "'" + e);
+			fail("There was a problem fetching and extracting data for the URL '" + url + "'\n" + e);
 		}
 	}
-
 }

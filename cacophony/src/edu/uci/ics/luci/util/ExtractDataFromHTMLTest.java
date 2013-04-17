@@ -36,33 +36,36 @@ public class ExtractDataFromHTMLTest {
 		String data = null;
 		String xpath = null;
 		try {
-			data = ExtractDataFromHTML.extractData(null,null,null);
+			data = ExtractDataFromHTML.extractData(null,null,null,null);
 			assertTrue(data == null);
 			
 			xpath="/foo";
 			data = ExtractDataFromHTML.extractData(xpath,null,
-				"<html><body><div class=\"sensor_data\">&lt;&lt;UCInet Mobile Access:00:19:a9:54:59:ae&gt;:-62&gt;</div></body></html>");
+				"<html><body><div class=\"sensor_data\">&lt;&lt;UCInet Mobile Access:00:19:a9:54:59:ae&gt;:-62&gt;</div></body></html>",
+				null);
 			assertTrue(data == null);
 			
 			xpath="/html/body/div";
 			data = ExtractDataFromHTML.extractData(xpath,null,
-				"<html><body><div class=\"sensor_data\">&lt;&lt;UCInet Mobile Access:00:19:a9:54:59:ae&gt;:-62&gt;</div></body></html>");
+				"<html><body><div class=\"sensor_data\">&lt;&lt;UCInet Mobile Access:00:19:a9:54:59:ae&gt;:-62&gt;</div></body></html>",
+				null);
 			assertEquals(data,"<<UCInet Mobile Access:00:19:a9:54:59:ae>:-62>");
 			
 			xpath="/html/body/div";
 			data = ExtractDataFromHTML.extractData(xpath," ",
-				"<html><body><div class=\"sensor_data\">&lt;&lt;UCInet Mobile Access:00:19:a9:54:59:ae&gt;:-62&gt;</div></body></html>");
+				"<html><body><div class=\"sensor_data\">&lt;&lt;UCInet Mobile Access:00:19:a9:54:59:ae&gt;:-62&gt;</div></body></html>",
+				null);
 			assertEquals(data,"<<UCInet Mobile Access:00:19:a9:54:59:ae>:-62>");
 		} catch (XPathExpressionException e) {
-			fail("There was a problem with the XPath expression '" + xpath + "'" + e);
+			fail("There was a problem with the XPath expression '" + xpath + "'\n" + e);
 		}
 		
-		try{
+		try {
 			xpath="=/html/body/div";
 			data = ExtractDataFromHTML.extractData(xpath," ",
-				"<html><body><div class=\"sensor_data\">&lt;&lt;UCInet Mobile Access:00:19:a9:54:59:ae&gt;:-62&gt;</div></body></html>");
-			assertEquals(data,"<<UCInet Mobile Access:00:19:a9:54:59:ae>:-62>");
-			fail("There was a problem with the XPath expression because it should have thrown an exception" + xpath);
+				"<html><body><div class=\"sensor_data\">&lt;&lt;UCInet Mobile Access:00:19:a9:54:59:ae&gt;:-62&gt;</div></body></html>",
+				null);
+			fail("There was a problem with the XPath expression because it should have thrown an exception " + xpath);
 		} catch (XPathExpressionException e) {
 		}
 		
@@ -76,16 +79,18 @@ public class ExtractDataFromHTMLTest {
 		try {
 			data = ExtractDataFromHTML.extractData(xpath,
 				"<<(.*):[0-9a-f]*:[0-9a-f]*:[0-9a-f]*:[0-9a-f]*:[0-9a-f]*:[0-9a-f]*>:[-]?[0-9][0-9]*>",
-				"<html><body><div class=\"sensor_data\">&lt;&lt;UCInet Mobile Access:00:19:a9:54:59:ae&gt;:-62&gt;</div></body></html>");
+				"<html><body><div class=\"sensor_data\">&lt;&lt;UCInet Mobile Access:00:19:a9:54:59:ae&gt;:-62&gt;</div></body></html>",
+				null);
 		
 			assertEquals("UCInet Mobile Access", data);
 		
 			data = ExtractDataFromHTML.extractData(xpath,
 				"<<.*:([0-9a-f]*:[0-9a-f]*:[0-9a-f]*:[0-9a-f]*:[0-9a-f]*:[0-9a-f]*)>:[-]?[0-9][0-9]*>",
-				"<html><body><div class=\"sensor_data\">&lt;&lt;UCInet Mobile Access:00:19:a9:54:59:ae&gt;:-62&gt;</div></body></html>");
-			assertEquals(data,"00:19:a9:54:59:ae");
+				"<html><body><div class=\"sensor_data\">&lt;&lt;UCInet Mobile Access:00:19:a9:54:59:ae&gt;:-62&gt;</div></body></html>",
+				null);
+			assertEquals("00:19:a9:54:59:ae",data);
 		} catch (XPathExpressionException e) {
-			fail("There was a problem with the XPath expression '" + xpath + "'" + e);
+			fail("There was a problem with the XPath expression '" + xpath + "'\n" + e);
 		}
 	}
 
@@ -94,14 +99,14 @@ public class ExtractDataFromHTMLTest {
 		String url = "http://www.cnn.com";
 		String xpath = "//*[@id=\"cnn_ftrcntntinner\"]/div[9]/div[1]/text()[2]";
 		try {
-			String data = ExtractDataFromHTML.fetchAndExtractData(url, xpath, "(.*)");
+			String data = ExtractDataFromHTML.fetchAndExtractData(url, xpath, "(.*)", null);
 			assertEquals(" All Rights Reserved.", data);
 		} catch (MalformedURLException e) {
-			fail("The URL '" + url + "' is invalid" + e);
+			fail("The URL '" + url + "' is invalid\n" + e);
 		} catch (IOException e) {
-			fail("There was a problem fetching and extracting data for the URL '" + url + "'" + e);
+			fail("There was a problem fetching and extracting data for the URL '" + url + "'\n" + e);
 		} catch (XPathExpressionException e) {
-			fail("There was a problem with the XPath expression '" + xpath + "'" + e);
+			fail("There was a problem with the XPath expression '" + xpath + "'\n" + e);
 		}
 	}
 

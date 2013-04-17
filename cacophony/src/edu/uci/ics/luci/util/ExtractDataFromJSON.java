@@ -1,55 +1,41 @@
 package edu.uci.ics.luci.util;
 
 import java.io.IOException;
-import java.io.StringReader;
 import java.net.MalformedURLException;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
-
-import org.json.JSONObject;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.tidy.Tidy;
+import com.jayway.jsonpath.JsonPath;
 
 import edu.uci.ics.luci.cacophony.node.Translator;
 import edu.uci.ics.luci.utility.webserver.WebUtil;
 
-	//TODO: John to implement and clean this up
 public class ExtractDataFromJSON {
 	
-	//TODO: John to implement and clean this up
-	public static String extractData(String jsonPathString, String regEx, Translator<?> t,String htmlContent) throws XPathExpressionException {
-		
+	//TODO: John to add translator support
+	public static String extractData(String jsonPath, String regEx, String jsonContent, Translator<?> translator) {
 		String ret = null;
-		if(htmlContent == null){
+		if (jsonContent == null) {
 			ret = null;
 		}
-		else{
-			Tidy tidy = new Tidy();
-			tidy.setXHTML(true);
-			tidy.setQuiet(true);
-			tidy.setXmlOut(true);
-			tidy.setShowWarnings(false);
-			tidy.setTrimEmptyElements(false);
-		
-			StringReader sr = new StringReader(htmlContent);
-			Document doc = tidy.parseDOM(sr, null);
-			XPath xPath = XPathFactory.newInstance().newXPath();
-			Node node = (Node)xPath.evaluate(jsonPathString, doc, XPathConstants.NODE);
-			if (node != null) {
-				// Text only appears at leaves in the DOM tree, so check if the node specified by the XPath is a leaf.
-				// If it's not a leaf, try getting text from its first child.
-				String nodeValue = (node.getFirstChild() == null ? node.getNodeValue() : node.getFirstChild().getNodeValue());
+		else {
+			Object jsonValueRaw = JsonPath.read(jsonContent, jsonPath);
+			if (jsonValueRaw instanceof List<?> && ((List<?>)jsonValueRaw).size() > 0) {
+				// If the jsonPath specified a list of values, just choose the first value.
+				jsonValueRaw = ((List<?>)jsonValueRaw).get(0);
+			}
+			if (jsonValueRaw == null) {
+				ret = null;
+			}
+			else {
+				String jsonValue = jsonValueRaw.toString();
+				
 				if (regEx == null || regEx.trim().equals("")) {
-					ret = nodeValue;
+					ret = jsonValue;
 				}
-				else{
-					Matcher matcher = Pattern.compile(regEx).matcher(nodeValue);
+				else {
+					Matcher matcher = Pattern.compile(regEx).matcher(jsonValue);
 					if (matcher.find()) {
 						ret = matcher.group(1);
 					}
@@ -59,17 +45,14 @@ public class ExtractDataFromJSON {
 		return ret;
 	}
 
-	//TODO: John to implement and clean this up
-	public static String fetchAndExtractData(String url, String xPathString, String regEx) throws MalformedURLException, IOException, XPathExpressionException {
-		String json = WebUtil.fetchWebPage(url, false, null, 10000);
-		return extractData(xPathString, regEx, html);
-	}
-	
-	//TODO: John to implement and clean this up
-	public static String fetchAndExtractData(FailoverFetch failoverFetch,String url, String jsonPathString, String regEx,Translator<?> translator) throws MalformedURLException, IOException, XPathExpressionException {
-		
-		JSONObject json = failoverFetch.fetchJSONObject(url, false, null, 10000);
-		return extractData(jsonPathString, regEx, json);
+	public static String fetchAndExtractData(String url, String jsonPath, String regEx, Translator<?> translator) throws MalformedURLException, IOException {
+		String jsonContent = WebUtil.fetchWebPage(url, false, null, 10000);
+		return extractData(jsonPath, regEx, jsonContent, translator);
 	}
 
+// TODO: Decide if we really want to have an overload of fetchAndExtractData that takes a FailoverFetch object.
+//	public static String fetchAndExtractData(FailoverFetch failoverFetch, String url, String jsonPath, String regEx, Translator<?> translator) throws MalformedURLException, IOException, JSONException {
+//		JSONObject json = failoverFetch.fetchJSONObject(url, false, null, 10000);
+//		return extractData(jsonPath, regEx, json, translator);
+//	}
 }
