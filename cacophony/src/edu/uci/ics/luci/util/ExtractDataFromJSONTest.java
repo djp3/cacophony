@@ -7,6 +7,7 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 import java.net.MalformedURLException;
 
+import org.json.JSONException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -104,6 +105,7 @@ public class ExtractDataFromJSONTest {
 			fail("There was a problem with the method because it should have thrown an exception" + jsonPath);
 		} catch (InvalidPathException e) {
 		}
+		
 	}
 
 	@Test
