@@ -248,14 +248,14 @@ public class AccessControlTest extends AccessControl{
 		assertTrue(!allowSource("128.195.58.12", false,false));
 		assertTrue(allowSource("128.195.58.12", true,false));
 		
-		//18.9.22.169 is supposed to resolve to WWW.MIT.EDU
-		assertTrue(!allowSource("18.9.22.169", false,true));
-		assertTrue(!allowSource("18.9.22.169", false,true));
+		String www_uci_edu = "128.195.188.233"; //If this is wrong the test might break
+		assertTrue(!allowSource(www_uci_edu, false,true));
+		assertTrue(!allowSource(www_uci_edu, false,true));
 		
 		allowedConnections.add("edu$");
 		setAllowedConnections(allowedConnections);
-		assertTrue(!allowSource("18.9.22.169", false,false));
-		assertTrue(allowSource("18.9.22.169", true,false));
+		assertTrue(!allowSource(www_uci_edu, false,false));
+		assertTrue(allowSource(www_uci_edu, true,false));
 		
 		allowedConnections.add(".*");
 		setAllowedConnections(allowedConnections);

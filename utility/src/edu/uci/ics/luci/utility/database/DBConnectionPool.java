@@ -251,13 +251,13 @@ public class DBConnectionPool {
 	private synchronized void checkForHotStandby(Integer numberToKeepHot){
 		if((connections != null) && (numberToKeepHot != null)){
 			int inuse = 0;
-			int notinuse=0;
+			//int notinuse=0;
 			for(DBConnection conn:connections){
 				if(conn.inUse()){
 					inuse++;
 				}
 				else{
-					notinuse++;
+			//		notinuse++;
 				}
 			}
 			

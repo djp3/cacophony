@@ -38,11 +38,10 @@ import java.sql.Statement;
 import java.sql.Struct;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.Executor;
 
 import org.apache.log4j.Logger;
 
-public class DBConnection implements java.sql.Connection{
+public class DBConnection implements Connection{
 
     private Connection conn;
     private boolean inuse;
@@ -346,6 +345,7 @@ public class DBConnection implements java.sql.Connection{
 		throw new RuntimeException("unimplemented method");
 	}
 
+	/*
 	public void setSchema(String schema) throws SQLException {
 		conn.setSchema(schema);
 	}
@@ -364,7 +364,7 @@ public class DBConnection implements java.sql.Connection{
 
 	public int getNetworkTimeout() throws SQLException {
 		return conn.getNetworkTimeout();
-	}
+	}*/
 
 }
 
