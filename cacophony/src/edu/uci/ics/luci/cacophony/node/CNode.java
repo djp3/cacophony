@@ -27,10 +27,12 @@ import java.util.concurrent.Future;
 
 import javax.xml.xpath.XPathExpressionException;
 
+import net.minidev.json.JSONArray;
+import net.minidev.json.JSONObject;
+import net.minidev.json.JSONStyle;
+import net.minidev.json.JSONValue;
+
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import weka.classifiers.Evaluation;
 import weka.classifiers.RandomizableIteratedSingleClassifierEnhancer;
@@ -54,7 +56,7 @@ public class CNode implements Quittable,Serializable{
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = -1502750151783007623L;
+	private static final long serialVersionUID = 4246341487110473130L;
 	private static transient volatile Logger log = null;
 	public static Logger getLog(){
 		if(log == null){
@@ -224,8 +226,8 @@ public class CNode implements Quittable,Serializable{
 		if(configuration == null){
 			if(configurationString != null){
 				try {
-					configuration = new JSONObject(configurationString);
-				} catch (JSONException e) {
+					configuration = (JSONObject) JSONValue.parse(configurationString);
+				} catch (ClassCastException e) {
 				}
 			}
 		}
@@ -235,8 +237,8 @@ public class CNode implements Quittable,Serializable{
 	public synchronized void setConfiguration(String configurationString) {
 		this.configurationString = configurationString;
 		try {
-			configuration = new JSONObject(configurationString);
-		} catch (JSONException e) {
+			configuration = (JSONObject) JSONValue.parse(configurationString);
+		} catch (ClassCastException e) {
 		}
 	}
 
@@ -268,29 +270,65 @@ public class CNode implements Quittable,Serializable{
 			if(response == null){
 				getLog().error("Unable to get a node assignment!");
 			}
-			else if(response.getString("error") == null){
+			else if(response.get("error") == null){
 				getLog().error("Bad node assignment format received!");
 			}
 			else{
 				try {
-					if(response.getString("error").equals("false")){
-						this.setMetaCNodeGUID(response.getString("node_id"));
-						this.setNodeName(response.getString("name"));
+					String error = null;
+					try{
+						error = (String)response.get("error");
+					}
+					catch(ClassCastException e){
+						getLog().error("Unable to find error report");
+					}
+					if((error != null) && (error.equals("false"))){
+						String node_id = null;
+						try{
+							node_id = (String)response.get("node_id");
+						}
+						catch(ClassCastException e){
+						}
+						
+						this.setMetaCNodeGUID(node_id);
+						
+						String name = null;
+						try{
+							name = (String)response.get("name");
+						}
+						catch(ClassCastException e){
+						}
+						this.setNodeName(name);
+							
 						InstanceQuery trainingQuery;
-						JSONObject configuration = response.getJSONObject("node_configuration");
+						JSONObject configuration = null;
+						try{
+							configuration = (JSONObject)response.get("node_configuration");
+						}
+						catch(ClassCastException e){
+						}
+						
 						if(configuration != null){
 							this.setConfiguration(configuration.toString());
-							if(configuration.getBoolean("doTraining")){
+							String doTraining = null;
+							try{
+								doTraining = (String)configuration.get("doTraining");
+							}
+							catch(ClassCastException e){
+							}
+							if((doTraining != null) && (doTraining.equals("true"))){
 								String zid = null;
 								try {
 									trainingQuery = new InstanceQuery();
-									trainingQuery.setUsername(configuration.getString("username"));
-									trainingQuery.setPassword(configuration.getString("password"));
-									trainingQuery.setDatabaseURL("jdbc:mysql://"+configuration.getString("databaseDomain")+"/"+configuration.getString("database"));
-									String trainingQueryString = configuration.getString("trainingQuery");
-									zid = configuration.getString("node_id");
+									trainingQuery.setUsername((String)configuration.get("username"));
+									trainingQuery.setPassword((String)configuration.get("password"));
+									trainingQuery.setDatabaseURL("jdbc:mysql://"+((String)configuration.get("databaseDomain"))+"/"+((String)configuration.get("database")));
+									String trainingQueryString = (String)configuration.get("trainingQuery");
+									zid = (String)configuration.get("node_id");
 									trainingQuery.setQuery(trainingQueryString.replaceAll("_NODE_ID_", zid));
 									this.setTrainingQuery(trainingQuery);
+								} catch (ClassCastException e) {
+									getLog().error("Unable to parse cnode configureation: "+configuration);
 								} catch (Exception e) {
 									getLog().error("Unable to load cnode training using: "+zid);
 								}
@@ -300,7 +338,7 @@ public class CNode implements Quittable,Serializable{
 							}
 						}
 					}
-				} catch (JSONException e) {
+				} catch (ClassCastException e) {
 					getLog().error("Problem getting configuration:"+e);
 				}
 			}
@@ -308,8 +346,6 @@ public class CNode implements Quittable,Serializable{
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
-		} catch (JSONException e) {
-			getLog().error("Problem getting configuration:"+e);
 		}
 	}
 	
@@ -393,11 +429,11 @@ public class CNode implements Quittable,Serializable{
 						
 			if(response != null){
 				try {
-					if(response.getString("error").equals("true")){
-						getLog().error("Something is wrong with JSON:"+response.toString(1));
+					if(((String)response.get("error")).equals("true")){
+						getLog().error("Something is wrong with JSON:"+response.toString(JSONStyle.NO_COMPRESS));
 					}
-				} catch (JSONException e) {
-					getLog().error("Something is wrong with JSON:"+response.toString(1)+"\n"+e);
+				} catch (ClassCastException e) {
+					getLog().error("Something is wrong with JSON:"+response.toString(JSONStyle.NO_COMPRESS)+"\n"+e);
 				}
 			}
 		} catch (MalformedURLException e) {
@@ -405,7 +441,7 @@ public class CNode implements Quittable,Serializable{
 		} catch (IOException e) {
 			getLog().warn("IO Exception when the CNode tried to check in:"+e);
 		}
-		catch (JSONException e) {
+		catch (ClassCastException e) {
 			getLog().warn("JSON Exception when the CNode tried to check in:"+e);
 		}
 	}
@@ -439,10 +475,10 @@ public class CNode implements Quittable,Serializable{
 	   	Instances proposedTestSet = new Instances(typicalInstances,0);
 		
 	   	try{
-	   		for(int i = 0; i < timesToPredict.length(); i++){
+	   		for(int i = 0; i < timesToPredict.size(); i++){
 	   			
 	   			/* Get the first time we are predicting */
-	   			Long originalTime = timesToPredict.getLong(i);
+	   			Long originalTime = Long.parseLong(((String)timesToPredict.get(i)));
 	   			
 	   			/* Convert it to the standard and figure out the day of the week */
 	   			Long t = transformTimeForCalendar(getTimeZoneOffset(), originalTime);
@@ -478,6 +514,9 @@ public class CNode implements Quittable,Serializable{
    				c.setValue(waitTimeIndex,canonicalizeFilter.toCanonical(waitTimeIndex,0));
    				proposedTestSet.add(c);
 	   		}
+	   	}
+	   	catch(ClassCastException e){
+			getLog().error("Unable to parse JSON:"+timesToPredict.toString(JSONStyle.NO_COMPRESS)+"\n"+e);
 	   	}
 	   	catch(Exception e){
 			getLog().error("Unable to recreate a test set\n"+e);
@@ -575,22 +614,23 @@ public class CNode implements Quittable,Serializable{
 	public JSONObject getAccuracy() {
 		JSONObject ret = new JSONObject();
 		Evaluation eval = getEvaluation();
-		try {
-			Long lmbt = getLastModelBuildTime(); 
-			if((lmbt == null) || (lmbt == 0)){
-				ret.put("last_model_build_time", "never");
+		if(eval != null){
+			try {
+				Long lmbt = getLastModelBuildTime(); 
+				if((lmbt == null) || (lmbt == 0)){
+					ret.put("last_model_build_time", "never");
+				}
+				else{
+					Date build = new Date(lmbt);
+					ret.put("last_model_build_time", DateFormat.getInstance().format(build));
+				}
+				ret.put("instances",eval.numInstances());
+				ret.put("mean_absolute_error", eval.meanAbsoluteError());
+				ret.put("root_mean_squared_error", eval.rootMeanSquaredError());
+				ret.put("relative_absolute_error", eval.relativeAbsoluteError());
+			} catch (Exception e) {
+				getLog().error("Problem:"+e+"\n"+eval.toSummaryString());
 			}
-			else{
-				Date build = new Date(lmbt);
-				ret.put("last_model_build_time", DateFormat.getInstance().format(build));
-			}
-			ret.put("instances",eval.numInstances());
-			ret.put("mean_absolute_error", eval.meanAbsoluteError());
-			ret.put("root_mean_squared_error", eval.rootMeanSquaredError());
-			ret.put("relative_absolute_error", eval.relativeAbsoluteError());
-		} catch (JSONException e) {
-			getLog().error("Probably building JSON"+e+"\n"+eval.toSummaryString());
-		} catch (Exception e) {
 		}
 		return(ret);
 	}
@@ -741,21 +781,59 @@ public class CNode implements Quittable,Serializable{
 			
 			//Build feature vector
 			
-			JSONObject targetInfo = this.configuration.optJSONObject("target");
+			JSONObject targetInfo = (JSONObject) this.configuration.get("target");
 			if(targetInfo != null){
-				String format = targetInfo.optString("format").toLowerCase().trim();
-				String url = targetInfo.optString("url").trim();
-				String dataPath = targetInfo.optString("data_path").trim();
-				String regularExpression = targetInfo.optString("regular_expression").trim();
-				String translatorClass = targetInfo.optString("translator_class").trim();
+				String format = "";
+				String url = "";
+				String dataPath = "";
+				String regularExpression = "";
+				String translatorClass = "";
+				
+				try{
+					format = (String)targetInfo.get("format");
+				}
+				catch(ClassCastException e){
+				}
+				
+				try{
+					url = ((String)targetInfo.get("url"));
+				}
+				catch(ClassCastException e){
+				}
+				
+				try{
+					dataPath = ((String)targetInfo.get("data_path"));
+				}
+				catch(ClassCastException e){
+				}
+				
+				try{
+					regularExpression = ((String)targetInfo.get("regular_expression"));
+				}
+				catch(ClassCastException e){
+				}
+				
+				try{
+					translatorClass = ((String)targetInfo.get("translator_class"));
+				}
+				catch(ClassCastException e){
+				}
+				
+				format = format.toLowerCase().trim();
+				url = url.trim();
+				dataPath = dataPath.trim();
+				regularExpression = regularExpression.trim();
+				translatorClass = translatorClass.trim();
+				
 				Translator<?> translator;
 				try {
 					translator = (Translator<?>) Class.forName(translatorClass).newInstance();
 				}
-				catch (InstantiationException| IllegalAccessException | ClassNotFoundException e) {
+				catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
 					getLog().error("Unable to synchronize. There was a problem creating a new instance of the class " + translatorClass + "\n" + e);
 					return;
 				}
+				
 				try {
 					Object targetData = null;
 					if(format.equals("html")){
@@ -765,7 +843,7 @@ public class CNode implements Quittable,Serializable{
 						targetData = ExtractDataFromJSON.fetchAndExtractData(url,dataPath,regularExpression,translator);
 					}
 					else{
-						getLog().warn("Unrecognized CNode format: "+format);
+						getLog().warn("Unrecognized CNode format: "+targetInfo);
 					}
 					
 					// Collect durations between changes
@@ -794,43 +872,42 @@ public class CNode implements Quittable,Serializable{
 					Map<Pair<String,String>,Future<?>> featureFutures = new HashMap<Pair<String,String>,Future<?>>();
 					Map<Pair<String,String>,Object> features = new HashMap<Pair<String,String>,Object>();
 					
-					JSONArray featureSets = this.configuration.optJSONArray("features");
+					JSONArray featureSets = (JSONArray) this.configuration.get("features");
 					if(featureSets != null){
-						for(int i = 0 ; i < featureSets.length(); i++){
-							String namespace = featureSets.getJSONObject(i).optString("namespace");
+						for(int i = 0 ; i < featureSets.size(); i++){
+							String namespace = (String) ((JSONObject)featureSets.get(i)).get("namespace");
 							if(namespace != null){
-								namespace = featureSets.getJSONObject(i).optString("namespace");
+								namespace = (String) ((JSONObject)featureSets.get(i)).get("namespace");
 								/* Check to make sure we can handle namespace of feature */
 								if((namespace != null) && (!namespace.equals(this.getParentPool().getNamespace()))){
 									getLog().error("We can only handle null namespace and namespaces that are the same as the CNode for features");
 								}
 								else{
-									JSONArray names = featureSets.getJSONObject(i).optJSONArray("names");
-									if(featureFutures != null){
-										for(int j = 0; j< names.length(); j++){
-											final String feature = names.getString(j);
-											Pair<String, String> key = new Pair<String,String>(namespace,feature);
-											Future<?> value = null;
-											if(namespace == null){ //Internal functions
-												value = pool.submit(new Callable<Object>(){
-													@Override
-													public Object call() throws Exception {
-														return CNode.calculateFeature(feature);
-													}
-												});
-											}
-											else{ //fetch the feature
-												value = pool.submit(new Callable<Object>(){
-													@Override
-													public Object call() throws Exception {
-														// TODO: For Don: Not sure if failoverFetch should be passed to fetchAndExtractData or not. For now I'm commenting out the overload. -John
-														//return ExtractDataFromJSON.fetchAndExtractData(failoverFetch,"/api/cnode_data","$.data","(.*)",new TranslatorIdentity());
-														return ExtractDataFromJSON.fetchAndExtractData("/api/cnode_data","$.data","(.*)",new TranslatorIdentity());
-													}
-												});
-											}
-											featureFutures.put(key,value);
+									JSONArray names = (JSONArray) ((JSONObject)featureSets.get(i)).get("names");
+									
+									for(int j = 0; j< names.size(); j++){
+										final String feature = (String) names.get(j);
+										Pair<String, String> key = new Pair<String,String>(namespace,feature);
+										Future<?> value = null;
+										if(namespace == null){ //Internal functions
+											value = pool.submit(new Callable<Object>(){
+												@Override
+												public Object call() throws Exception {
+													return CNode.calculateFeature(feature);
+												}
+											});
 										}
+										else{ //fetch the feature
+											value = pool.submit(new Callable<Object>(){
+												@Override
+												public Object call() throws Exception {
+													// TODO: For Don: Not sure if failoverFetch should be passed to fetchAndExtractData or not. For now I'm commenting out the overload. -John
+													//return ExtractDataFromJSON.fetchAndExtractData(failoverFetch,"/api/cnode_data","$.data","(.*)",new TranslatorIdentity());
+													return ExtractDataFromJSON.fetchAndExtractData("/api/cnode_data","$.data","(.*)",new TranslatorIdentity());
+												}
+											});
+										}
+										featureFutures.put(key,value);
 									}
 								}
 							}
@@ -857,7 +934,7 @@ public class CNode implements Quittable,Serializable{
 					getLog().error("There was a problem with the XPath expression '" + dataPath + "'\n" + e);
 				} catch (IOException e) {
 					getLog().error("There was a problem fetching and extracting data for the URL '" + url + "'\n" + e);
-				} catch (JSONException e) {
+				} catch (ClassCastException e) {
 					getLog().error("There was a problem parsing the JSON for the URL '" + url + "'\n" + e);
 				}
 			}
@@ -1124,7 +1201,7 @@ public class CNode implements Quittable,Serializable{
 		// TODO Auto-generated method stub
 	}
 	
-	void launch(){
+	public void launch(){
 		if(getSelfSynchronize()){
 			/* TODO:Start a thread to self synchronize */
 		}

@@ -6,24 +6,37 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.jayway.jsonpath.*;
+import net.minidev.json.JSONObject;
+import net.minidev.json.parser.JSONParser;
+import net.minidev.json.parser.ParseException;
 
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.apache.log4j.Logger;
+
+import com.jayway.jsonpath.JsonPath;
 
 import edu.uci.ics.luci.cacophony.node.Translator;
 import edu.uci.ics.luci.utility.webserver.WebUtil;
 
 public class ExtractDataFromJSON {
 	
+	private static transient volatile Logger log = null;
+	public static Logger getLog(){
+		if(log == null){
+			log = Logger.getLogger(ExtractDataFromJSON.class);
+		}
+		return log;
+	}
+	
+	static JSONParser jsonParser = new JSONParser(JSONParser.MODE_PERMISSIVE);
+	
 	//TODO: John to add translator support
-	public static String extractData(String jsonPath, String regEx, String jsonContent, Translator<?> translator) {
+	public static String extractData(String jsonPath, String regEx, JSONObject jsonObject, Translator<?> translator) {
 		String ret = null;
-		if (jsonContent == null) {
+		if (jsonObject == null) {
 			ret = null;
 		}
 		else {
-			Object jsonValueRaw = JsonPath.read(jsonContent, jsonPath);
+			Object jsonValueRaw = JsonPath.read(jsonObject, jsonPath);
 			if (jsonValueRaw instanceof List<?> && ((List<?>)jsonValueRaw).size() > 0) {
 				// If the jsonPath specified a list of values, just choose the first value.
 				jsonValueRaw = ((List<?>)jsonValueRaw).get(0);
@@ -49,13 +62,23 @@ public class ExtractDataFromJSON {
 	}
 
 	public static String fetchAndExtractData(String url, String jsonPath, String regEx, Translator<?> translator) throws MalformedURLException, IOException {
-		String jsonContent = WebUtil.fetchWebPage(url, false, null, 10000);
-		return extractData(jsonPath, regEx, jsonContent, translator);
+		String ret = null;
+		String response = WebUtil.fetchWebPage(url, false, null, 10000);
+		
+		JSONObject jsonObject = null;
+		try {
+			jsonObject = (JSONObject) jsonParser.parse(response);
+			ret = extractData(jsonPath, regEx, jsonObject, translator);
+		} catch (ParseException e) {
+			getLog().warn("Received bad json from:"+url+"\n"+response);
+			ret = null;
+		}
+		return ret;
 	}
 
-// TODO: Decide if we really want to have an overload of fetchAndExtractData that takes a FailoverFetch object.
-//	public static String fetchAndExtractData(FailoverFetch failoverFetch, String url, String jsonPath, String regEx, Translator<?> translator) throws MalformedURLException, IOException, JSONException {
-//		JSONObject json = failoverFetch.fetchJSONObject(url, false, null, 10000);
-//		return extractData(jsonPath, regEx, json, translator);
-//	}
+	public static String fetchAndExtractData(FailoverFetch failoverFetch, String url, String jsonPath, String regEx, Translator<?> translator) throws MalformedURLException, IOException{
+		
+		JSONObject json = failoverFetch.fetchJSONObject(url, false, null, 10000);
+		return extractData(jsonPath, regEx, json, translator);
+	}
 }

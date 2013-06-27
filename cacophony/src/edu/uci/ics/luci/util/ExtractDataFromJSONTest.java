@@ -7,7 +7,9 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 import java.net.MalformedURLException;
 
-import org.json.JSONException;
+import net.minidev.json.JSONObject;
+import net.minidev.json.JSONValue;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -61,7 +63,7 @@ public class ExtractDataFromJSONTest {
 		"      }"+
 		"    ],"+
 		"    \"bicycle\": {"+
-		"      \"color\": \"red\","+
+		"      \"color\": null,"+
 		"      \"price\": 19.95"+
 		"    }"+
 		"  }"+
@@ -70,6 +72,8 @@ public class ExtractDataFromJSONTest {
 	
 	@Test
 	public void testExtractDataDegenerative() {
+		
+		JSONObject json = (JSONObject) JSONValue.parse(jsonData);
 		String data = null;
 		String jsonPath = null;
 		data = ExtractDataFromJSON.extractData(null,null,null,null);
@@ -84,24 +88,24 @@ public class ExtractDataFromJSONTest {
 		
 		try{
 			jsonPath="$.error.book[*].author";
-			data = ExtractDataFromJSON.extractData(jsonPath,null,jsonData,null);
-			fail("This should thrown and exception");
+			data = ExtractDataFromJSON.extractData(jsonPath,null,json,null);
+			fail("This should thrown an exception");
 		}
 		catch(InvalidPathException e){
 			assertTrue(data == null);
 		}
 		
 		jsonPath="$.store.book[*].author";
-		data = ExtractDataFromJSON.extractData(jsonPath,null,jsonData,null);
+		data = ExtractDataFromJSON.extractData(jsonPath,null,json,null);
 		assertEquals(data,"Nigel Rees");
 		
 		jsonPath="$.store.book[*].category";
-		data = ExtractDataFromJSON.extractData(jsonPath," ",jsonData,null);
+		data = ExtractDataFromJSON.extractData(jsonPath," ",json,null);
 		assertEquals(data,"reference");
 		
 		try {
 			jsonPath="=$.store.book[*].category";
-			ExtractDataFromJSON.extractData(jsonPath," ",jsonData,null);
+			ExtractDataFromJSON.extractData(jsonPath," ",json,null);
 			fail("There was a problem with the method because it should have thrown an exception" + jsonPath);
 		} catch (InvalidPathException e) {
 		}
@@ -110,14 +114,19 @@ public class ExtractDataFromJSONTest {
 
 	@Test
 	public void testExtractData() {
+		JSONObject json = (JSONObject) JSONValue.parse(jsonData);
 		
 		String data = null;
 		String jsonPath="$.store.book[*].isbn";
-		data = ExtractDataFromJSON.extractData(jsonPath,"[^-]*-([0-9]*)-[0-9]*-[0-9]",jsonData,null);
+		data = ExtractDataFromJSON.extractData(jsonPath,"[^-]*-([0-9]*)-[0-9]*-[0-9]",json,null);
 		assertEquals("553", data);
 		
-		data = ExtractDataFromJSON.extractData(jsonPath,"[^-]*-[0-9]*-([0-9]*)-[0-9]",jsonData,null);
+		data = ExtractDataFromJSON.extractData(jsonPath,"[^-]*-[0-9]*-([0-9]*)-[0-9]",json,null);
 		assertEquals("21311", data);
+		
+		jsonPath ="$.store.bicycle.color";
+		data = ExtractDataFromJSON.extractData(jsonPath, null, json, null);
+		assertTrue(data == null);
 	}
 
 	@Test
