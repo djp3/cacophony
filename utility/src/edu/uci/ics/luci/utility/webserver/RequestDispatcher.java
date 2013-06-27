@@ -35,8 +35,9 @@ import java.util.Queue;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import net.minidev.json.JSONArray;
+
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
 
 import edu.uci.ics.luci.utility.datastructure.Pair;
 
@@ -603,7 +604,8 @@ public class RequestDispatcher implements Runnable{
 						
 						if(error){
 							contentTypeHeader = HandlerAbstract.getContentTypeHeader_JSON();
-							JSONArray jsonArray = new JSONArray(errors);
+							JSONArray jsonArray = new JSONArray();
+							jsonArray.addAll(errors);
 							outputBytes=jsonArray.toString().getBytes();
 						}
 						//getLog().error("Checking what we are sending back:"+handle.getSecond().toString());

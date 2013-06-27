@@ -28,8 +28,9 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.HashMap;
 
-import org.json.JSONException;
-import org.json.JSONObject;
+import net.minidev.json.JSONObject;
+import net.minidev.json.JSONValue;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -113,21 +114,15 @@ public class HandlerVersionTest {
 			fail("IO Exception");
 		}
 		//System.out.println(responseString);
+		
 
 		JSONObject response = null;
 		try {
-			response = new JSONObject(responseString);
-			try {
-				assertEquals("false",response.getString("error"));
-			} catch (JSONException e) {
-				e.printStackTrace();
-				fail("No error code");
-			}
-		} catch (JSONException e) {
-			e.printStackTrace();
+			response = (JSONObject) JSONValue.parse(responseString);
+			assertEquals("false",response.get("error"));
+		} catch (ClassCastException e) {
 			fail("Bad JSON Response");
 		}
-		
 
 	}
 
@@ -150,27 +145,18 @@ public class HandlerVersionTest {
 			fail("IO Exception");
 		}
 		//System.out.println(responseString);
-
+		
 		JSONObject response = null;
 		try {
-			response = new JSONObject(responseString);
-			try {
-				assertEquals("false",response.getString("error"));
-			} catch (JSONException e) {
-				e.printStackTrace();
-				fail("No error code");
-			}
+			response = (JSONObject) JSONValue.parse(responseString);
+			assertEquals("false",(String)response.get("error"));
 			
-			String answer  = response.getString("version");
+			String answer  = (String) response.get("version");
 			assertEquals(Globals.getGlobals().getSystemVersion(),answer);
-			
-			
-		} catch (JSONException e) {
-			e.printStackTrace();
+		} catch (ClassCastException e) {
 			fail("Bad JSON Response");
 		}
-		
-		
+
 		
 
 		responseString = null;
@@ -186,26 +172,18 @@ public class HandlerVersionTest {
 			fail("IO Exception");
 		}
 		//System.out.println(responseString);
-
+		
 		response = null;
 		try {
-			response = new JSONObject(responseString);
-			try {
-				assertEquals("false",response.getString("error"));
-			} catch (JSONException e) {
-				e.printStackTrace();
-				fail("No error code");
-			}
-		
-			String answer  = response.getString("version");
+			response = (JSONObject) JSONValue.parse(responseString);
+			assertEquals("false",(String)response.get("error"));
+			
+			String answer  = (String) response.get("version");
 			assertEquals(Globals.getGlobals().getSystemVersion(),answer);
-			
-			
-		} catch (JSONException e) {
-			e.printStackTrace();
+		} catch (ClassCastException e) {
 			fail("Bad JSON Response");
 		}
-		
+
 
 	}
 	

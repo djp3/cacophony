@@ -28,8 +28,9 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.HashMap;
 
-import org.json.JSONException;
-import org.json.JSONObject;
+import net.minidev.json.JSONObject;
+import net.minidev.json.JSONValue;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -115,18 +116,11 @@ public class HandlerErrorTest {
 
 		JSONObject response = null;
 		try {
-			response = new JSONObject(responseString);
-			try {
-				assertEquals("true",response.getString("error"));
-			} catch (JSONException e) {
-				e.printStackTrace();
-				fail("No error code");
-			}
-		} catch (JSONException e) {
-			e.printStackTrace();
+			response = (JSONObject) JSONValue.parse(responseString);
+			assertEquals("true",response.get("error"));
+		} catch (ClassCastException e) {
 			fail("Bad JSON Response");
 		}
-		
 
 	}
 

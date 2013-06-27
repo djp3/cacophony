@@ -36,7 +36,7 @@ This is what is in this directory on a working distribution
 
 	jars without a well described pedigree:
 		annotations.jar (From FindBugs)
-		json.jar
+		json-smart-1.1.jar
 		log4j-1.2.14.jar
 		mail.jar
 		mysql-connector-java-5.1.7-bin.jar

@@ -24,9 +24,9 @@ package edu.uci.ics.luci.utility.webserver.handlers;
 import java.net.InetAddress;
 import java.util.Map;
 
+import net.minidev.json.JSONObject;
+
 import org.apache.log4j.Logger;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 
 import edu.uci.ics.luci.utility.datastructure.Pair;
@@ -65,12 +65,8 @@ public class HandlerVersion extends HandlerAbstract {
 		Pair<byte[], byte[]> pair = null;
 		
 		JSONObject ret = new JSONObject();
-		try {
-			ret.put("version", version);
-			ret.put("error", "false");
-		} catch (JSONException e) {
-			getLog().error("Unable to respond with version:"+e);
-		}
+		ret.put("version", version);
+		ret.put("error", "false");
 		
 		pair = new Pair<byte[],byte[]>(HandlerAbstract.getContentTypeHeader_JSON(),wrapCallback(parameters,ret.toString()).getBytes());
 		

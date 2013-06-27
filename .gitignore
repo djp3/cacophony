@@ -82,7 +82,6 @@ cacophony/lib/libjkyotocabinet.jnilib
 cacophony/lib/commons-logging-1.1.1.jar
 cacophony/lib/hector-core-1.1-2.jar
 cacophony/lib/hector-object-mapper-3.1-07.jar
-cacophony/lib/json.jar
 cacophony/lib/json-path-0.8.0.jar
 cacophony/lib/json-smart-1.1.jar
 cacophony/lib/jsr305.jar
@@ -97,7 +96,7 @@ utility/lib/commons-configuration-1.9
 utility/lib/commons-io-2.4
 utility/lib/log4j-1.2.14.jar
 utility/lib/annotations.jar
-utility/lib/json.jar
+utility/lib/json-smart-1.1.jar
 utility/lib/mail.jar
 utility/lib/mysql-connector-java-5.1.7-bin.jar
 
