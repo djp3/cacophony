@@ -1,7 +1,9 @@
 .metadata
 .classpath
 .project
+.settings
 cacophony/.settings
+
 
 cacophony/cacophony.log4j.properties
 cacophony/luci.log4j.properties
