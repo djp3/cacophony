@@ -43,7 +43,7 @@ public abstract class Globals implements Quittable{
 		return log;
 	}
 	
-	static Globals _globals = null;
+	static protected Globals _globals = null;
 	private static final String propertyFileNameDefault = "luci.log4j.properties";
 	
 	
