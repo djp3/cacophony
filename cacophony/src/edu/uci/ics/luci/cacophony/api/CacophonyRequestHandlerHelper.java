@@ -1,12 +1,9 @@
 package edu.uci.ics.luci.cacophony.api;
 
 import java.util.Map;
-import java.util.Random;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
+import net.minidev.json.JSONArray;
+import net.minidev.json.JSONObject;
 import edu.uci.ics.luci.utility.datastructure.Pair;
 import edu.uci.ics.luci.utility.webserver.HandlerAbstract;
 
@@ -22,7 +19,7 @@ public abstract class CacophonyRequestHandlerHelper extends HandlerAbstract{
 	public static final long SIX_MONTHS = ONE_YEAR / 2;
 	protected static final long DEFAULT_EXPIRATION = SIX_MONTHS;
 	private static final String API_VERSION = "1.4";
-	protected static transient volatile Random random = new Random();
+	//protected static transient volatile Random random = new Random();
 
 	/**
 	 * @return the version of the API are we implementing
@@ -31,9 +28,9 @@ public abstract class CacophonyRequestHandlerHelper extends HandlerAbstract{
 		return API_VERSION;
 	}
 	
-	static protected Random getRandom(){
-		return random;
-	}
+	//static protected Random getRandom(){
+	//	return random;
+	//}
 	
 	protected String versionOK(Map<String, String> parameters) {
 		String trueVersion = getAPIVersion();
@@ -59,17 +56,14 @@ public abstract class CacophonyRequestHandlerHelper extends HandlerAbstract{
 
 		JSONObject ret = new JSONObject();
 
-		try {
-			ret.put("error","true");
-			JSONArray errors = new JSONArray();
-			errors.put("REST call to "+restFunction+" failed");  
-			errors.put(reason);
-			ret.put("errors",errors);
+		ret.put("error","true");
+		JSONArray errors = new JSONArray();
+		errors.add("REST call to "+restFunction+" failed");  
+		errors.add(reason);
+		ret.put("errors",errors);
 			
-			pair = new Pair<byte[],byte[]>(HandlerAbstract.getContentTypeHeader_JSON(),ret.toString().getBytes());
-		} catch (JSONException e) {
-			getLog().error("Unable to respond with version:"+e);
-		}
+		pair = new Pair<byte[],byte[]>(HandlerAbstract.getContentTypeHeader_JSON(),ret.toString().getBytes());
+		
 		return pair;
 	}
 }

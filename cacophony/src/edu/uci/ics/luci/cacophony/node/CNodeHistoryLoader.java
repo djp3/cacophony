@@ -1,7 +1,8 @@
 package edu.uci.ics.luci.cacophony.node;
 
+import net.minidev.json.JSONObject;
+
 import org.apache.log4j.Logger;
-import org.json.JSONObject;
 
 import weka.core.Instances;
 

@@ -152,7 +152,8 @@ JNIEXPORT jobjectArray JNICALL Java_edu_uci_ics_luci_cacophony_sensors_WiFiMac__
 				(*env)->SetObjectArrayElement(env, results, 2, (*env)->NewStringUTF( env, NULL));
 			}
 
-			[singleScan release];
+			// Not sure if I should release this
+			[singleScan autorelease];
 			singleScan = nil;
 		}
 		else{
@@ -199,7 +200,8 @@ JNIEXPORT jobjectArray JNICALL Java_edu_uci_ics_luci_cacophony_sensors_WiFiMac__
 				}
 			}
 		}
-		[multiScan release];
+		// Not sure if I should release this
+		[multiScan autorelease];
 		multiScan = nil;
 	}
 
@@ -249,8 +251,9 @@ int main(int argc, const char * argv[]){
 			printf("%3s\n","");
 			//printf("rssi scan failed\n");
 		}
-
-		[singleScan release];
+	
+		// Not sure if I should release this
+		[singleScan autorelease];
 		singleScan = nil;
 	}
 
@@ -262,7 +265,8 @@ int main(int argc, const char * argv[]){
 			printf("%25s %16s %3d\n",[[obj ssid] UTF8String],[[obj bssid] UTF8String],(int) [obj rssiValue] );
 
 		}
-		[multiScan release];
+		// Not sure if I should release this
+		[multiScan autorelease];
 		multiScan = nil;
 	}
 

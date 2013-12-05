@@ -13,12 +13,13 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import net.minidev.json.JSONObject;
+import net.minidev.json.JSONValue;
+
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.commons.configuration.XMLPropertiesConfiguration;
 import org.apache.log4j.Logger;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import com.martiansoftware.jsap.FlaggedOption;
 import com.martiansoftware.jsap.JSAP;
@@ -292,7 +293,7 @@ public class CNodePool implements Quittable{
 		if(directorySeed == null){
 			directorySeed = config.getString("directory_seed");
 		}
-		failoverFetch = new FailoverFetch(directorySeed,getNamespace());
+		failoverFetch = new FailoverFetch(FailoverFetch.fetchDirectoryList(directorySeed,getNamespace()));
 		
 		if((config.getString("poll_for_config") != null) && (config.getString("poll_for_config").equals("true"))){
 			if(poolSize == null){
@@ -335,7 +336,7 @@ public class CNodePool implements Quittable{
 			if( cnhl != null){
 				String cNodeLoaderClassOptions = config.getString("cnode.loader.class.options");
 				try {
-					JSONObject hlcOptions = new JSONObject(cNodeLoaderClassOptions);
+					JSONObject hlcOptions = (JSONObject) JSONValue.parse(cNodeLoaderClassOptions);
 					CNodeLoader i = null;
 					try {
 						i = cnhl.newInstance();
@@ -346,7 +347,7 @@ public class CNodePool implements Quittable{
 					} catch (IllegalAccessException e) {
 						getLog().error("Unable to instantiate class to load nodes with "+cNodeLoader+"\n"+e);
 					}
-				} catch (JSONException e) {
+				} catch (ClassCastException e) {
 					getLog().error("Property file does not contain valid json\n"+cNodeLoaderClassOptions+"\n"+e);
 				}
 			}

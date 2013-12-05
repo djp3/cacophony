@@ -49,12 +49,17 @@ void getLight(uint64_t *left,uint64_t *right)
 
 	//Create a connection to the IOService object 
 	kr = IOServiceOpen(serviceObject, mach_task_self(), 0, &dataPort);
-	IOObjectRelease(serviceObject);
 	if (kr != KERN_SUCCESS) {
 		//mach_error("IOServiceOpen:", kr);
 		*left = -1;
 		*right = -1;
 		return;
+	}
+	else{
+		fprintf(stderr,"light about to release serviceObject...");
+		IOObjectRelease(serviceObject);
+		serviceObject = 0;
+		fprintf(stderr,"done\n");
 	}
 
 	//Get the ALS reading

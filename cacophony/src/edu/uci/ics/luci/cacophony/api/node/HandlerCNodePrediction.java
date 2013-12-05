@@ -4,10 +4,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeSet;
 
+import net.minidev.json.JSONArray;
+import net.minidev.json.JSONObject;
+import net.minidev.json.JSONValue;
+
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import edu.uci.ics.luci.cacophony.node.CNode;
 import edu.uci.ics.luci.cacophony.node.CNodePool;
@@ -59,17 +60,17 @@ public class HandlerCNodePrediction extends NodeRequestHandlerHelper {
 			String _timesToPredict = parameters.get("times");
 			if(_timesToPredict != null){
 				try {
-					JSONArray timesToPredict = new JSONArray(_timesToPredict);
+					JSONArray timesToPredict = (JSONArray) JSONValue.parse(_timesToPredict);
 					CNode fromPool = cnp.getFromPool(nodeToPredict);
 					if(fromPool != null){
 						prediction = fromPool.predict(timesToPredict);
 					}
 					else{
-						errors.put("No model currently exists for "+nodeToPredict);
+						errors.add("No model currently exists for "+nodeToPredict);
 					}
-				} catch (JSONException e) {
+				} catch (ClassCastException e) {
 					getLog().error("Unable to parse JSON for times:"+_timesToPredict);
-					errors.put("Unable to parse JSON for times:"+_timesToPredict);
+					errors.add("Unable to parse JSON for times:"+_timesToPredict);
 				}
 			}
 			else{
@@ -79,51 +80,41 @@ public class HandlerCNodePrediction extends NodeRequestHandlerHelper {
 					prediction = fromPool.predict(null);
 				}
 				else{
-					errors.put("No model currently exists for "+nodeToPredict);
+					errors.add("No model currently exists for "+nodeToPredict);
 				}
 			}
 			
 			if(prediction != null){
 				for(Entry<String, TreeSet<Pair<Long, Double>>> foo:prediction.entrySet()){
-					try {
-						JSONArray dayData = new JSONArray();
-						for(Pair<Long, Double> guess:foo.getValue()){
-							JSONObject element = new JSONObject();
-							element.put("x", guess.getFirst().toString());
-							element.put("y", guess.getSecond().toString());
-							dayData.put(element);
-						}
-						ret.put(foo.getKey(),dayData);
-					} catch (JSONException e) {
-						getLog().error("Unable to construct JSON :"+e);
-						errors.put("I had a problem putting together my prediction");
+					JSONArray dayData = new JSONArray();
+					for(Pair<Long, Double> guess:foo.getValue()){
+						JSONObject element = new JSONObject();
+						element.put("x", guess.getFirst().toString());
+						element.put("y", guess.getSecond().toString());
+						dayData.add(element);
 					}
+					ret.put(foo.getKey(),dayData);
 				}
 			}
 			else{
-				errors.put("Prediction unavailable.  We may be recalculating model right now.");
+				errors.add("Prediction unavailable.  We may be recalculating model right now.");
 			}
 		}
 		else{
-			errors.put("No \"node\" parameter present to predict");
+			errors.add("No \"node\" parameter present to predict");
 		}
 		
-		try {
-			ret.put("stats", cnp.getFromPool(nodeToPredict).getAccuracy());
-		} catch (JSONException e1) {
+		CNode fromPool = cnp.getFromPool(nodeToPredict);
+		if(fromPool != null){
+			ret.put("stats", fromPool.getAccuracy());
 		}
 		
-		try{
-			if(errors.length() == 0){
-				ret.put("error", "false");
-			}
-			else{
-				ret.put("error", "true");
-				ret.put("errors",errors);
-			}
-		} catch (JSONException e) {
-			getLog().error("Unable to respond with error:"+e);
-			errors.put("I had a problem telling you about the error status");
+		if(errors.size() == 0){
+			ret.put("error", "false");
+		}
+		else{
+			ret.put("error", "true");
+			ret.put("errors",errors);
 		}
 		
 		pair = new Pair<byte[],byte[]>(HandlerAbstract.getContentTypeHeader_JSON(),wrapCallback(parameters,ret.toString()).getBytes());

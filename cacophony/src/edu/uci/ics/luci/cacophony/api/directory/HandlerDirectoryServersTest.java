@@ -8,10 +8,11 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.HashMap;
 
+import net.minidev.json.JSONObject;
+import net.minidev.json.JSONValue;
+
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLPropertiesConfiguration;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -139,21 +140,20 @@ public class HandlerDirectoryServersTest {
 
 		JSONObject response = null;
 		try {
-			response = new JSONObject(responseString);
+			response = (JSONObject) JSONValue.parse(responseString);
 			try {
-				assertEquals("false",response.getString("error"));
-				assertTrue(response.getString("servers").length() > 0);
-    			Long heartbeat = response.getJSONObject("servers").getJSONObject(directoryGUID).getLong("heartbeat");
+				assertEquals("false",(String)response.get("error"));
+				assertTrue(((JSONObject)response.get("servers")).size() > 0);
+    			Long heartbeat = Long.parseLong((String)((JSONObject)((JSONObject)response.get("servers")).get(directoryGUID)).get("heartbeat"));
 				assertTrue(System.currentTimeMillis() - heartbeat < Directory.FIVE_MINUTES);
-			} catch (JSONException e) {
-				e.printStackTrace();
-				fail("No error code:"+e);
+			} catch (ClassCastException e5) {
+				e5.printStackTrace();
+				fail("No error code");
 			}
-		} catch (JSONException e) {
-			e.printStackTrace();
+		} catch (ClassCastException e2) {
+			e2.printStackTrace();
 			fail("Bad JSON Response");
 		}
-		
 
 	}
 	

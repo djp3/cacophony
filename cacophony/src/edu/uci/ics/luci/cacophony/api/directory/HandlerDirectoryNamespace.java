@@ -3,9 +3,9 @@ package edu.uci.ics.luci.cacophony.api.directory;
 import java.net.InetAddress;
 import java.util.Map;
 
+import net.minidev.json.JSONObject;
+
 import org.apache.log4j.Logger;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import edu.uci.ics.luci.cacophony.directory.Directory;
 import edu.uci.ics.luci.utility.datastructure.Pair;
@@ -48,12 +48,8 @@ public class HandlerDirectoryNamespace extends DirectoryRequestHandlerHelper {
 		String namespace = getDirectory().getDirectoryNamespace();
 		
 		JSONObject ret = new JSONObject();
-		try {
-			ret.put("namespace", namespace);
-			ret.put("error", "false");
-		} catch (JSONException e) {
-			getLog().error("Unable to respond with version:"+e);
-		}
+		ret.put("namespace", namespace);
+		ret.put("error", "false");
 		
 		pair = new Pair<byte[],byte[]>(HandlerAbstract.getContentTypeHeader_JSON(),wrapCallback(parameters,ret.toString()).getBytes());
 		return pair;

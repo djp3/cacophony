@@ -7,8 +7,9 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.HashMap;
 
-import org.json.JSONException;
-import org.json.JSONObject;
+import net.minidev.json.JSONObject;
+import net.minidev.json.JSONValue;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -110,14 +111,14 @@ public class HandlerShutdownTest {
 
 		JSONObject response = null;
 		try {
-			response = new JSONObject(responseString);
+			response = (JSONObject) JSONValue.parse(responseString);
 			try {
-				assertEquals("false",response.getString("error"));
-			} catch (JSONException e) {
+				assertEquals("false",(String)response.get("error"));
+			} catch (ClassCastException e) {
 				e.printStackTrace();
 				fail("No error code");
 			}
-		} catch (JSONException e) {
+		} catch (ClassCastException e) {
 			e.printStackTrace();
 			fail("Bad JSON Response");
 		}
@@ -141,14 +142,14 @@ public class HandlerShutdownTest {
 		
 		JSONObject response1 = null;
 		try {
-			response1 = new JSONObject(responseString1);
+			response1 = (JSONObject) JSONValue.parse(responseString1);
 			try {
-				assertEquals("true",response1.getString("error"));
-			} catch (JSONException e5) {
+				assertEquals("true",(String)response1.get("error"));
+			} catch (ClassCastException e5) {
 				e5.printStackTrace();
 				fail("No error code");
 			}
-		} catch (JSONException e2) {
+		} catch (ClassCastException e2) {
 			e2.printStackTrace();
 			fail("Bad JSON Response");
 		}
@@ -172,14 +173,14 @@ public class HandlerShutdownTest {
 		
 		response1 = null;
 		try {
-			response1 = new JSONObject(responseString1);
+			response1 = (JSONObject) JSONValue.parse(responseString1);
 			try {
-				assertEquals("true",response1.getString("error"));
-			} catch (JSONException e5) {
+				assertEquals("true",(String)response1.get("error"));
+			} catch (ClassCastException e5) {
 				e5.printStackTrace();
 				fail("No error code");
 			}
-		} catch (JSONException e2) {
+		} catch (ClassCastException e2) {
 			e2.printStackTrace();
 			fail("Bad JSON Response");
 		}
@@ -203,14 +204,14 @@ public class HandlerShutdownTest {
 		
 		response1 = null;
 		try {
-			response1 = new JSONObject(responseString1);
+			response1 = (JSONObject) JSONValue.parse(responseString1);
 			try {
-				assertEquals("true",response1.getString("error"));
-			} catch (JSONException e5) {
+				assertEquals("true",(String)response1.get("error"));
+			} catch (ClassCastException e5) {
 				e5.printStackTrace();
 				fail("No error code");
 			}
-		} catch (JSONException e2) {
+		} catch (ClassCastException e2) {
 			e2.printStackTrace();
 			fail("Bad JSON Response");
 		}
@@ -235,14 +236,14 @@ public class HandlerShutdownTest {
 		
 		response1 = null;
 		try {
-			response1 = new JSONObject(responseString1);
+			response1 = (JSONObject) JSONValue.parse(responseString1);
 			try {
-				assertEquals("true",response1.getString("error"));
-			} catch (JSONException e5) {
+				assertEquals("true",(String)response1.get("error"));
+			} catch (ClassCastException e5) {
 				e5.printStackTrace();
 				fail("No error code");
 			}
-		} catch (JSONException e2) {
+		} catch (ClassCastException e2) {
 			e2.printStackTrace();
 			fail("Bad JSON Response");
 		}
@@ -268,14 +269,14 @@ public class HandlerShutdownTest {
 		
 		response1 = null;
 		try {
-			response1 = new JSONObject(responseString1);
+			response1 = (JSONObject) JSONValue.parse(responseString1);
 			try {
-				assertEquals("false",response1.getString("error"));
-			} catch (JSONException e5) {
+				assertEquals("false",(String)response1.get("error"));
+			} catch (ClassCastException e5) {
 				e5.printStackTrace();
 				fail("No error code");
 			}
-		} catch (JSONException e2) {
+		} catch (ClassCastException e2) {
 			e2.printStackTrace();
 			fail("Bad JSON Response");
 		}

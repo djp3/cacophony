@@ -105,7 +105,10 @@ public abstract class Accelerometer extends Abstract {
 	
 	@Override
 	public synchronized List<Double> sense(){
-		return senseAccelerometer(); 
+		List<Double> x = senseAccelerometer();
+		getLog().debug("Sensing accelerometer: "+x.toString());
+		return x;
+		//return senseAccelerometer(); 
 	}
 	
 	@Override

@@ -8,8 +8,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 
-import org.json.JSONException;
-import org.json.JSONObject;
+import net.minidev.json.JSONObject;
+import net.minidev.json.JSONValue;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -112,8 +113,8 @@ public class MySQLTest {
 
 			JSONObject jsonObject = null;
 			try {
-				jsonObject = new JSONObject(options);
-			} catch (JSONException e) {
+				jsonObject = (JSONObject) JSONValue.parse(options);
+			} catch (ClassCastException e) {
 				fail(e.toString());
 			}
 			m = new MySQL();

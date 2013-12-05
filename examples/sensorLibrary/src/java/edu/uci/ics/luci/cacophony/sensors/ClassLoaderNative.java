@@ -7,7 +7,17 @@ import java.net.URLClassLoader;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 
+import org.apache.log4j.Logger;
+
 public class ClassLoaderNative {
+	
+	private static transient volatile Logger log = null;
+	public static Logger getLog(){
+		if(log == null){
+			log = Logger.getLogger(ClassLoaderNative.class);
+		}
+		return log;
+	}
 
     private static URL[] urls;
     
@@ -46,6 +56,13 @@ public class ClassLoaderNative {
 		}		
 		if (path == null) 
 			throw new UnsatisfiedLinkError(new StringBuilder(lib).append(" not found in class path").toString());
-		System.load(path);
+		
+		getLog().debug("This is what I'm trying "+path);
+		try{
+			System.load(path);
+		}
+		catch(RuntimeException e){
+			getLog().error("Couldn't load "+lib+", "+e);
+		}
 	}
 }

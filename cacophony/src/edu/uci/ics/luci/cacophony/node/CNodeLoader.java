@@ -2,8 +2,9 @@ package edu.uci.ics.luci.cacophony.node;
 
 import java.util.List;
 
+import net.minidev.json.JSONObject;
+
 import org.apache.log4j.Logger;
-import org.json.JSONObject;
 
 import edu.uci.ics.luci.util.FailoverFetch;
 import edu.uci.ics.luci.utility.datastructure.Pair;

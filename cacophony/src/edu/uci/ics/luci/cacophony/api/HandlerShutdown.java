@@ -3,10 +3,10 @@ package edu.uci.ics.luci.cacophony.api;
 import java.net.InetAddress;
 import java.util.Map;
 
+import net.minidev.json.JSONArray;
+import net.minidev.json.JSONObject;
+
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import edu.uci.ics.luci.utility.Globals;
 import edu.uci.ics.luci.utility.datastructure.Pair;
@@ -62,24 +62,16 @@ public class HandlerShutdown extends CacophonyRequestHandlerHelper {
 		JSONObject ret = new JSONObject();
 		if(shutdown){
 			Globals.getGlobals().setQuitting(true);
-			try {
-				ret.put("Saying Goodbye", "true");
-				ret.put("error", "false");
-			} catch (JSONException e) {
-				getLog().error("Unable to respond with version:"+e);
-			}
+			ret.put("Saying Goodbye", "true");
+			ret.put("error", "false");
 		}
 		else{
-			try {
-				ret.put("error", "true");
+			ret.put("error", "true");
 				
-				JSONArray errorsA = new JSONArray();
-				errorsA.put("Invalid form of shutdown command");
-				getLog().info("Invalid form of shutdown command see: http://dev.quub.com/projects/swayr/wiki/Link_Shortener_REST_API#Shutdown-Service");
-				ret.put("errors", errorsA);
-			} catch (JSONException e) {
-				getLog().error("Unable to respond with version:"+e);
-			}
+			JSONArray errorsA = new JSONArray();
+			errorsA.add("Invalid form of shutdown command");
+			getLog().info("Invalid form of shutdown command see: http://dev.quub.com/projects/swayr/wiki/Link_Shortener_REST_API#Shutdown-Service");
+			ret.put("errors", errorsA);
 		}
 		
 		pair = new Pair<byte[],byte[]>(HandlerAbstract.getContentTypeHeader_JSON(),wrapCallback(parameters,ret.toString()).getBytes());

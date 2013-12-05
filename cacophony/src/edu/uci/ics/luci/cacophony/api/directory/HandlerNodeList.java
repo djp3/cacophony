@@ -6,10 +6,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.minidev.json.JSONArray;
+import net.minidev.json.JSONObject;
+import net.minidev.json.JSONValue;
+
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import edu.uci.ics.luci.cacophony.directory.Directory;
 import edu.uci.ics.luci.cacophony.directory.nodelist.MetaCNode;
@@ -70,15 +71,25 @@ public class HandlerNodeList extends DirectoryRequestHandlerHelper {
 			/* Convert to a Set */
 			JSONArray g;
 			try {
-				g = new JSONArray(guids);
-				Set<String> gSet = new HashSet<String>();
-				for(int i = 0; i < g.length(); i++){
-					gSet.add(g.getString(i));
+				g = (JSONArray) JSONValue.parse(guids);
+				if(g != null){
+					Set<String> gSet = new HashSet<String>();
+					for(int i = 0; i < g.size(); i++){
+						String s = null;
+						try{
+							s = (String) g.get(i);
+						} catch (ClassCastException e) {
+							error = true;
+							errors.add("Unable to create a list of guids from :"+guids);
+							break;
+						}
+						gSet.add(s);
+					}
+					nodeList = getDirectory().getNodeList(gSet);
 				}
-				nodeList = getDirectory().getNodeList(gSet);
-			} catch (JSONException e) {
+			} catch (ClassCastException e) {
 				error = true;
-				errors.put("Unable to create a list of guids from :"+guids);
+				errors.add("Unable to create a list of guids from :"+guids);
 			}
 		}
 		
@@ -88,7 +99,7 @@ public class HandlerNodeList extends DirectoryRequestHandlerHelper {
 			if(nodeList != null){
 				for(MetaCNode c:nodeList){
 					if(c != null){
-						retServers.put(c.toJSONObject());
+						retServers.add(c.toJSONObject());
 					}
 					else{
 						/* if c is null then something is malformed in the backing store.  Probably old serialization */
@@ -99,14 +110,11 @@ public class HandlerNodeList extends DirectoryRequestHandlerHelper {
 		}
 		
 		JSONObject ret = new JSONObject();
-		try {
-			ret.put("nodes", retServers);
-			ret.put("error", error.toString());
-			if(error){
-				ret.put("errors", errors);
-			}
-		} catch (JSONException e) {
-			getLog().error("Unable to respond with version:"+e);
+		
+		ret.put("nodes", retServers);
+		ret.put("error", error.toString());
+		if(error){
+			ret.put("errors", errors);
 		}
 		
 		pair = new Pair<byte[],byte[]>(HandlerAbstract.getContentTypeHeader_JSON(),wrapCallback(parameters,ret.toString()).getBytes());

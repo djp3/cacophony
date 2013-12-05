@@ -3,7 +3,6 @@ package edu.uci.ics.luci.cacophony.directory.nodelist;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -11,8 +10,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 
-import org.json.JSONException;
-import org.json.JSONObject;
+import net.minidev.json.JSONObject;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -175,6 +174,7 @@ public class MetaCNodeTest {
 	}
 
 	@Test
+	@edu.umd.cs.findbugs.annotations.SuppressWarnings(value={"EC_UNRELATED_TYPES"}, justification="This is what I'm testing")
 	public void testJSONConversion(){
 		
 		MetaCNode mc = new MetaCNode();
@@ -187,12 +187,10 @@ public class MetaCNodeTest {
 		mc.setMapWeight(r.nextDouble());
 		mc.setPriority(Math.ceil(r.nextDouble()*10.0));
 		JSONObject j = new JSONObject();
-		try {
-			j.put("Hello", "World");
-			j.put("Number", 5.0);
-		} catch (JSONException e1) {
-			fail("");
-		}
+		
+		j.put("Hello", "World");
+		j.put("Number", 5.0);
+		
 		mc.setConfiguration(j);
 		
 		CNodeReference cr = CNodeReferenceTest.makeCNodeReference();

@@ -9,9 +9,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
+import net.minidev.json.JSONObject;
+import net.minidev.json.JSONValue;
+
 import org.apache.log4j.Logger;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import edu.uci.ics.luci.utility.Globals;
 import edu.uci.ics.luci.utility.database.DBConnection;
@@ -50,8 +51,9 @@ public class MySQL extends NodeListLoader{
 		
 		String databaseDomain = null;
 		try {
-			databaseDomain = options.getString("server_address");
-		} catch (JSONException e) {
+			databaseDomain = (String) options.get("server_address");
+		} catch (ClassCastException e) {
+			getLog().error("Unable to convert the \"server_address\" to String");
 		}
 		
 		if(databaseDomain == null){
@@ -60,15 +62,18 @@ public class MySQL extends NodeListLoader{
 		}
 		
 		try{
-			namespace = options.getString("namespace");
-		} catch (JSONException e) {
+			namespace = (String) options.get("namespace");
+		} catch (ClassCastException e) {
+			getLog().error("Unable to convert the \"namespace\" to String");
 		}
 		
 		String database = null;
 		try {
-			database = options.getString("database");
-		} catch (JSONException e) {
+			database = (String) options.get("database");
+		} catch (ClassCastException e) {
+			getLog().error("Unable to convert the \"database\" to String");
 		}
+		
 		if(database == null){
 			getLog().error("Unable to get the \"database\"");
 			error = true;
@@ -76,9 +81,11 @@ public class MySQL extends NodeListLoader{
 		
 		String username=null;
 		try {
-			username = options.getString("user");
-		} catch (JSONException e) {
+			username = (String) options.get("user");
+		} catch (ClassCastException e) {
+			getLog().error("Unable to convert the \"user\" to String");
 		}
+		
 		if(username == null){
 			getLog().error("Unable to get the \"user\"");
 			error = true;
@@ -86,9 +93,11 @@ public class MySQL extends NodeListLoader{
 		
 		String password=null;
 		try {
-			password = options.getString("password");
-		} catch (JSONException e) {
+			password = (String) options.get("password");
+		} catch (ClassCastException e) {
+			getLog().error("Unable to convert the \"password\" to String");
 		}
+		
 		if(password == null){
 			getLog().error("Unable to get the \"password\"");
 			error = true;
@@ -96,9 +105,11 @@ public class MySQL extends NodeListLoader{
 		
 		String listViewQuery=null;
 		try {
-			listViewQuery = options.getString("listViewQuery");
-		} catch (JSONException e) {
+			listViewQuery = (String) options.get("listViewQuery");
+		} catch (ClassCastException e) {
+			getLog().error("Unable to convert the \"listViewQuery\" to String");
 		}
+		
 		if(listViewQuery == null){
 			getLog().error("Unable to get the \"listViewQuery\"");
 			error = true;
@@ -120,9 +131,11 @@ public class MySQL extends NodeListLoader{
 		
 		String mapViewQuery=null;
 		try {
-			mapViewQuery = options.getString("mapViewQuery");
-		} catch (JSONException e) {
+			mapViewQuery = (String) options.get("mapViewQuery");
+		} catch (ClassCastException e) {
+			getLog().error("Unable to convert the \"mapViewQuery\" to String");
 		}
+		
 		if(mapViewQuery == null){
 			getLog().error("Unable to get the \"mapViewQuery\"");
 			error = true;
@@ -153,9 +166,11 @@ public class MySQL extends NodeListLoader{
 
 		String configurationQuery=null;
 		try {
-			configurationQuery = options.getString("configurationQuery");
-		} catch (JSONException e) {
+			configurationQuery = (String) options.get("configurationQuery");
+		} catch (ClassCastException e) {
+			getLog().error("Unable to convert the \"configurationQuery\" to String");
 		}
+		
 		if(configurationQuery == null){
 			getLog().error("Unable to get the \"configurationQuery\"");
 			error = true;
@@ -303,10 +318,10 @@ public class MySQL extends NodeListLoader{
 								String configuration = null;
 								try {
 									configuration = rs.getString("CONFIGURATION");
-									configurationJSON = new JSONObject(configuration);
+									configurationJSON = (JSONObject) JSONValue.parse(configuration);
 								} catch (SQLException e) {
 									getLog().error("Query failed to return good results\n"+e);
-								} catch (JSONException e) {
+								} catch (ClassCastException e) {
 									getLog().error("Failed to convert configuration to JSON\n"+configuration+"\n"+e);
 								}
 							}

@@ -27,14 +27,15 @@ import me.prettyprint.hector.api.HConsistencyLevel;
 import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.exceptions.HectorException;
 import me.prettyprint.hector.api.factory.HFactory;
+import net.minidev.json.JSONArray;
+import net.minidev.json.JSONObject;
+import net.minidev.json.JSONStyle;
+import net.minidev.json.JSONValue;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.commons.configuration.XMLPropertiesConfiguration;
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import com.martiansoftware.jsap.FlaggedOption;
 import com.martiansoftware.jsap.JSAP;
@@ -295,32 +296,26 @@ public class Directory implements Quittable{
 		
 		
 	   	final JSONObject localData = new JSONObject();
-	   	try {
-			localData.put("namespace", localNamespace);
-			JSONArray servers = new JSONArray();
-			for(Pair<Long,String> x:urls){
-				JSONObject bar = new JSONObject();
-				bar.put("priority_order",x.getFirst());
-				bar.put("url",x.getSecond());
-				servers.put(bar);
-			}
-			localData.put("access_routes", servers);
-	   	} catch (JSONException e) {
-	   		getLog().fatal("Something is wrong with JSON:"+localNamespace+"\n"+e);
-	   	}
+	   	
+		localData.put("namespace", localNamespace);
+		JSONArray servers = new JSONArray();
+		for(Pair<Long,String> x:urls){
+			JSONObject bar = new JSONObject();
+			bar.put("priority_order",x.getFirst().toString());
+			bar.put("url",x.getSecond());
+			servers.add(bar);
+		}
+		localData.put("access_routes", servers);
 		
 		/* If we already started a heartbeat cancel it and restart */
 		if(heartbeat != null){
 			heartbeat.cancel();
 		}
 		
-		try {
-			getLog().info("Starting a Directory -> Cassandra heartbeat for: "+localData.toString(1));
-		} catch (JSONException e1) {
-		}
+		getLog().info("Starting a Directory -> Cassandra heartbeat for: "+localData.toString(JSONStyle.NO_COMPRESS));
 		
 		/*Set up the heartbeat to go every 5 minutes;*/
-		 heartbeat = new Timer(true);
+		 heartbeat = new Timer(false);
 		 heartbeat.scheduleAtFixedRate(
 			    new TimerTask(){
 			    	
@@ -333,11 +328,9 @@ public class Directory implements Quittable{
 						/* Update this nodes heartbeat */
 			    		ColumnFamilyUpdater<String, String> updater = directoryServerTemplate.createUpdater(localGUID);
 			    		String now = Long.toString(System.currentTimeMillis());
-			    		try {
-							localData.put("heartbeat",now);
-						} catch (JSONException e) {
-							getLog().fatal("Something is wrong with JSON:"+now+"\n"+e);
-						}
+			    		
+						localData.put("heartbeat",now);
+						
 						updater.setString("json_data", localData.toString());
 						directoryServerTemplate.update(updater);
 						
@@ -351,16 +344,32 @@ public class Directory implements Quittable{
 						    	ColumnFamilyResult<String, String> res = directoryServerTemplate.queryColumns(keyI);
 								jsonData = res.getString("json_data");
 								if(jsonData != null){
-									JSONObject jsonObject = new JSONObject(jsonData);
-									Long heartbeat  = jsonObject.getLong("heartbeat");
-									if((heartbeat == null)||(heartbeat < System.currentTimeMillis() - ONE_DAY)){
-										directoryServerTemplate.deleteRow(keyI);
+									JSONObject jsonObject = null;
+									try{
+										jsonObject = (JSONObject) JSONValue.parse(jsonData);
+									}
+									catch(ClassCastException e){
+										getLog().warn("cassandra data did not look like json:"+jsonData);
+									}
+									if(jsonObject != null){
+										Long heartbeat = null;
+										try{
+											heartbeat = Long.parseLong((String) jsonObject.get("heartbeat"));
+										}
+										catch(ClassCastException e){
+											getLog().warn("heartbeat data did not look like a string:"+jsonObject);
+										}
+										catch(NumberFormatException e){
+											getLog().warn("heartbeat data did not look like long:"+jsonObject);
+										}
+										
+										if((heartbeat == null)||(heartbeat < System.currentTimeMillis() - ONE_DAY)){
+											directoryServerTemplate.deleteRow(keyI);
+										}
 									}
 								}
 							} catch (HectorException e) {
 								getLog().error("Problem getting a Directory Server List:\n"+e);
-							} catch (JSONException e) {
-								getLog().error("Bad JSON Data in Cassandra ring:\n"+jsonData+"\n"+e);
 							}
 						}
 					}
@@ -377,13 +386,28 @@ public class Directory implements Quittable{
 			    if(keyI.equals(key)){
 			    	ColumnFamilyResult<String, String> res = directoryServerTemplate.queryColumns(keyI);
 			    	String jsonString = res.getString("json_data");
-			    	JSONObject jsonObject = new JSONObject(jsonString);
-			    	ret = jsonObject.getLong("heartbeat");
+			    	JSONObject jsonObject = null;
+			    	try{
+			    		jsonObject = (JSONObject) JSONValue.parse(jsonString);
+			    	}
+			    	catch(ClassCastException e){
+			    		getLog().warn("cassandra data did not look like json:"+jsonString);
+			    	}
+			    	
+			    	if(jsonObject != null){
+			    		try{
+			    			ret = Long.parseLong((String) jsonObject.get("heartbeat"));
+			    		}
+			    		catch(ClassCastException e){
+			    			getLog().warn("heartbeat data did not look like json:"+jsonObject);
+			    		}
+			    		catch(NumberFormatException e){
+			    			getLog().warn("heartbeat data did not look like Long:"+jsonObject);
+			    		}
+			    	}
 			    }
 			} catch (HectorException e) {
 				getLog().error("Problem getting a Heartbeat:\n"+e);
-			} catch (JSONException e) {
-				getLog().error("Problem with JSON getting a Heartbeat:\n"+e);
 			}
 		}
 		return ret;
@@ -515,13 +539,19 @@ public class Directory implements Quittable{
 		    	ColumnFamilyResult<String, String> res = directoryServerTemplate.queryColumns(keyI);
 				jsonData = res.getString("json_data");
 				if(jsonData != null){
-					JSONObject jsonObject = new JSONObject(jsonData);
-					ret.put(keyI, jsonObject);
+					JSONObject jsonObject = null;
+					try{
+						jsonObject = (JSONObject) JSONValue.parse(jsonData);
+					}
+					catch(ClassCastException e){
+						getLog().warn("cassandra data did not look like json:"+jsonData);
+					}
+					if(jsonObject != null){
+						ret.put(keyI, jsonObject);
+					}
 				}
 			} catch (HectorException e) {
 				getLog().error("Problem getting a Directory Server List:\n"+e);
-			} catch (JSONException e) {
-				getLog().error("Bad JSON Data in Cassandra ring:\n"+jsonData+"\n"+e);
 			}
 		}
 		return ret;
@@ -564,12 +594,18 @@ public class Directory implements Quittable{
 
 	private void refreshDatumInCache(String id){
 		String jsonData = null;
-		try {
-	    	ColumnFamilyResult<String, String> res = this.cacophonyNodeTemplate.queryColumns(id);
+		
+		try{
+			ColumnFamilyResult<String, String> res = this.cacophonyNodeTemplate.queryColumns(id);
 			jsonData = res.getString("json_data");
 			JSONObject jsonObject = null;
 			if(jsonData != null){
-				jsonObject = new JSONObject(jsonData);
+				try{
+					jsonObject = (JSONObject) JSONValue.parse(jsonData);
+				}
+				catch(ClassCastException e){
+					getLog().warn("json_data didn't parse right:"+jsonData);
+				}
 			}
 			/* Put the updated info in the cache */
 			synchronized(cacheLock){
@@ -577,8 +613,6 @@ public class Directory implements Quittable{
 			}
 		} catch (HectorException e) {
 			getLog().error("Problem getting a c node list:\n"+e);
-		} catch (JSONException e) {
-			getLog().error("Bad JSON Data in Cassandra ring:\n"+jsonData+"\n"+e);
 		}
 	}	
 	
@@ -806,8 +840,10 @@ public class Directory implements Quittable{
 		
 		if( c != null){
 			String nodeListLoaderOptions = config.getString("nodelist.loader.class.options");
-			try {
-				JSONObject nllOptions = new JSONObject(nodeListLoaderOptions);
+			JSONObject nllOptions = null;
+			try{
+				nllOptions = (JSONObject) JSONValue.parse(nodeListLoaderOptions);
+					
 				NodeListLoader i = null;;
 				try {
 					i = c.newInstance();
@@ -818,10 +854,10 @@ public class Directory implements Quittable{
 				} catch (IllegalAccessException e) {
 					getLog().error("Unable to instantiate class to load nodes with "+nodeListLoader+"\n"+e);
 				}
-			} catch (JSONException e) {
-				getLog().error("Property file does not contain valid json\n"+nodeListLoaderOptions+"\n"+e);
 			}
-			finally{}
+			catch (ClassCastException e){
+				getLog().error("nodelist.loader.class.options does not parse as a JSONObject"+nodeListLoaderOptions);
+			}
 		}
 	}
 

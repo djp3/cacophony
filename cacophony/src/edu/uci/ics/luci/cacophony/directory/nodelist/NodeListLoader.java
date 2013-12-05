@@ -2,8 +2,9 @@ package edu.uci.ics.luci.cacophony.directory.nodelist;
 
 import java.util.List;
 
+import net.minidev.json.JSONObject;
+
 import org.apache.log4j.Logger;
-import org.json.JSONObject;
 
 public abstract class NodeListLoader {
 	

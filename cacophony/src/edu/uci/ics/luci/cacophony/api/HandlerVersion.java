@@ -3,9 +3,9 @@ package edu.uci.ics.luci.cacophony.api;
 import java.net.InetAddress;
 import java.util.Map;
 
+import net.minidev.json.JSONObject;
+
 import org.apache.log4j.Logger;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import edu.uci.ics.luci.utility.datastructure.Pair;
 import edu.uci.ics.luci.utility.webserver.HandlerAbstract;
@@ -37,12 +37,9 @@ public class HandlerVersion extends CacophonyRequestHandlerHelper{
 		Pair<byte[], byte[]> pair = null;
 		
 		JSONObject ret = new JSONObject();
-		try {
-			ret.put("version", getAPIVersion());
-			ret.put("error", "false");
-		} catch (JSONException e) {
-			getLog().error("Unable to respond with version:"+e);
-		}
+		
+		ret.put("version", getAPIVersion());
+		ret.put("error", "false");
 		
 		pair = new Pair<byte[],byte[]>(HandlerAbstract.getContentTypeHeader_JSON(),wrapCallback(parameters,ret.toString()).getBytes());
 		

@@ -12,11 +12,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import net.minidev.json.JSONArray;
+import net.minidev.json.JSONObject;
+import net.minidev.json.JSONValue;
+
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLPropertiesConfiguration;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -249,38 +250,38 @@ public class MilestoneTest {
 
 		JSONObject response = null;
 		try {
-			response = new JSONObject(responseString);
+			response = (JSONObject) JSONValue.parse(responseString);
 			//System.out.println(response.toString(5));
 			try {
-				if(response.getString("error").equals("true")){
-					fail(response.getString("errors"));
+				if(((String)(response.get("error"))).equals("true")){
+					fail((String)response.get("errors"));
 				}
-				assertEquals("false",response.getString("error"));
+				assertEquals("false",((String)response.get("error")));
 			
-				assertTrue(response.getJSONObject("servers").length() > 0);
+				assertTrue(((JSONObject)response.get("servers")).size() > 0);
 				
-				Long heartbeat = response.getJSONObject("servers").getJSONObject(guid).getLong("heartbeat");
+				Long heartbeat = Long.parseLong((String)((JSONObject)((JSONObject)response.get("servers")).get(guid)).get("heartbeat"));
 				assertTrue(System.currentTimeMillis() - heartbeat < Directory.FIVE_MINUTES);
 				
-				String namespace = response.getJSONObject("servers").getJSONObject(guid).getString("namespace");
+				String namespace = ((String)((JSONObject) ((JSONObject) response.get("servers")).get(guid)).get("namespace"));
 				assertEquals(directory.getDirectoryNamespace(),namespace);
    			
-				JSONArray servers = response.getJSONObject("servers").getJSONObject(guid).getJSONArray("access_routes");
-				assertTrue(servers.length() >= 1);
-				for(int i =0 ; i < servers.length(); i++){
-					if(servers.getJSONObject(i).getLong("priority_order") == 0){
-						assertEquals(url+":"+port,servers.getJSONObject(i).getString("url"));
+				JSONArray servers = ((JSONArray) ((JSONObject) ((JSONObject)response.get("servers")).get(guid)).get("access_routes"));
+				assertTrue(servers.size() >= 1);
+				for(int i =0 ; i < servers.size(); i++){
+					if(Long.parseLong((String)((JSONObject)servers.get(i)).get("priority_order")) == 0L){
+						assertEquals(url+":"+port,((String)((JSONObject)servers.get(i)).get("url")));
 					}
 					else{
-						assertEquals(badURL,servers.getJSONObject(i).getString("url"));
+						assertEquals(badURL,((String)((JSONObject)servers.get(i)).get("url")));
 					}
 				}
 			
-			} catch (JSONException e) {
+			} catch (ClassCastException e) {
 				e.printStackTrace();
 				fail("No error code:"+e);
 			}
-		} catch (JSONException e) {
+		} catch (ClassCastException e) {
 			e.printStackTrace();
 			fail("Bad JSON Response");
 		}

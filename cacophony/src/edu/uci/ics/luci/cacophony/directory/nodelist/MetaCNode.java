@@ -6,10 +6,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
+import net.minidev.json.JSONArray;
+import net.minidev.json.JSONObject;
+
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import edu.uci.ics.luci.util.HashCodeUtil;
 
@@ -103,86 +103,111 @@ public class MetaCNode {
 		if(j != null){
 			c = new MetaCNode();
 			
-			Long creationTime;
+			Long creationTime = null;
 			try {
-				creationTime = j.getLong("creation_time");
-				c.setCreationTime(creationTime);
-			} catch (JSONException e1) {
-			}
-			String id;
-			try {
-				id = j.getString("id");
-				c.setGuid(id);
-			} catch (JSONException e1) {
+				creationTime = Long.parseLong((String) j.get("creation_time"));
+				if(creationTime != null){
+					c.setCreationTime(creationTime);
+				}
+			} catch (ClassCastException e) {
+			} catch(NumberFormatException e){
 			}
 			
-			String name;
+			String id = null;
 			try {
-				name = j.getString("name");
-				c.setName(name);
-			} catch (JSONException e1) {
+				id = (String) j.get("id");
+				if(id != null){
+					c.setGuid(id);
+				}
+			} catch (ClassCastException e) {
 			}
 			
-			String namespace;
+			String name = null;
 			try {
-				namespace = j.getString("namespace");
-				c.setNamespace(namespace);
-			} catch (JSONException e1) {
+				name = (String) j.get("name");
+				if(name != null){
+					c.setName(name);
+				}
+			} catch (ClassCastException e) {
 			}
 			
-			Double priority;
+			String namespace = null;
 			try {
-				priority = j.getDouble("priority");
-				c.setPriority(priority);
-			} catch (JSONException e1) {
+				namespace = (String) j.get("namespace");
+				if(namespace != null){
+					c.setNamespace(namespace);
+				}
+			} catch (ClassCastException e) {
 			}
 			
-			JSONObject configuration;
+			Double priority = null;
 			try {
-				configuration = j.getJSONObject("configuration");
-				c.setConfiguration(configuration);
-			} catch (JSONException e1) {
+				priority = (Double) j.get("priority");
+				if(priority != null){
+					c.setPriority(priority);
+				}
+			} catch (ClassCastException e) {
 			}
 			
-			Double latitude;
+			JSONObject configuration = null;
 			try {
-				latitude = j.getDouble("latitude");
-				c.setLatitude(latitude);
-			} catch (JSONException e1) {
+				configuration = (JSONObject) j.get("configuration");
+				if(configuration != null){
+					c.setConfiguration(configuration);
+				}
+			} catch (ClassCastException e) {
 			}
 			
-			Double longitude;
+			Double latitude = null;
 			try {
-				longitude = j.getDouble("longitude");
-				c.setLongitude(longitude);
-			} catch (JSONException e1) {
+				latitude = (Double) j.get("latitude");
+				if(latitude != null){
+					c.setLatitude(latitude);
+				}
+			} catch (ClassCastException e) {
 			}
 			
-			Double mapWeight;
+			Double longitude = null;
 			try {
-				mapWeight = j.getDouble("map_weight");
-				c.setMapWeight(mapWeight);
-			} catch (JSONException e1) {
+				longitude = (Double) j.get("longitude");
+				if(longitude != null){
+					c.setLongitude(longitude);
+				}
+			} catch (ClassCastException e1) {
+			}
+			
+			Double mapWeight = null;
+			try {
+				mapWeight = (Double) j.get("map_weight");
+				if(mapWeight != null){
+					c.setMapWeight(mapWeight);
+				}
+			} catch (ClassCastException e) {
 			}
 			
 			JSONArray _cNodeReferences= null;
 			try {
-				_cNodeReferences = j.getJSONArray("c_node_references");
-			} catch (JSONException e1) {
+				_cNodeReferences = (JSONArray) j.get("c_node_references");
+			} catch (ClassCastException e) {
 			}
+			
 			if(_cNodeReferences == null){
 				c.setCNodeReferences(null);
 			}
 			else{
-				for(int idx = 0; idx < _cNodeReferences.length();idx++){
-					try {
-						JSONObject x = _cNodeReferences.getJSONObject(idx);
+				for(int idx = 0; idx < _cNodeReferences.size();idx++){
+					JSONObject x = null;
+					try{
+						x = (JSONObject) _cNodeReferences.get(idx);
+					} catch(ClassCastException e){
+					}
+					
+					if( x != null){
 						CNodeReference y = CNodeReference.fromJSONObject(x);
+						
 						if(y.getCNodeGuid() != null){
 							c.getCNodeReferences().put(y.getCNodeGuid(),y);
 						}
-					} catch (JSONException e) {
-						getLog().error("Unable to make MetaCNode from JSON: "+_cNodeReferences.toString()+"\n"+e);
 					}
 				}
 			}
@@ -194,46 +219,43 @@ public class MetaCNode {
 		JSONObject jsonObject = null;
 		if(c != null){
 			jsonObject = new JSONObject();
-			try {
-				if(c.getCreationTime() != null){
-					jsonObject.put("creation_time", c.getCreationTime());
-				}
-				if(c.getGuid() != null){
-					jsonObject.put("id", c.getGuid());
-				}
-				if(c.getName() != null){
-					jsonObject.put("name", c.getName());
-				}
-				if(c.getNamespace() != null){
-					jsonObject.put("namespace", c.getNamespace());
-				}
-				if(c.getPriority() != null){
-					jsonObject.put("priority", c.getPriority());
-				}
-				if(c.getConfiguration() != null){
-					jsonObject.put("configuration", c.getConfiguration());
-				}
-				if(c.getLongitude() != null){
-					jsonObject.put("longitude", c.getLongitude());
-				}
-				if(c.getLatitude() != null){
-					jsonObject.put("latitude", c.getLatitude());
-				}
-				if(c.getMapWeight() != null){
-					jsonObject.put("map_weight", c.getMapWeight());
-				}
-				if(c.getCNodeReferences() != null){
-					Map<String, CNodeReference> l = c.getCNodeReferences();
-					if(l != null){
-						JSONArray _cNodeReferences = new JSONArray();
-						for(Entry<String, CNodeReference> e:l.entrySet()){
-							_cNodeReferences.put(e.getValue().toJSONObject());
-						}
-						jsonObject.put("c_node_references", _cNodeReferences);
+			
+			if(c.getCreationTime() != null){
+				jsonObject.put("creation_time", c.getCreationTime());
+			}
+			if(c.getGuid() != null){
+				jsonObject.put("id", c.getGuid());
+			}
+			if(c.getName() != null){
+				jsonObject.put("name", c.getName());
+			}
+			if(c.getNamespace() != null){
+				jsonObject.put("namespace", c.getNamespace());
+			}
+			if(c.getPriority() != null){
+				jsonObject.put("priority", c.getPriority());
+			}
+			if(c.getConfiguration() != null){
+				jsonObject.put("configuration", c.getConfiguration());
+			}
+			if(c.getLongitude() != null){
+				jsonObject.put("longitude", c.getLongitude());
+			}
+			if(c.getLatitude() != null){
+				jsonObject.put("latitude", c.getLatitude());
+			}
+			if(c.getMapWeight() != null){
+				jsonObject.put("map_weight", c.getMapWeight());
+			}
+			if(c.getCNodeReferences() != null){
+				Map<String, CNodeReference> l = c.getCNodeReferences();
+				if(l != null){
+					JSONArray _cNodeReferences = new JSONArray();
+					for(Entry<String, CNodeReference> e:l.entrySet()){
+						_cNodeReferences.add(e.getValue().toJSONObject());
 					}
+					jsonObject.put("c_node_references", _cNodeReferences);
 				}
-			} catch (JSONException e) {
-				getLog().error("Unable to make JSONObject: id = "+c.getGuid()+", name = "+c.getName()+"\n"+e);
 			}
 		}
 		return jsonObject;

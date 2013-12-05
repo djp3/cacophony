@@ -8,7 +8,8 @@ import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.json.JSONObject;
+import net.minidev.json.JSONObject;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;

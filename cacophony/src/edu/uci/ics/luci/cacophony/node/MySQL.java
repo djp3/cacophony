@@ -9,9 +9,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
+import net.minidev.json.JSONObject;
+
 import org.apache.log4j.Logger;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import edu.uci.ics.luci.util.FailoverFetch;
 import edu.uci.ics.luci.utility.Globals;
@@ -50,8 +50,8 @@ public class MySQL extends CNodeLoader{
 		
 		String databaseDomain = null;
 		try {
-			databaseDomain = options.getString("server_address");
-		} catch (JSONException e) {
+			databaseDomain = (String)options.get("server_address");
+		} catch (ClassCastException e) {
 		}
 		
 		if(databaseDomain == null){
@@ -61,8 +61,8 @@ public class MySQL extends CNodeLoader{
 		
 		String database = null;
 		try {
-			database = options.getString("database");
-		} catch (JSONException e) {
+			database = (String)options.get("database");
+		} catch (ClassCastException e) {
 		}
 		if(database == null){
 			getLog().error("Unable to get the \"database\"");
@@ -71,8 +71,8 @@ public class MySQL extends CNodeLoader{
 		
 		String username=null;
 		try {
-			username = options.getString("user");
-		} catch (JSONException e) {
+			username = (String)options.get("user");
+		} catch (ClassCastException e) {
 		}
 		if(username == null){
 			getLog().error("Unable to get the \"user\"");
@@ -81,8 +81,8 @@ public class MySQL extends CNodeLoader{
 		
 		String password=null;
 		try {
-			password = options.getString("password");
-		} catch (JSONException e) {
+			password = (String)options.get("password");
+		} catch (ClassCastException e) {
 		}
 		if(password == null){
 			getLog().error("Unable to get the \"password\"");
@@ -91,8 +91,8 @@ public class MySQL extends CNodeLoader{
 		
 		String nodeQuery=null;
 		try {
-			nodeQuery = options.getString("nodeQuery");
-		} catch (JSONException e) {
+			nodeQuery = (String) options.get("nodeQuery");
+		} catch (ClassCastException e) {
 		}
 		if(nodeQuery == null){
 			getLog().error("Unable to get the \"nodeQuery\"");
@@ -101,8 +101,8 @@ public class MySQL extends CNodeLoader{
 		
 		String configurationQuery=null;
 		try {
-			configurationQuery = options.getString("configurationQuery");
-		} catch (JSONException e) {
+			configurationQuery = (String) options.get("configurationQuery");
+		} catch (ClassCastException e) {
 		}
 		if(configurationQuery == null){
 			getLog().error("Unable to get the \"configurationQuery\"");

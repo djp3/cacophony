@@ -4,10 +4,10 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.TreeSet;
 
+import net.minidev.json.JSONArray;
+import net.minidev.json.JSONObject;
+
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import edu.uci.ics.luci.util.HashCodeUtil;
 import edu.uci.ics.luci.utility.datastructure.Pair;
@@ -26,49 +26,88 @@ public class CNodeReference {
 	public static CNodeReference fromJSONObject(JSONObject x) {
 		CNodeReference c = null;
 		if(x != null){
-			try {
-				c = new CNodeReference();
-				if(x.has("meta_cnode_guid")){
-					c.setMetaCNodeGuid(x.getString("meta_cnode_guid"));
-				}
-				if(x.has("cnode_guid")){
-					c.setCNodeGuid(x.getString("cnode_guid"));
-				}
+			c = new CNodeReference();
 				
-				Long lastHeartbeat;
-				try{
-					lastHeartbeat = x.getLong("last_heartbeat");
+			String mcg = null;
+			try{
+				mcg = (String) x.get("meta_cnode_guid");
+				if(mcg != null){
+					c.setMetaCNodeGuid(mcg);
+				}
+			}
+			catch(ClassCastException e){
+				getLog().warn("meta_cnode_guid isn't a string:"+x);
+			}
+			
+			String cg = null;
+			try{
+				cg = (String) x.get("cnode_guid");
+				if(cg != null){
+					c.setCNodeGuid(cg);
+				}
+			}
+			catch(ClassCastException e){
+				getLog().warn("cnode_guid isn't a string:"+x);
+			}
+			
+			Long lastHeartbeat = null;
+			try{
+				lastHeartbeat = Long.parseLong((String) x.get("last_heartbeat"));
+				if(lastHeartbeat != null){
 					c.setLastHeartbeat(lastHeartbeat);
 				}
-				catch(JSONException e){
-				}
+			}
+			catch(ClassCastException e){
+				getLog().warn("last_hearbeat isn't a String:"+x);
+			}
+			catch(NumberFormatException e){
+				getLog().warn("last_hearbeat isn't a Long:"+x);
+			}
 				
-				if(x.has("access_routes_for_ui")){
-					JSONArray ars = x.getJSONArray("access_routes_for_ui");
+			JSONArray ars = null;
+			try{
+				ars = (JSONArray) x.get("access_routes_for_ui");
+				if(ars != null){
 					Set<Pair<Long, String>> newArs = new TreeSet<Pair<Long,String>>(Collections.reverseOrder());
-					for(int i = 0; i< ars.length(); i++){
-						long priority = ars.getJSONObject(i).getLong("priority");
-						String route = ars.getJSONObject(i).getString("route");
-						Pair<Long,String> p = new Pair<Long,String>(priority,route);
-						newArs.add(p);
+					for(int i = 0; i< ars.size(); i++){
+						Long priority = Long.parseLong(((String)((JSONObject)ars.get(i)).get("priority")));
+						String route = ((String)((JSONObject)ars.get(i)).get("route"));
+						if((priority != null) && (route != null)){
+							Pair<Long,String> p = new Pair<Long,String>(priority,route);
+							newArs.add(p);
+						}
 					}
 					c.setAccessRoutesForUI(newArs);
 				}
-				
-				if(x.has("access_routes_for_api")){
-					JSONArray ars = x.getJSONArray("access_routes_for_api");
+			}
+			catch(ClassCastException e){
+				getLog().warn("access_routes_for_ui have unknown classes:"+x);
+			}
+			catch(NumberFormatException e){
+				getLog().warn("access_routes_for_ui have unparseable elements:"+x);
+			}
+			
+			ars = null;
+			try{
+				ars = (JSONArray) x.get("access_routes_for_api");
+				if(ars != null){
 					Set<Pair<Long, String>> newArs = new TreeSet<Pair<Long,String>>(Collections.reverseOrder());
-					for(int i = 0; i< ars.length(); i++){
-						long priority = ars.getJSONObject(i).getLong("priority");
-						String route = ars.getJSONObject(i).getString("route");
-						Pair<Long,String> p = new Pair<Long,String>(priority,route);
-						newArs.add(p);
+					for(int i = 0; i< ars.size(); i++){
+						Long priority = Long.parseLong((String)((JSONObject) ars.get(i)).get("priority"));
+						String route = ((String)((JSONObject) ars.get(i)).get("route"));
+						if((priority != null) && (route != null)){
+							Pair<Long,String> p = new Pair<Long,String>(priority,route);
+							newArs.add(p);
+						}
 					}
 					c.setAccessRoutesForAPI(newArs);
 				}
-			} catch (JSONException e) {
-				getLog().error("Unable to convert JSONObject to "+CNodeReference.class.getCanonicalName()+" "+e+"\n"+x.toString());
-				c = null;
+			}
+			catch(ClassCastException e){
+				getLog().warn("access_routes_for_api have unknown classes:"+x);
+			}
+			catch(NumberFormatException e){
+				getLog().warn("access_routes_for_api have unparseable elements:"+x);
 			}
 		}
 		return c;
@@ -77,43 +116,38 @@ public class CNodeReference {
 	public static JSONObject toJSONObject(CNodeReference c) {
 		JSONObject ret = null;
 		if(c != null){
-			try {
-				ret = new JSONObject();
-				if(c.getMetaCNodeGuid() != null){
-					ret.put("meta_cnode_guid", c.getMetaCNodeGuid());
-				}
-				if(c.getCNodeGuid() != null){
-					ret.put("cnode_guid", c.getCNodeGuid());
-				}
+			ret = new JSONObject();
+			if(c.getMetaCNodeGuid() != null){
+				ret.put("meta_cnode_guid", c.getMetaCNodeGuid());
+			}
+			if(c.getCNodeGuid() != null){
+				ret.put("cnode_guid", c.getCNodeGuid());
+			}
 				
-				if(c.getLastHeartbeat() != null){
-					ret.put("last_heartbeat", c.getLastHeartbeat());
-				}
+			if(c.getLastHeartbeat() != null){
+				ret.put("last_heartbeat", c.getLastHeartbeat().toString());
+			}
 				
-				if(c.getAccessRoutesForUI() != null){
-					JSONArray ars = new JSONArray();
-					for(Pair<Long,String> p:c.getAccessRoutesForUI()){
-						JSONObject ar = new JSONObject();
-						ar.put("priority",p.getFirst());
-						ar.put("route",p.getSecond());
-						ars.put(ar);
-					}
-					ret.put("access_routes_for_ui", ars);
+			if(c.getAccessRoutesForUI() != null){
+				JSONArray ars = new JSONArray();
+				for(Pair<Long,String> p:c.getAccessRoutesForUI()){
+					JSONObject ar = new JSONObject();
+					ar.put("priority",p.getFirst().toString());
+					ar.put("route",p.getSecond());
+					ars.add(ar);
 				}
-				
-				if(c.getAccessRoutesForAPI() != null){
-					JSONArray ars = new JSONArray();
-					for(Pair<Long,String> p:c.getAccessRoutesForAPI()){
-						JSONObject ar = new JSONObject();
-						ar.put("priority",p.getFirst());
-						ar.put("route",p.getSecond());
-						ars.put(ar);
-					}
-					ret.put("access_routes_for_api", ars);
+				ret.put("access_routes_for_ui", ars);
+			}
+			
+			if(c.getAccessRoutesForAPI() != null){
+				JSONArray ars = new JSONArray();
+				for(Pair<Long,String> p:c.getAccessRoutesForAPI()){
+					JSONObject ar = new JSONObject();
+					ar.put("priority",p.getFirst().toString());
+					ar.put("route",p.getSecond());
+					ars.add(ar);
 				}
-			} catch (JSONException e) {
-				getLog().error("Unable to convert "+CNodeReference.class.getCanonicalName()+" to JSONObject:"+e);
-				ret = null;
+				ret.put("access_routes_for_api", ars);
 			}
 		}
 		return ret;

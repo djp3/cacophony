@@ -12,13 +12,15 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeSet;
+
+import net.minidev.json.JSONArray;
+import net.minidev.json.JSONObject;
+import net.minidev.json.JSONValue;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLPropertiesConfiguration;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -84,19 +86,42 @@ public class FailoverFetchTest {
 	}
 	
 	@Test
+	public void testJSONAssumptions(){
+		JSONObject parse = (JSONObject)JSONValue.parse("{hello:world}");
+		assertTrue(parse != null);
+		assertTrue(parse.get("hello").equals("world"));
+		assertTrue(parse.get("world") == null);
+		parse = (JSONObject)JSONValue.parse("{blah}");
+		assertTrue(parse == null);
+		
+		String testcase = "";
+		try{
+			parse = (JSONObject)JSONValue.parse(testcase);
+			fail("Should parse as string");
+		}
+		catch(ClassCastException e){
+			assertTrue("".equals(JSONValue.parse(testcase)));
+		}
+		parse = (JSONObject)JSONValue.parse((String)null);
+		assertTrue(parse == null);
+	}
+	
+	@Test
 	public void testSorting(){
 		
 		FailoverFetch f = new FailoverFetch();
+		Map<String,Long> urlMap = new HashMap<String,Long>();
 		
-		f.directoryServerPool.put("localhost:1776",0L);
-		f.directoryServerPool.put("localhost:1776",0L);
-		f.directoryServerPool.put("localhost:1777",1L);
-		f.directoryServerPool.put("localhost:1778",1L);
-		f.directoryServerPool.put("localhost:1779",2L);
-		f.directoryServerPool.put("localhost:1780",3L);
+		urlMap.put("localhost:1776",0L);
+		urlMap.put("localhost:1776",0L);
+		urlMap.put("localhost:1777",1L);
+		urlMap.put("localhost:1778",1L);
+		urlMap.put("localhost:1779",2L);
+		urlMap.put("localhost:1780",3L);
+		f.resetUrlPool(urlMap);
 		
 		for(int i = 0 ;i < 100; i++){
-			TreeSet<Pair<Long, String>> servers = f.orderDirectoryServers();
+			TreeSet<Pair<Long, String>> servers = new TreeSet<Pair<Long,String>>(f.getUrlPoolCopy());
 			assertTrue(servers.pollFirst().getSecond().contains("1776"));
 			assertTrue(servers.pollLast().getSecond().contains("1780"));
 		}
@@ -193,53 +218,43 @@ public class FailoverFetchTest {
 		startAWebServer(workingPort,d);
 		
 		
-		FailoverFetch f = new FailoverFetch("localhost:"+workingPort,namespace);
-		assertEquals(2,f.directoryServerPool.size());  //Should only be keeping uniques
+		FailoverFetch f = new FailoverFetch(FailoverFetch.fetchDirectoryList("localhost:"+workingPort,namespace));
+		assertEquals(2,f.getUrlPoolCopy().size());  //Should only be keeping uniques
 		
 		/* Test to see if the code returns JSON */
-		try {
 			HashMap<String, String> params = new HashMap<String, String>();
 			
 			params.put("version", CacophonyRequestHandlerHelper.getAPIVersion());
 			params.put("namespace", namespace);
 
-			JSONObject response = f.fetchJSONObject("/servers", false, params, 30 * 1000);
+			JSONObject response = null;
+			try {
+				response = f.fetchJSONObject("/servers", false, params, 30 * 1000);
+			} catch (MalformedURLException e) {
+				fail("Bad URL "+e);
+			} catch (IOException e) {
+				fail("IO Exception"+e);
+			}
 		
 			//System.out.println(response.toString(5));
-			try {
-				if(response.getString("error").equals("true")){
-					fail(response.getString("errors"));
+				if(((String)response.get("error")).equals("true")){
+					fail((String)response.get("errors"));
 				}
-				assertEquals("false",response.getString("error"));
+				assertEquals("false",response.get("error"));
 			
-				assertTrue(response.getJSONObject("servers").length() > 0);
+				assertTrue(((JSONObject)response.get("servers")).size() > 0);
 			
-				Long heartbeat = response.getJSONObject("servers").getJSONObject(guid).getLong("heartbeat");
+				Long heartbeat = Long.parseLong(((String)((JSONObject) ((JSONObject)response.get("servers")).get(guid)).get("heartbeat")));
 				assertTrue(System.currentTimeMillis() - heartbeat < Directory.FIVE_MINUTES);
 			
-				namespace = response.getJSONObject("servers").getJSONObject(guid).getString("namespace");
+				namespace = ((String)((JSONObject) ((JSONObject)response.get("servers")).get(guid)).get("namespace"));
 				assertEquals(d.getDirectoryNamespace(),namespace);
 			
-				JSONArray servers = response.getJSONObject("servers").getJSONObject(guid).getJSONArray("access_routes");
-				assertEquals(5,servers.length());
-				for(int i =0 ; i < servers.length(); i++){
-					assertTrue(servers.getJSONObject(i).getString("url").contains(url));
+				JSONArray servers = ((JSONArray)((JSONObject)((JSONObject)response.get("servers")).get(guid)).get("access_routes"));
+				assertEquals(5,servers.size());
+				for(int i =0 ; i < servers.size(); i++){
+					assertTrue(((String)((JSONObject)servers.get(i)).get("url")).contains(url));
 				}
-			
-			} catch (JSONException e) {
-				e.printStackTrace();
-				fail("No error code:"+e);
-			}
-		} catch (MalformedURLException e1) {
-			e1.printStackTrace();
-			fail("Bad URL "+e1);
-		} catch (IOException e1) {
-			e1.printStackTrace();
-			fail("IO Exception"+e1);
-		} catch (JSONException e) {
-			e.printStackTrace();
-			fail("JSON Exception"+e);
-		}
 	}
 
 }

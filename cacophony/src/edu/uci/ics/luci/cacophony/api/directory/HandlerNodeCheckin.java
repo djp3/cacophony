@@ -3,10 +3,11 @@ package edu.uci.ics.luci.cacophony.api.directory;
 import java.net.InetAddress;
 import java.util.Map;
 
+import net.minidev.json.JSONArray;
+import net.minidev.json.JSONObject;
+import net.minidev.json.JSONValue;
+
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import edu.uci.ics.luci.cacophony.directory.Directory;
 import edu.uci.ics.luci.cacophony.directory.nodelist.CNodeReference;
@@ -50,32 +51,26 @@ public class HandlerNodeCheckin extends DirectoryRequestHandlerHelper {
 		
 		if(jsonDataString != null){
 			try {
-				JSONObject json = new JSONObject(jsonDataString);
-				CNodeReference cnr = CNodeReference.fromJSONObject(json);
+				JSONObject json = (JSONObject) JSONValue.parse(jsonDataString);
+				if(json != null){
+					CNodeReference cnr = CNodeReference.fromJSONObject(json);
 				
-				getDirectory().updateMetaCNode(cnr);
+					getDirectory().updateMetaCNode(cnr);
 				
-				ret = new JSONObject();
-				try {
+					ret = new JSONObject();
 					ret.put("error", "false");
-				} catch (JSONException e) {
-					getLog().error("Unable to respond with version:"+e);
 				}
-			} catch (JSONException e) {
+			} catch (ClassCastException e) {
 				getLog().warn("Received bad checkin data:"+jsonDataString+"\n"+e);
 			}
 		}
 		
 		if(ret == null){
 			ret = new JSONObject();
-			try {
-				ret.put("error", "true");
-				JSONArray errors = new JSONArray();
-				errors.put("Unable to get a valid check_in report");
-				ret.put("errors",errors);
-			} catch (JSONException e) {
-				getLog().error("Unable to respond with version:"+e);
-			}
+			ret.put("error", "true");
+			JSONArray errors = new JSONArray();
+			errors.add("Unable to get a valid check_in report");
+			ret.put("errors",errors);
 		}
 		
 		pair = new Pair<byte[],byte[]>(HandlerAbstract.getContentTypeHeader_JSON(),wrapCallback(parameters,ret.toString()).getBytes());

@@ -7,10 +7,11 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.HashMap;
 
+import net.minidev.json.JSONObject;
+import net.minidev.json.JSONValue;
+
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLPropertiesConfiguration;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -132,15 +133,15 @@ public class HandlerDirectoryNamespaceTest {
 
 		JSONObject response = null;
 		try {
-			response = new JSONObject(responseString);
+			response = (JSONObject) JSONValue.parse(responseString);
 			try {
-				assertEquals("true",response.getString("error"));
-			} catch (JSONException e) {
-				e.printStackTrace();
-				fail("No error code:"+e);
+				assertEquals("true",(String)response.get("error"));
+			} catch (ClassCastException e5) {
+				e5.printStackTrace();
+				fail("No error code");
 			}
-		} catch (JSONException e) {
-			e.printStackTrace();
+		} catch (ClassCastException e2) {
+			e2.printStackTrace();
 			fail("Bad JSON Response");
 		}
 		
@@ -165,16 +166,16 @@ public class HandlerDirectoryNamespaceTest {
 
 		response = null;
 		try {
-			response = new JSONObject(responseString);
+			response = (JSONObject) JSONValue.parse(responseString);
 			try {
-				assertEquals("false",response.getString("error"));
-				assertEquals(directoryNamespace,response.getString("namespace"));
-			} catch (JSONException e) {
-				e.printStackTrace();
-				fail("No error code:"+e);
+				assertEquals("false",(String)response.get("error"));
+				assertEquals(directoryNamespace,(String)response.get("namespace"));
+			} catch (ClassCastException e5) {
+				e5.printStackTrace();
+				fail("No error code");
 			}
-		} catch (JSONException e) {
-			e.printStackTrace();
+		} catch (ClassCastException e2) {
+			e2.printStackTrace();
 			fail("Bad JSON Response");
 		}
 		

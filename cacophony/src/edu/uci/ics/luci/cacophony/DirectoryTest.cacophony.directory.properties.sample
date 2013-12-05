@@ -6,11 +6,11 @@
    <entry key="namespace">edu.uci.ics.luci.cacophony</entry>
    <entry key="nodelist.loader.class">edu.uci.ics.luci.cacophony.directory.nodelist.MySQL</entry>
    <entry key="nodelist.loader.class.options">{	server_address:"127.0.0.1:3306"\,
-   												user:"<username>"\, >
+   												user:"<username>"\,
    												password:"<password>"\,
    												database:"<databasename>"\,
    												listViewQuery:"select id AS ID\, name AS NAME from testList"\,
    												mapViewQuery:"select id AS ID\, Y(point) AS Y\, X(point) AS X\, weight AS MAP_WEIGHT from testList"\,
-   												configurationQuery:"select configuration AS CONFIGURATION\ from configurations" }
+   												configurationQuery:"select configuration AS CONFIGURATION from configurations" }
    	</entry>
  </properties>

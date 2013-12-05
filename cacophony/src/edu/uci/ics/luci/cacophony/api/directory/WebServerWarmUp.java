@@ -4,9 +4,10 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.HashMap;
 
+import net.minidev.json.JSONObject;
+import net.minidev.json.JSONValue;
+
 import org.apache.log4j.Logger;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import edu.uci.ics.luci.cacophony.CacophonyGlobals;
 import edu.uci.ics.luci.cacophony.api.CacophonyRequestHandlerHelper;
@@ -73,8 +74,8 @@ public class WebServerWarmUp {
 			else{
 				JSONObject response = null;
 				try {
-					response = new JSONObject(responseString);
-				} catch (JSONException e) {
+					response = (JSONObject) JSONValue.parse(responseString);
+				} catch (ClassCastException e) {
 					getLog().fatal("Couldn't form JSON from responseString:"+e.toString()+":"+responseString);
 					ws.setQuitting(true);
 				}
@@ -86,8 +87,8 @@ public class WebServerWarmUp {
 				else{
 					String error = null;
 					try {
-						error = response.getString("error");
-					} catch (JSONException e) {
+						error = (String) response.get("error");
+					} catch (ClassCastException e) {
 						getLog().fatal("Couldn't find errors respons from webserver:"+e.toString()+"\n"+response);
 						ws.setQuitting(true);
 					}
@@ -103,8 +104,8 @@ public class WebServerWarmUp {
 					else{
 						String answer = null;
 						try {
-							answer = response.getString("version");
-						} catch (JSONException e) {
+							answer = (String) response.get("version");
+						} catch (ClassCastException e) {
 							getLog().fatal("Couldn't form JSON string from version:"+e.toString()+"\n"+response);
 							ws.setQuitting(true);
 						}

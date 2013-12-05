@@ -3,9 +3,9 @@ package edu.uci.ics.luci.cacophony.directory.nodelist;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import net.minidev.json.JSONObject;
+
 import org.apache.log4j.Logger;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import edu.uci.ics.luci.util.HashCodeUtil;
 
@@ -26,27 +26,27 @@ public class CNode{
 			c = new CNode();
 			String guid;
 			try {
-				guid = j.getString("guid");
+				guid = (String)j.get("guid");
 				c.setGuid(guid);
-			} catch (JSONException e1) {
+			} catch (ClassCastException e1) {
 			}
 			
 			String _uri = null;
 			URI uri;
 			try {
-				_uri = j.getString("uri");
+				_uri = (String)j.get("uri");
 				uri = new URI(_uri);
 				c.setUri(uri);
-			} catch (JSONException e1) {
+			} catch (ClassCastException e1) {
 			} catch (URISyntaxException e) {
 				getLog().error("Unable to create uri from:"+_uri);
 			}
 			
 			Long heartbeat;
 			try {
-				heartbeat = j.getLong("last_heartbeat");
+				heartbeat = Long.parseLong((String)j.get("last_heartbeat"));
 				c.setLastHeartbeat(heartbeat);
-			} catch (JSONException e1) {
+			} catch (ClassCastException | NumberFormatException e1) {
 			}
 		}
 		return c;
@@ -64,7 +64,7 @@ public class CNode{
 			if(_uri != null){
 				jsonObject.put("uri", _uri.toString());
 			}
-		} catch (JSONException e) {
+		} catch (ClassCastException e) {
 			getLog().error("Unable to make JSONObject: id = "+c.getGuid()+", last_heartbeat = "+c.getLastHeartbeat()+", uri:"+c.getUri()+"\n"+e);
 		}
 		return jsonObject;

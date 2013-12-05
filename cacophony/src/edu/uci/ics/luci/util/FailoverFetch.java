@@ -7,16 +7,16 @@ import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeSet;
 
+import net.minidev.json.JSONArray;
+import net.minidev.json.JSONObject;
+import net.minidev.json.JSONValue;
+
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import edu.uci.ics.luci.cacophony.api.CacophonyRequestHandlerHelper;
 import edu.uci.ics.luci.utility.datastructure.Pair;
@@ -27,7 +27,7 @@ public class FailoverFetch implements Serializable{
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = -5315766361652027469L;
+	private static final long serialVersionUID = -318204566899644128L;
 	private static transient volatile Logger log = null;
 	public static Logger getLog(){
 		if(log == null){
@@ -40,22 +40,15 @@ public class FailoverFetch implements Serializable{
 		log = null;
 	}
 	
-	/* Number of times the URL has failed and the URL like "localhost:1776" */
-	transient Object dspLock = new Object();
-	Map<String,Long> directoryServerPool = null;
-	
-	FailoverFetch(){
-		directoryServerPool = new HashMap<String,Long>();
-	}
-	
-	public FailoverFetch(String seedServer,String namespace){
-		this();
-		fetchDirectoryList(seedServer,namespace);
-	}
-	
-	
-	
-	public void fetchDirectoryList(String directorySeed,String namespace) {
+
+	/**
+	 * This is a convenience function to load up a list of directory servers for initializing a FailoverFetch object 
+	 * @param directorySeed, a directory server name to query, like www.ics.uci.luci
+	 * @param namespace, the namespace for that directory
+	 * @return a map of urls(String) and priorities (Long)
+	 */
+	static public Map<String,Long> fetchDirectoryList(String directorySeed,String namespace) {
+		HashMap<String, Long> ret = new HashMap<String,Long>();
 		String responseString = null;
 		
 		try{
@@ -72,51 +65,123 @@ public class FailoverFetch implements Serializable{
 		
 		JSONObject response = null;
 		try{
-			response = new JSONObject(responseString);
-			try {
-				if(!response.getString("error").equals("false")){
-					getLog().fatal("Couldn't get directory list:"+responseString);
-				}
-				else{
-					if(response.getJSONObject("servers").length() == 0){
-						getLog().fatal("No servers in directory directory list:"+responseString);
-					}
-					else{
-		    			JSONObject servers = response.getJSONObject("servers");
-		    			for(Iterator<?> k = servers.keys();k.hasNext();){
-		    				try{
-		    					JSONObject server = servers.getJSONObject((String) k.next());
-	    						JSONArray urlsForServer = server.getJSONArray("access_routes");
-	    						for(int i =0 ; i < urlsForServer.length(); i++){
-	    							long p = urlsForServer.getJSONObject(i).getLong("priority_order");
-	    							String url = urlsForServer.getJSONObject(i).getString("url");
-	    							synchronized(dspLock){
-	    								/* Make sure each url is only in the list once with the lowest priority */
-	    								if(directoryServerPool.containsKey(url)){
-	    									Long count = directoryServerPool.get(url);
-	    									if(count > p){
-	    										directoryServerPool.put(url, p);
-	    									}
-	    								}
-	    								else{
-	    									directoryServerPool.put(url,p);
-	    								}
-	    							}
-		    					}
-		    				} catch (JSONException e) {
-		    					getLog().debug("Something is missing from directory server JSON\n"+e);
-		    				}
-		    			}
-	    				
+			response = (JSONObject) JSONValue.parse(responseString);
+		}
+		catch(ClassCastException e){
+			getLog().error("Directory List did not return a JSONObject:\n"+responseString);
+		}
+		
+		if((response == null) || (!response.get("error").equals("false"))){
+			getLog().fatal("Couldn't get directory list:"+responseString);
+		}
+		else{
+			JSONObject servers = null;
+			try{
+				servers = (JSONObject)response.get("servers");
+			}
+			catch(ClassCastException e){
+				getLog().error("server list is not a JSONObject:\n"+response);
+			}
+			
+			if(servers.size() == 0){
+				getLog().fatal("No servers in directory directory list:"+responseString);
+			}
+			else{
+    			for(Entry<String, Object> entry:servers.entrySet()){
+    				
+    				JSONObject server = null;
+    				try{
+		    			server = (JSONObject) entry.getValue();
+    				}
+    				catch(ClassCastException e){
+    					getLog().error("server is not a JSONObject:\n"+servers);
+    				}
+    				
+    				if(server != null){
+    					JSONArray urlsForServer = null;
+    					
+    					try{
+    						urlsForServer = (JSONArray) server.get("access_routes");
+    					}
+    					catch(ClassCastException e){
+    						getLog().error("access_routes is not a JSONObject:\n"+server);
+    					}
+    					
+    					if(urlsForServer != null){
+    						for(int i =0 ; i < urlsForServer.size(); i++){
+    							JSONObject url = null;
+    							try{
+    								url = (JSONObject)urlsForServer.get(i);
+    							}
+    							catch(ClassCastException e){
+    								getLog().error("url is not a JSONObject:\n"+urlsForServer);
+    							}
+    							
+    							if(url != null){
+    								Long p = null;
+    								try{
+    									p = Long.parseLong((String)url.get("priority_order"));
+    								}
+    								catch(ClassCastException e){
+    									getLog().error("priority_order is not a String:\n"+url);
+    								}
+    								catch(NumberFormatException e){
+    									getLog().error("priority_order is not a Long:\n"+url);
+    								}
+    								
+    								if(p != null){
+    									String actualUrl = null;
+    									try{
+    										actualUrl = (String) url.get("url");
+    									}
+    									catch(ClassCastException e){
+    										getLog().error("actual URL is not a String:\n"+url);
+    									}
+    									
+    									if(actualUrl != null){
+   											/* Make sure each url is only in the list once with the lowest priority */
+   											if(ret.containsKey(actualUrl)){
+   												Long count = ret.get(actualUrl);
+   												if(count > p){
+   													ret.put(actualUrl, p);
+   												}
+   											}
+   											else{
+   												ret.put(actualUrl,p);
+    										}
+    									}
+    								}
+    							}
+    						}
+    					}
 	    			}
 				}
-			} catch (JSONException e) {
-				getLog().error(e);
 			}
-		} catch (JSONException e) {
-			getLog().error(e);
 		}
+		return(ret);
 	}
+	
+	/* Number of times the URL has failed and the URL like "localhost:1776" */
+	transient Object urlPoolLock = new Object();
+	private TreeSet<Pair<Long,String>> urlPool = null;
+	
+	FailoverFetch(){
+		urlPool = new TreeSet<Pair<Long,String>>();
+	}
+	
+	
+	/**
+	 * 
+	 * @param urlPool, a set of urls (String) mapped to a priority (Long).  The lower the priority the earlier the url is tried.
+	 *  If a url fails it's priority is incremented by one each time and the priorities are reordered. 
+	 */
+	public FailoverFetch(Map<String,Long> urlPool){
+		this();
+		resetUrlPool(urlPool);
+	}
+	
+	
+	
 	
 	/**
 	 * Fetch a web page's contents. Note that this will change all line breaks
@@ -146,7 +211,11 @@ public class FailoverFetch implements Serializable{
 	public String fetchWebPage(String path, boolean authenticate, Map<String, String> vars, int timeOutMilliSecs) throws  MalformedURLException, IOException
 	{
 		String responseString = null;
-		TreeSet<Pair<Long, String>> servers = orderDirectoryServers();
+		TreeSet<Pair<Long, String>> servers = new TreeSet<Pair<Long,String>>();
+		
+		synchronized(urlPoolLock){
+			servers.addAll(urlPool);
+		}
 		
 		while(servers.size()>0){
 			String s = servers.pollFirst().getSecond();
@@ -190,10 +259,15 @@ public class FailoverFetch implements Serializable{
 	 * @throws JSONException 
 	 */
 	
-	public JSONObject fetchJSONObject(String path, boolean authenticate, Map<String, String> vars, int timeOutMilliSecs) throws  MalformedURLException, IOException, JSONException
+	public JSONObject fetchJSONObject(String path, boolean authenticate, Map<String, String> vars, int timeOutMilliSecs) throws  MalformedURLException, IOException 
 	{
 		JSONObject ret = null;
-		TreeSet<Pair<Long, String>> servers = orderDirectoryServers();
+		TreeSet<Pair<Long, String>> servers = new TreeSet<Pair<Long,String>>();
+		
+		synchronized(urlPoolLock){
+			servers.addAll(urlPool);
+		}
+		
 		
 		while(servers.size() > 0){
 			String s = servers.pollFirst().getSecond();
@@ -201,12 +275,13 @@ public class FailoverFetch implements Serializable{
 				String responseString = WebUtil.fetchWebPage("http://"+s+path, authenticate, vars, timeOutMilliSecs);
 				if(responseString != null){
 					try{
-						ret = new JSONObject(responseString);
+						ret = (JSONObject) JSONValue.parse(responseString);
 						break;
-					} catch (JSONException e) {
-						incrementFailCount(s);
+					}
+					catch(ClassCastException e){
+						getLog().info("response is not a JSONObject:\n"+responseString);
 						if(servers.size() == 0){
-							throw e;
+							throw new IOException(e);
 						}
 					}
 				}
@@ -221,42 +296,66 @@ public class FailoverFetch implements Serializable{
 		return ret;
 	}
 
-	protected TreeSet<Pair<Long, String>> orderDirectoryServers() {
-		TreeSet<Pair<Long,String>> servers = new TreeSet<Pair<Long,String>>();
+	protected void resetUrlPool(Map<String,Long> urlMap) {
 		
 		/* Get a set ordered by success/priority */
-		synchronized(dspLock){
+		synchronized(urlPoolLock){
+			
 			List<Entry<String, Long>> shuffler = new ArrayList<Entry<String,Long>>();
-			for(Entry<String, Long> e: directoryServerPool.entrySet()){
+			
+			for(Entry<String, Long> e: urlMap.entrySet()){
 				shuffler.add(e);
 			}
 			/* Randomly choose among equal priorities */
 			Collections.shuffle(shuffler); 
+			
 			for(Entry<String, Long> p:shuffler){
-				servers.add(new Pair<Long,String>(p.getValue(),p.getKey()));
+				urlPool.add(new Pair<Long,String>(p.getValue(),p.getKey()));
 			}
 		}
-		return servers;
+	}
+	
+	public TreeSet<Pair<Long,String>> getUrlPoolCopy(){
+		TreeSet<Pair<Long,String>> ret = null;
+		synchronized(urlPoolLock){
+			ret = new TreeSet<Pair<Long,String>>(urlPool);
+		}
+		return(ret);
 	}
 
 	private void incrementFailCount(String s) {
-		synchronized(dspLock){
-			if(directoryServerPool.containsKey(s)){
-				Long x = directoryServerPool.get(s);
-				directoryServerPool.put(s,x+1);
+		
+		boolean found = false;
+		synchronized(urlPoolLock){
+			TreeSet<Pair<Long, String>> toDelete = new TreeSet<Pair<Long,String>>();
+			TreeSet<Pair<Long, String>> toAdd = new TreeSet<Pair<Long,String>>();
+			for(Pair<Long, String> p:urlPool){
+				if(p.getSecond().equals(s)){
+					Long x = p.getFirst();
+					toDelete.add(p);
+					if(!found){
+						toAdd.add(new Pair<Long,String>(x+1,s));
+						found = true;
+					}
+				}
 			}
-			else{
-				directoryServerPool.put(s,1L);
+			for(Pair<Long, String> p:toDelete){
+				urlPool.remove(p);
+			}
+			for(Pair<Long,String> p:toAdd){
+				urlPool.add(p);
+			}
+			if(!found){
+				urlPool.add(new Pair<Long,String>(1L,s));
 			}
 		}
-		
 	}
 	
 	private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
 
         setLog();
-        dspLock = new Object();
+        urlPoolLock = new Object();
     }
 
 }
