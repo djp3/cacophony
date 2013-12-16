@@ -30,7 +30,7 @@ import edu.uci.ics.luci.utility.datastructure.Pair;
 import edu.uci.ics.luci.utility.webserver.RequestDispatcher.HTTPRequest;
 
 
-public abstract class HandlerAbstract {
+public abstract class HandlerAbstract{
 	
 	private static transient volatile Logger log = null;
 	public static Logger getLog(){
@@ -72,8 +72,18 @@ public abstract class HandlerAbstract {
 		super();
 	}
 	
+	static private long jobsHandled = 0;
+	protected void oneMoreJobHandled(){
+		jobsHandled++;
+	}
+	
+	static public long getJobCounter(){
+		return jobsHandled;
+	}
+	
 	/**
-	 * This function should be overridden to actually do something in response to a REST call
+	 * This function should be overridden to actually do something in response to a REST call.  It should call oneMoreJobHandled, so
+	 * that getJobCounter is meaningful.
 	 * @param ip, The ip address from which the request came 
 	 * @param httpRequestType, The type of HTTP Request that was received, like: "GET" 
 	 * @param headers, the HTML headers in the request 
@@ -82,6 +92,7 @@ public abstract class HandlerAbstract {
 	 * @return a pair where the first element is the content type and the second element are the output bytes to send back
 	 */
 	public abstract Pair<byte[],byte[]> handle(InetAddress ip,HTTPRequest httpRequestType,Map<String, String> headers,String restFunction, Map<String, String> parameters);
+	
 	
 	/** This function is called to duplicate a Handler before being
 	 * dispatched to handle an incoming request.
