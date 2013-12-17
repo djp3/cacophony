@@ -2,10 +2,10 @@
 
 #cacophony project
 
-
 cacophony/bin/*
 
 #These should be built or downloaded locally
+cacophony/lib/annotations.jar
 cacophony/lib/json-smart-1.1.jar
 cacophony/lib/jsr305.jar
 
