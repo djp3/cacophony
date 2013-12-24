@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="MacRoman" standalone="no"?>
+<jardesc>
+    <jar path="sensorServer/sensorServer.jar"/>
+    <options buildIfNeeded="true" compress="true" descriptionLocation="/sensorServer/sensorServerJarDescription.jardesc" exportErrors="true" exportWarnings="true" includeDirectoryEntries="false" overwrite="false" saveDescription="true" storeRefactorings="false" useSourceFolders="false"/>
+    <storedRefactorings deprecationInfo="true" structuralOnly="false"/>
+    <selectedProjects/>
+    <manifest generateManifest="true" mainClassHandleIdentifier="=sensorServer/src&lt;edu.uci.ics.luci.cacophony.examples.sensorServer{Server.java[Server" manifestLocation="" manifestVersion="1.0" reuseManifest="false" saveManifest="false" usesManifest="true">
+        <sealing sealJar="true">
+            <packagesToSeal/>
+            <packagesToUnSeal/>
+        </sealing>
+    </manifest>
+    <selectedElements exportClassFiles="true" exportJavaFiles="false" exportOutputFolder="false">
+        <file path="/sensorServer/sensorServer.log4j.properties"/>
+        <javaElement handleIdentifier="=utility"/>
+        <folder path="/sensorServer/lib"/>
+        <file path="/sensorServer/CHANGES"/>
+        <file path="/sensorServer/VERSION"/>
+        <file path="/sensorServer/README"/>
+        <javaElement handleIdentifier="=sensorServer/src"/>
+        <file path="/sensorServer/COPYING"/>
+        <javaElement handleIdentifier="=sensorLibrary"/>
+        <folder path="/sensorServer/test"/>
+    </selectedElements>
+</jardesc>
