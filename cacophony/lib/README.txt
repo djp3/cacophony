@@ -3,10 +3,6 @@ This is what is in this directory on a working distribution
 	jars from other places:
 		json-smart-1.1.jar:
 			A Java JSON parser
-
-		JSAP-2.1.jar
-			Java Simple Argument Parser
-			http://sourceforge.net/projects/jsap/
 	
 		jtidy-r938.jar
 			JTidy: http://jtidy.sourceforge.net
@@ -32,6 +28,10 @@ This is what is in this directory on a working distribution
 			
 	jars without a well described pedigree:
 		log4j-1.2.14.jar
-		mysql-connector-java-5.1.7-bin.jar
-
 		annotations.jar (From FindBugs)
+
+
+Not currently necessary to build, but likely in the future
+	JSAP-2.1.jar
+		Java Simple Argument Parser
+		http://sourceforge.net/projects/jsap/
