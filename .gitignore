@@ -10,6 +10,7 @@ cacophony/lib/*.jar
 #p2p file system detritus
 tmp/*
 .cache/*
+cacophony/.cache/*
 
 #Mac file system detritus
 .DS_Store
