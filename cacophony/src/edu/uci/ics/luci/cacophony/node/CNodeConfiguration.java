@@ -1,12 +1,10 @@
 package edu.uci.ics.luci.cacophony.node;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
-import net.minidev.json.JSONStyle;
 
 public class CNodeConfiguration {
 	private String myPath;

@@ -1,15 +1,6 @@
 package edu.uci.ics.luci.cacophony.server.responder;
 
-import static org.junit.Assert.*;
-
-import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Random;
-
-import net.minidev.json.JSONArray;
+import static org.junit.Assert.fail;
 import net.minidev.json.JSONObject;
 import net.minidev.json.JSONStyle;
 
@@ -23,7 +14,6 @@ import edu.uci.ics.luci.cacophony.server.CNodeServer;
 import edu.uci.ics.luci.cacophony.server.CNodeServerTest;
 import edu.uci.ics.luci.cacophony.server.P2PSinkTest;
 import edu.uci.ics.luci.p2pinterface.P2PInterface;
-import edu.uci.ics.luci.p2pinterface.P2PSink;
 
 public class ResponderCapabilitiesTest {
 
