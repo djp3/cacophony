@@ -162,5 +162,129 @@ public class CNodeAddressTest {
 		}
 		
 	}
+	
+	@Test
+	@edu.umd.cs.findbugs.annotations.SuppressWarnings(value={"EC_UNRELATED_TYPES"}, justification="This is what we are testing")
+	public void testEquals() {
+		CNodeAddress a = new CNodeAddress("foo","/bar");
+		CNodeAddress b = new CNodeAddress("foo","/bar");
+		assertTrue(!a.equals(null));
+		assertTrue(!a.equals("Hello world"));
+		assertTrue(a.equals(a));
+		assertTrue(a.equals(b));
+		
+		/*Make sure we don't have to account for nulls */
+		try{
+			b.setServer(null);
+			fail("Expected an exception");
+		}catch(IllegalArgumentException e){
+			//expected
+		}
+		assertTrue(a.equals(b));
+		
+		/*Make sure we don't have to account for nulls */
+		try{
+			b.setPath(null);
+			fail("Expected an exception");
+		}catch(IllegalArgumentException e){
+			//expected
+		}
+		assertTrue(a.equals(b));
+		
+		b.setPath("/baz");
+		assertTrue(!a.equals(b));
+		
+		b.setPath("/bar");
+		assertTrue(a.equals(b));
+		
+		b.setServer("baz");
+		assertTrue(!a.equals(b));
+	}
+	
+	@Test
+	public void testHashCode() {
+		CNodeAddress a = new CNodeAddress("foo","/bar");
+		CNodeAddress b = new CNodeAddress("foo","/bar");
+		assertTrue(a.hashCode() == a.hashCode());
+		assertTrue(a.hashCode() == b.hashCode());
+		
+		/*Make sure we don't have to account for nulls */
+		try{
+			b.setServer(null);
+			fail("Expected an exception");
+		}catch(IllegalArgumentException e){
+			//expected
+		}
+		assertTrue(a.hashCode() == b.hashCode());
+		
+		/*Make sure we don't have to account for nulls */
+		try{
+			b.setPath(null);
+			fail("Expected an exception");
+		}catch(IllegalArgumentException e){
+			//expected
+		}
+		assertTrue(a.hashCode() == b.hashCode());
+		
+		b.setPath("/baz");
+		assertTrue(a.hashCode() != b.hashCode());
+		
+		b.setPath("/bar");
+		assertTrue(a.hashCode() == b.hashCode());
+		
+		b.setServer("baz");
+		assertTrue(a.hashCode() != b.hashCode());
+	}
+	
+	@Test
+	public void testCompareTo() {
+		CNodeAddress a = new CNodeAddress("foo","/bar");
+		CNodeAddress b = new CNodeAddress("foo","/bar");
+		assertTrue(a.compareTo(b) == 0);
+		
+		/*Make sure we don't have to account for nulls */
+		try{
+			b.setServer(null);
+			fail("Expected an exception");
+		}catch(IllegalArgumentException e){
+			//expected
+		}
+		assertTrue(a.compareTo(b) == 0);
+		
+		/*Make sure we don't have to account for nulls */
+		try{
+			b.setPath(null);
+			fail("Expected an exception");
+		}catch(IllegalArgumentException e){
+			//expected
+		}
+		assertTrue(a.compareTo(b) == 0);
+		
+		b.setPath("/baz");
+		assertTrue(a.compareTo(b) < 0);
+		
+		b.setPath("/bap");
+		assertTrue(a.compareTo(b) > 0);
+		
+		b.setPath("/bar");
+		assertTrue(a.compareTo(b) == 0);
+		
+		b.setServer("fop");
+		assertTrue(a.compareTo(b) < 0);
+		
+		b.setServer("fom");
+		assertTrue(a.compareTo(b) > 0);
+		
+		b.setServer("foo");
+		assertTrue(a.compareTo(b) == 0);
+		
+		b.setPath("/zzz");
+		b.setServer("fop");
+		assertTrue(a.compareTo(b) < 0);
+		
+		b.setServer("fom");
+		assertTrue(a.compareTo(b) > 0);
+		
+	}
 
 }

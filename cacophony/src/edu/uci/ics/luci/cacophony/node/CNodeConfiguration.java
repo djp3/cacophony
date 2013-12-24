@@ -227,6 +227,14 @@ public class CNodeConfiguration {
 	public void setTranslator(Translator translator) {
 		this.translator = translator;
 	}
+	
+	public JSONObject getTranslatorOptions() {
+		return translatorOptions;
+	}
+
+	public void setTranslatorOptions(JSONObject translatorOptions) {
+		this.translatorOptions = translatorOptions;
+	}
 
 	public Long getPollingMinInterval() {
 		return pollingMinInterval;

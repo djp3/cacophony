@@ -1,5 +1,7 @@
 package edu.uci.ics.luci.cacophony.node;
 
+import edu.uci.ics.luci.utility.datastructure.HashCodeUtil;
+
 /**
  * @author djp3
  * A full address is correctly formes like "p2p://server/this/is/the/path"
@@ -12,7 +14,7 @@ package edu.uci.ics.luci.cacophony.node;
  *  For example, paths should always start with a "/".
  *  
  */
-public class CNodeAddress {
+public class CNodeAddress implements Comparable<CNodeAddress>{
 	
 	private String server;
 	private String path;
@@ -96,6 +98,39 @@ public class CNodeAddress {
 		}
 		this.path = path;
 	}
+
+	@Override
+	public int compareTo(CNodeAddress o) {
+		int s = this.server.compareTo(o.server);
+		return s == 0 ? this.path.compareTo(o.path): s; 
+	}
+	
+	@Override
+	public boolean equals(Object _that) {
+		
+		if(_that == null) return false;
+		if(this == _that) return true;
+		if(!(_that instanceof CNodeAddress)) return false; 
+		
+		CNodeAddress that = (CNodeAddress)_that;
+		
+		if(this.server.equals(that.server)){
+			return this.path.equals(that.path);
+		}
+		else{
+			return false;
+		}
+	}
+	
+	public int hashCode(){
+		int result = HashCodeUtil.SEED;
+
+		result = HashCodeUtil.hash(result,this.getServer());
+		result = HashCodeUtil.hash(result,this.getPath());
+		
+		return(result);
+	}
+
 
 
 }
