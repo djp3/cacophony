@@ -1,5 +1,7 @@
 package edu.uci.ics.luci.cacophony.server.responder;
 
+This needs to be made to work
+
 import static org.junit.Assert.*;
 
 import java.io.UnsupportedEncodingException;
