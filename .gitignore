@@ -1,3 +1,7 @@
+#Mac file system detritus
+.DS_Store
+**/.DS_Store
+
 .metadata
 
 #cacophony project
