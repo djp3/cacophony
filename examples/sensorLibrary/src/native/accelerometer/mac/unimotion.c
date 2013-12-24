@@ -198,58 +198,76 @@ static bool probe_sms(int kernFunc, char *servMatch, int dataType, void *data)
     outputStructure = (union motion_data *)data;
 
     result = IOMasterPort(MACH_PORT_NULL, &masterPort);
+	if( result != KERN_SUCCESS){
+		return false;
+	}
+	else{
+    	CFMutableDictionaryRef matchingDictionary = IOServiceMatching(servMatch);
+		result = IOServiceGetMatchingServices(masterPort, matchingDictionary, &iterator);
 
-    CFMutableDictionaryRef matchingDictionary = IOServiceMatching(servMatch);
+		if (result != KERN_SUCCESS) {
+			//fputs("IOServiceGetMatchingServices returned error.\n", stderr);
+			return false;
+		}
+		else{
+			aDevice = IOIteratorNext(iterator);
 
-    result = IOServiceGetMatchingServices(masterPort, matchingDictionary, &iterator);
+			fprintf(stderr,"probe_sms about to release iterator...");
+			IOObjectRelease(iterator);
+			iterator = 0;
+			fprintf(stderr,"done\n");
 
-    if (result != KERN_SUCCESS) {
-        //fputs("IOServiceGetMatchingServices returned error.\n", stderr);
-        return false;
-    }
+			if (aDevice == 0) {
+				//fputs("No motion sensor available\n", stderr);
+				return false;
+			}
+			else{
+				result = IOServiceOpen(aDevice, mach_task_self(), 0, &dataPort);
 
-    aDevice = IOIteratorNext(iterator);
-    IOObjectRelease(iterator);
+				fprintf(stderr,"probe_sms about to release aDevice...");
+				IOObjectRelease(aDevice);
+				aDevice = 0;
+				fprintf(stderr,"done\n");
 
-    if (aDevice == 0) {
-        //fputs("No motion sensor available\n", stderr);
-        return false;
-    }
+				if (result != KERN_SUCCESS) {
+					//fputs("Could not open motion sensor device\n", stderr);
+					return false;
+				}
+				else{
 
-    result = IOServiceOpen(aDevice, mach_task_self(), 0, &dataPort);
-    IOObjectRelease(aDevice);
+					switch ( dataType ) {
+						case PB_IB:
+							structureInputSize = sizeof(struct pb_ib_data);
+							structureOutputSize = sizeof(struct pb_ib_data);
+							break;
+						case MBP:
+							structureInputSize = sizeof(struct mbp_data);
+							structureOutputSize = sizeof(struct mbp_data);
+							break;
+						default:
+							return false;
+					}
 
-    if (result != KERN_SUCCESS) {
-        //fputs("Could not open motion sensor device\n", stderr);
-        return false;
-    }
+					memset(&inputStructure, 0, sizeof(union motion_data));
+					memset(outputStructure, 0, sizeof(union motion_data));
+			
+					result = IOConnectCallStructMethod((mach_port_t)dataPort, kernFunc, &inputStructure, structureInputSize, outputStructure,&structureOutputSize);
+			
+					if (result != KERN_SUCCESS) {
+						//puts("no coords");
+						return false;
+					}
+					else{
+						fprintf(stderr,"probe_sms about to close dataPort ...");
+						IOServiceClose(dataPort); 
+						fprintf(stderr,"done\n");
+						return true;
+					}
+				}
+			}
+		}
+	}
 
-    switch ( dataType ) {
-        case PB_IB:
-            structureInputSize = sizeof(struct pb_ib_data);
-            structureOutputSize = sizeof(struct pb_ib_data);
-            break;
-        case MBP:
-            structureInputSize = sizeof(struct mbp_data);
-            structureOutputSize = sizeof(struct mbp_data);
-            break;
-        default:
-            return false;
-    }
-
-    memset(&inputStructure, 0, sizeof(union motion_data));
-    memset(outputStructure, 0, sizeof(union motion_data));
-
-    result = IOConnectCallStructMethod((mach_port_t)dataPort, kernFunc, &inputStructure, structureInputSize, outputStructure,&structureOutputSize);
-
-
-    IOServiceClose(dataPort);
-
-    if (result != KERN_SUCCESS) {
-        //puts("no coords");
-        return false;
-    }
-    return true;
 }
 
 int detect_sms()
@@ -277,7 +295,7 @@ bool read_sms_raw(int type, int *x, int *y, int *z)
     int dataType;
     union motion_data data;
 	
-	fprintf(stderr,"native code: acclerometer: readSMS 5\n");
+	//fprintf(stderr,"native code: acclerometer: readSMS 5\n");
     if ( !set_values(type, &kernFunc, &servMatch, &dataType) )
         return false;
     if ( probe_sms(kernFunc, servMatch, dataType, &data) ) {
@@ -301,7 +319,7 @@ bool read_sms_raw(int type, int *x, int *y, int *z)
 
 bool read_sms(int type, int *x, int *y, int *z)
 {
-	fprintf(stderr,"native code: acclerometer: readSMS 6\n");
+	//fprintf(stderr,"native code: acclerometer: readSMS 6\n");
     int _x, _y, _z;
 
 	if(read_sms_raw(type, &_x, &_y, &_z)){
@@ -378,7 +396,7 @@ JNIEXPORT jintArray JNICALL Java_edu_uci_ics_luci_cacophony_sensors_Acceleromete
 	int x,y,z;
 	x = y = z = 0;
 
-	fprintf(stderr,"native code: acclerometer: readSMS\n");
+	//fprintf(stderr,"native code: acclerometer: readSMS\n");
 	
 	if (first) {
 		//fprintf(stderr, "Detecting SMS\n");
@@ -408,7 +426,7 @@ JNIEXPORT jintArray JNICALL Java_edu_uci_ics_luci_cacophony_sensors_Acceleromete
 		first = false;
 	}
 
-	fprintf(stderr,"native code: acclerometer: readSMS 2\n");
+	//fprintf(stderr,"native code: acclerometer: readSMS 2\n");
 
 	jsize size = 3;
 	jintArray jr = (*env)->NewIntArray(env, size);
@@ -425,11 +443,11 @@ JNIEXPORT jintArray JNICALL Java_edu_uci_ics_luci_cacophony_sensors_Acceleromete
 				return NULL;
 			}
 			
-			fprintf(stderr,"native code: acclerometer: readSMS 3\n");
+			//fprintf(stderr,"native code: acclerometer: readSMS 3\n");
 			return jr;
 		}
 		else{
-			fprintf(stderr,"native code: acclerometer: readSMS 4\n");
+			//fprintf(stderr,"native code: acclerometer: readSMS 4\n");
 			return NULL;
 		}
 	}

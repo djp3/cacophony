@@ -1,25 +1,19 @@
 package edu.uci.ics.luci.cacophony.node;
 
-/**
- *	This is an interface for classes which translate a String from the web into something that we can
- *  build a model from. 
- * @author djp3
- *
- * @param <T> This is the type that the Translator translates into.
- */
-public interface Translator<T> {
+import net.minidev.json.JSONObject;
+
+public abstract class Translator {
 	
 	/**
-	 * 
-	 * @param x
-	 * @return true if x can be converted to a T
+	 * This is called after the object is instantiated to set parameters that might be necessary
+	 * @param jo
 	 */
-	boolean translatable(String x);
+	abstract void initialize(JSONObject jo);
 	
 	/**
-	 * 
-	 * @param x
-	 * @return the value of T that corresponds to x, unless translatable(x) is false in which case return null
+	 * This is called to translate some text from a webpage into a weka type
+	 * @param input
+	 * @return
 	 */
-	T translation(String x);
+	abstract Object translateToWeka(String input);
 }

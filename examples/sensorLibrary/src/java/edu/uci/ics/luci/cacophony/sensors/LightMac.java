@@ -59,6 +59,7 @@ public class LightMac extends Light {
     	return(readLight());
     }
     
+    @Override
     Integer senseAmbientLight(){
     	long[] readLight = readLight();
     	long tally = 0;

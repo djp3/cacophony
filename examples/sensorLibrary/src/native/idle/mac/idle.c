@@ -46,9 +46,9 @@ long long getIdleTime(int rightshift)
 	long long ret = -1;
 
 	/* Get IOHIDSystem */
-	IOServiceGetMatchingServices(masterPort, IOServiceMatching("IOHIDSystem"), &iter);
+	kern_return_t result = IOServiceGetMatchingServices(masterPort, IOServiceMatching("IOHIDSystem"), &iter);
 
-	if (iter == 0) {
+	if ((result != KERN_SUCCESS) || (iter == 0)){
 		ret = -1;
 	}
 	else{
@@ -66,9 +66,11 @@ long long getIdleTime(int rightshift)
 			}
 			else{
 				obj = CFDictionaryGetValue(properties, CFSTR("HIDIdleTime"));
-				CFRetain(obj);
-
-				if (obj) {
+				if(obj == NULL){
+					ret = -5;
+				}
+				else{
+					CFRetain(obj);
 					uint64_t tHandle;
 
 					CFTypeID type = CFGetTypeID(obj);
@@ -83,17 +85,32 @@ long long getIdleTime(int rightshift)
 						printf("Nomatic*IM: Mac Idle Sensor: Unsupported type %d\n",(int)type);
 						ret = -4;
 					}
+
+					fprintf(stderr,"getIdleTime about to release obj...");
 					CFRelease(obj);    
- 				} else {
-					ret = -5;
+					obj = nil;
+					fprintf(stderr,"done\n");
 				}
+
+				fprintf(stderr,"getIdleTime about to release properties...");
+				CFRelease((CFTypeRef)properties);
+				properties = nil;
+				fprintf(stderr,"done\n");
 			}
-			CFRelease((CFTypeRef)properties);
+
+			fprintf(stderr,"getIdleTime about to release curObj...");
+			IOObjectRelease(curObj);
+			curObj = 0;
+			fprintf(stderr,"done\n");
 		}
-		IOObjectRelease(curObj);
+
+		fprintf(stderr,"getIdleTime about to release iter...");
+		IOObjectRelease(iter);
+		iter = 0;
+		fprintf(stderr,"done\n");
+
 	}
-	/* Release our resources */
-	IOObjectRelease(iter);
+
 	return ret;
 }
 
@@ -107,13 +124,27 @@ long long getIdleTime(int rightshift)
  JNIEXPORT jlong JNICALL Java_edu_uci_ics_luci_cacophony_sensors_IdleMac_getIdleTimeNative
   (JNIEnv *env, jclass ob)
 {
+	jlong ret = -8;
+
 	fprintf(stderr,"native code: idle : getIdleTimeNative\n");
 
 	jclass excCls = (*env)->FindClass(env, "java/lang/Exception");
-	jlong ret = (jlong) getIdleTime(10);
-
-	if (excCls == 0){
-		ret = -6;
+	/* 
+		ClassFormatError: if the class data does not specify a valid class.
+		ClassCircularityError: if a class or interface would be its own superclass or superinterface.
+		NoClassDefFoundError: if no definition for a requested class or interface can be found.
+		OutOfMemoryError: if the system runs out of memory.
+	*/
+	if((*env)->ExceptionOccurred(env)) {
+		ret = -7;
+	}
+	else{
+		if ((excCls == NULL) || (excCls == 0)){
+			ret = -6;
+		}
+		else{
+			ret = (jlong) getIdleTime(10);
+		}
 	}
 
 	switch(ret){
@@ -123,6 +154,7 @@ long long getIdleTime(int rightshift)
 		case -4: (*env)->ThrowNew(env, excCls, "Mac Idle Sensor Failed: Unsupported type. See Console.\n");break;
 		case -5: (*env)->ThrowNew(env, excCls, "Mac Idle Sensor Failed: Can't find idle time\n");break;
 		case -6: (*env)->ThrowNew(env, excCls, "Mac Idle Sensor Failed: Couldn't find exception type\n");break;
+		case -7: (*env)->ThrowNew(env, excCls, "Mac Idle Sensor Failed: Couldn't find class \n");break;
 	}
 	return(ret);
 }
