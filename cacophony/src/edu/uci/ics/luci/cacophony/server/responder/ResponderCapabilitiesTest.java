@@ -69,24 +69,16 @@ public class ResponderCapabilitiesTest {
 				p2p.sendMessage(cNodeServer.getServerName(), request.toJSONString(JSONStyle.LT_COMPRESS));
 				
 				/* Wait for a response */
-				while((p2pSinkTest.getNumberOfPassPhrases() > 0) && (p2pSinkTest.getFail() == null)){
-					try {
-						Thread.sleep(100);
-					} catch (InterruptedException e) {
-					}
-				}
+				P2PSinkTest.waitForResponse(p2pSinkTest);
+				
 			
 				p2pSinkTest.addPassPhrase("{\"responses\":[{\"c_nodes\":[\"c_node_03\",\"c_node_01\",\"c_node_02\"],\"server_capacity\":\"3\",\"server_capabilities\":{\"predictors\":\"edu.uci.ics.luci.cacophony.server.responder.ResponderPredictors\",\"load_configurations\":\"edu.uci.ics.luci.cacophony.server.responder.ResponderConfigurationLoader\",\"list_c_nodes\":\"edu.uci.ics.luci.cacophony.server.responder.ResponderListCNodes\",\"capabilities\":\"edu.uci.ics.luci.cacophony.server.responder.ResponderCapabilities\",\"null\":\"edu.uci.ics.luci.cacophony.server.responder.ResponderCapabilities\",\"shutdown\":\"edu.uci.ics.luci.cacophony.server.responder.ResponderShutdown\"}}]}");
 				request.put("request","capabilities");
 				request.remove("data");
 				p2p.sendMessage(cNodeServer.getServerName(), request.toJSONString(JSONStyle.LT_COMPRESS));
 				
-				while((p2pSinkTest.getNumberOfPassPhrases() > 0) && (p2pSinkTest.getFail() == null)){
-					try {
-						Thread.sleep(100);
-					} catch (InterruptedException e) {
-					}
-				}
+				/* Wait for a response */
+				P2PSinkTest.waitForResponse(p2pSinkTest);
 				
 				if(p2pSinkTest.getFail() != null){
 					fail(p2pSinkTest.getFail());

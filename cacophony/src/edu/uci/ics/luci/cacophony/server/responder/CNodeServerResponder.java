@@ -31,14 +31,23 @@ public abstract class CNodeServerResponder {
 	
 	private JSONArray responses = new JSONArray();
 	private JSONArray errors = new JSONArray();
-
+	private Object lock = new Object();
+	
+	
+	
+	public Object getLock(){
+		return lock;
+	}
+	
 	/**
 	 * Subclasses should use this to add an error to the existing collection of errors
 	 * when handling a request
 	 * @param error
 	 */
-	protected void appendError(String error){
-		this.errors.add(error);
+	protected void appendError(Object error){
+		synchronized(lock){
+			this.errors.add(error);
+		}
 	}
 	
 	
@@ -49,11 +58,13 @@ public abstract class CNodeServerResponder {
 	 * @param errors
 	 */
 	protected void replaceErrors(JSONArray errors){
-		if(errors == null){
-			getLog().error("Setting errors to null is unexpected.  Won't do it.");
-		}
-		else{
-			this.errors = errors;
+		synchronized(lock){
+			if(errors == null){
+				getLog().error("Setting errors to null is unexpected.  Won't do it.");
+			}
+			else{
+				this.errors = errors;
+			}
 		}
 	}
 	
@@ -64,8 +75,10 @@ public abstract class CNodeServerResponder {
 	 * when handling a request
 	 * @param error
 	 */
-	protected void appendResponse(String response){
-		this.responses.add(response);
+	protected void appendResponse(Object response){
+		synchronized(lock){
+			this.responses.add(response);
+		}
 	}
 	
 	
@@ -76,11 +89,13 @@ public abstract class CNodeServerResponder {
 	 * @param responses
 	 */
 	protected void replaceResponses(JSONArray responses){
-		if(responses == null){
-			getLog().error("Setting responses to null is unexpected.  Won't do it.");
-		}
-		else{
-			this.responses = responses;
+		synchronized(lock){
+			if(responses == null){
+				getLog().error("Setting responses to null is unexpected.  Won't do it.");
+			}
+			else{
+				this.responses = responses;
+			}
 		}
 	}
 	
@@ -94,20 +109,33 @@ public abstract class CNodeServerResponder {
 	 */
 	public JSONObject constructResponse(){
 		
-		JSONObject ret = new JSONObject();
+		synchronized(lock){
+			JSONObject ret = new JSONObject();
 		
-		if(errors.size() != 0){
-			ret.put("errors", errors);
-		}
-		else{
-			ret.put("responses",responses);
-		}
+			if(errors.size() != 0){
+				ret.put("errors", errors);
+			}
+			else{
+				ret.put("responses",responses);
+			}
 		
-		return ret;
+			return ret;
+		}
 	}
 	
 	/**
-	 * 
+	 * Called right before a handle to clear any data structures necessary
+	 */
+	public void initialize(){
+		synchronized(lock){
+			errors.clear();
+			responses.clear();
+		}
+	}
+		
+	
+	/**
+	 * See also initialize
 	 * @param jo
 	 * @param cnodes
 	 */

@@ -1,5 +1,7 @@
 package edu.uci.ics.luci.cacophony.server;
 
+import static org.junit.Assert.fail;
+
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +33,16 @@ public class P2PSinkTest implements P2PSink {
 	
 	public int getNumberOfPassPhrases(){
 		return pass.size();
+	}
+	
+	public String getPassPhrases(){
+		StringBuilder sb = new StringBuilder();
+		for(String s:pass){
+			sb.append("\n");
+			sb.append(s);
+		}
+		sb.append("\n");
+		return sb.toString();
 	}
 		
 
@@ -69,8 +81,31 @@ public class P2PSinkTest implements P2PSink {
 			pass.remove(deleteUs);
 		}
 		if(!ok){
-			this.cns.stop();
 			fail = "Received an unexpected response:\n"+incomingMessage;
+			this.cns.stop();
+		}
+	}
+
+
+	/**
+	 * Wait 10 seconds for a response
+	 * @param p2pSinkTest
+	 */
+	public static void waitForResponse(P2PSinkTest p2pSinkTest) {
+		
+		int count = 0;
+		while((p2pSinkTest.getNumberOfPassPhrases() > 0) && (p2pSinkTest.getFail() == null)){
+			try {
+				Thread.sleep(100);
+				count++;
+			} catch (InterruptedException e) {
+			}
+			if(count > 100){
+				fail("Message did not arrive as expected:"+p2pSinkTest.getPassPhrases()+"\n"+p2pSinkTest.getFail());
+			}
+		}
+		if(p2pSinkTest.getFail() != null){
+			fail(p2pSinkTest.getFail());
 		}
 	}
 }

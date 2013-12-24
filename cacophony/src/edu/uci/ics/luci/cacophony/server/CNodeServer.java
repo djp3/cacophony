@@ -10,9 +10,8 @@ import java.util.concurrent.Executors;
 import edu.uci.ics.luci.cacophony.node.CNode;
 import edu.uci.ics.luci.cacophony.server.responder.CNodeServerResponder;
 import edu.uci.ics.luci.cacophony.server.responder.ResponderCapabilities;
+import edu.uci.ics.luci.cacophony.server.responder.ResponderConfiguration;
 import edu.uci.ics.luci.cacophony.server.responder.ResponderConfigurationLoader;
-import edu.uci.ics.luci.cacophony.server.responder.ResponderListCNodes;
-import edu.uci.ics.luci.cacophony.server.responder.ResponderPredictors;
 import edu.uci.ics.luci.cacophony.server.responder.ResponderShutdown;
 import edu.uci.ics.luci.p2pinterface.P2PInterface;
 import edu.uci.ics.luci.utility.Quittable;
@@ -111,7 +110,7 @@ public class CNodeServer implements Quittable{
 		
 			handlers.put("load_configurations", new ResponderConfigurationLoader(this));
 		
-			handlers.put("predictors", new ResponderPredictors());
+			handlers.put("configuration", new ResponderConfiguration());
 			handlers.put("shutdown", new ResponderShutdown(this));
 		
 			cs = new CustomerService(handlers,cNodes);

@@ -128,8 +128,12 @@ public class CustomerService implements P2PSink{
 					catch(RuntimeException e1){
 						getLog().error("Unable to find the \"data\" in the incoming JSON\n"+jo.toJSONString(JSONStyle.NO_COMPRESS));
 					}
-					cnr.handle(data,cNodes);
-					response = cnr.constructResponse();
+					
+					synchronized(cnr.getLock()){
+						cnr.initialize();
+						cnr.handle(data,cNodes);
+						response = cnr.constructResponse();
+					}
 				}
 					
 				if(from == null){

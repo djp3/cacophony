@@ -89,13 +89,8 @@ public class CNodeServerTest {
 			JSONObject request = ResponderConfigurationLoaderTest.makeLoadConfigurationRequest(testName1, testName1);
 			p2p.sendMessage(cNodeServer.getServerName(), request.toJSONString(JSONStyle.LT_COMPRESS));
 			
-			/*Wait for response to come in*/
-			while(p2pSinkTest.getNumberOfPassPhrases() > 0){
-				try {
-					Thread.sleep(100);
-				} catch (InterruptedException e) {
-				}
-			}
+			/* Wait for a response */
+			P2PSinkTest.waitForResponse(p2pSinkTest);
 			
 			/* Constructed data */
 			JSONObject data = (JSONObject) request.get("data");
