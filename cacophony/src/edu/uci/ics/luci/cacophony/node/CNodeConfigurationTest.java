@@ -81,8 +81,9 @@ public class CNodeConfigurationTest {
 		cnc.setTranslator(cnc.getTranslator());
 		assertEquals(cnc.getTranslator().getClass().getCanonicalName(),translator.get("classname"));
 		
-		cnc.setTranslatorOptions(cnc.getTranslatorOptions());
-		assertEquals(cnc.getTranslatorOptions(),translator.get("options"));
+//		TODO: leaving this commented out until we need to add support for it.		
+//		cnc.setTranslatorOptions(cnc.getTranslatorOptions());
+//		assertEquals(cnc.getTranslatorOptions(),translator.get("options"));
 		
 		JSONObject polling = (JSONObject) configuration.get("polling");
 		cnc.setPollingMinInterval(cnc.getPollingMinInterval());

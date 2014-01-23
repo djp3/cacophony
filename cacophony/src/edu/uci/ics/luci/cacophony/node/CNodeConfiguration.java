@@ -133,12 +133,13 @@ public class CNodeConfiguration {
 			} catch (ClassNotFoundException e) {
 				throw new IllegalArgumentException("Unable to load configuration for "+myPath+" because the target translator couldn't be instatiated :"+name+"\n"+e);
 			}
-			
-			try{
-				translator.initialize(translatorOptions);
-			} catch (RuntimeException e) {
-				throw new IllegalArgumentException("Unable to load configuration for "+myPath+" because the target translator couldn't be initialized with :"+translatorOptions.toJSONString()+"\n"+e);
-			}
+
+// TODO: leaving this commented out until we need to add support for it.
+//			try{
+//				translator.initialize(translatorOptions);
+//			} catch (RuntimeException e) {
+//				throw new IllegalArgumentException("Unable to load configuration for "+myPath+" because the target translator couldn't be initialized with :"+translatorOptions.toJSONString()+"\n"+e);
+//			}
 			
 			
 			JSONObject polling = (JSONObject) jo.get("polling");
