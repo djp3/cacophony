@@ -1,1 +1,0 @@
-Incremental training does not produce same result as batch training (nominal class)!

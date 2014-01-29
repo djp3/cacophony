@@ -1,1 +1,0 @@
-Cannot build model (only class attribute present in data!), using ZeroR model instead!

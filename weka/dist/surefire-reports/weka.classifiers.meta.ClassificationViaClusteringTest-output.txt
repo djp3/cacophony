@@ -1,1 +1,0 @@
-Data contains only class attribute, defaulting to ZeroR model.
