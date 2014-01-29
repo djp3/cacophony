@@ -1,12 +1,16 @@
 .metadata
 *.log
 
-#cacophony project
+#cacophony project build objects
 cacophony/bin/*
+jni.h
+*.jnilib
+examples/sensorLibrary/src/native/wifi/mac/wifi.dSYM
 
 #Anything in lib should be built or downloaded locally if needed
 cacophony/lib/*.jar
 cacophony/lib/p2p4java/*.jar
+cacophony/lib/p2p4java/processing
 
 #p2p file system detritus
 tmp/*
