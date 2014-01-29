@@ -1,9 +1,6 @@
 This is what is in this directory on a working distribution
 
 	jars from other places:
-		json.jar
-			Library for handling JSON from json.org.
-
 		json-smart-1.1.jar:
 			A Java JSON parser
 	
@@ -18,12 +15,7 @@ This is what is in this directory on a working distribution
 			json-path: https://code.google.com/p/json-path/
 			"JsonPath is to JSON what XPATH is to XML, a simple way to extract parts of a given document. JsonPath is available in many programming languages such as Javascript, Python and PHP. Now also in Java!"
 
-			
 			NOTE: json-path-0.8.0.jar depends on json-smart-1.1.jar. This can be found in json-path-0.8.0-dependencies.zip at the above Google code site's downloads page.
-
-		junit-4.10.jar
-			http://junit.org
-			Framework for unit testing
 
 		luci-utility.jar
 			https://github.com/djp3/luci-utility
@@ -32,6 +24,12 @@ This is what is in this directory on a working distribution
 		p2p4java.jar
 			The p2p4java implementation by the LUCI lab
 
+			p2p4java.jar requires that you include:
+				The source code for p2p4java has info on how to get them
+					bcprov-ext-jdk15on-147.jar
+					httptunnel-1.0.jar
+					netty-3.2.3.Final.jar
+				
 		weka.jar
 			The Weka machine learning library
 		
