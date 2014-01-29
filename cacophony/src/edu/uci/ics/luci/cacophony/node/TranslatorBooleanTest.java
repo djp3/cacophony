@@ -35,12 +35,15 @@ public class TranslatorBooleanTest {
 		String t1 = "truE";
 		String t2 = "TRUE";
 		String t3 = "true";
+		String t4 = " truE  ";
 		String f1 = "falSE";
 		String f2 = "FALSE";
 		String f3 = "false";
+		String f4 = " False ";
 		String x1 = "apple";
 		String x2 = "truer";
 		String x3 = "antifalse";
+		String x4 = "anti  false  ";
 		
 		
 		TranslatorBoolean tb = new TranslatorBoolean();
@@ -49,12 +52,18 @@ public class TranslatorBooleanTest {
 		assertTrue((Double)tb.translate(t1).getValue() == 1);
 		assertTrue((Double)tb.translate(t2).getValue() == 1);
 		assertTrue((Double)tb.translate(t3).getValue() == 1);
+		assertTrue((Double)tb.translate(t4).getValue() == 1);
+		
 		assertTrue((Double)tb.translate(f1).getValue() == 0);
 		assertTrue((Double)tb.translate(f2).getValue() == 0);
 		assertTrue((Double)tb.translate(f3).getValue() == 0);
+		assertTrue((Double)tb.translate(f4).getValue() == 0);
+		
 		assertTrue(tb.translate(x1) == null);
 		assertTrue(tb.translate(x2) == null);
 		assertTrue(tb.translate(x3) == null);
+		assertTrue(tb.translate(x4) == null);
+		
 		assertTrue(tb.translate(null) == null);
 	}
 }

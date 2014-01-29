@@ -1,9 +1,14 @@
 package edu.uci.ics.luci.cacophony.node;
 
+import net.minidev.json.JSONObject;
 import weka.core.Attribute;
 
 public class TranslatorBoolean implements Translator {
 
+	@Override
+	public void initialize(JSONObject jo) {
+	}
+	
 	@Override
 	public WekaAttributeTypeValuePair translate(String s) {
 		if (s == null) {
@@ -11,10 +16,10 @@ public class TranslatorBoolean implements Translator {
 		}
 
 		double value;
-		if (s.toLowerCase().equals("false")) {
+		if (s.toLowerCase().trim().equals("false")) {
 			value = 0;
 		}
-		else if (s.toLowerCase().equals("true")) {
+		else if (s.toLowerCase().trim().equals("true")) {
 			value = 1;
 		}
 		else {
@@ -23,4 +28,5 @@ public class TranslatorBoolean implements Translator {
 		
 		return new WekaAttributeTypeValuePair(Attribute.NUMERIC, value);
 	}
+
 }
