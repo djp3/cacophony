@@ -6,6 +6,7 @@ cacophony/bin/*
 
 #Anything in lib should be built or downloaded locally if needed
 cacophony/lib/*.jar
+cacophony/lib/p2p4java/*.jar
 
 #p2p file system detritus
 tmp/*
