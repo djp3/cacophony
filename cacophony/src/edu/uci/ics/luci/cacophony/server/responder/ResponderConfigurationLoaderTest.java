@@ -153,7 +153,7 @@ public class ResponderConfigurationLoaderTest {
 		target.put("path_expression", "/*/*");
 		target.put("reg_ex", "temp=(.*)");
 		translator = new JSONObject();
-		translator.put("classname","edu.uci.ics.luci.cacophony.node.TranslatorGeneric");
+		translator.put("classname","edu.uci.ics.luci.cacophony.node.TranslatorString");
 		options = new JSONObject();
 		options.put("b", "other thing");
 		translator.put("options",options);
@@ -176,7 +176,7 @@ public class ResponderConfigurationLoaderTest {
 		target.put("path_expression", "/*/*");
 		target.put("reg_ex", "temp=(.*)");
 		translator = new JSONObject();
-		translator.put("classname","edu.uci.ics.luci.cacophony.node.TranslatorGeneric");
+		translator.put("classname","edu.uci.ics.luci.cacophony.node.TranslatorString");
 		options = new JSONObject();
 		options.put("c", "yet another thing");
 		translator.put("options",options);
