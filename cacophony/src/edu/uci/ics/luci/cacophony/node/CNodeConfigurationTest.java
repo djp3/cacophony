@@ -57,32 +57,38 @@ public class CNodeConfigurationTest {
 		assertEquals(cnc.getMyPath(),(String)configuration.get("c_node_name"));
 		
 		cnc.setPredictors(cnc.getPredictors());
-		for(int i=0; i< ((JSONArray)configuration.get("predictors")).size(); i++){
+		for(int i=0; i<((JSONArray)configuration.get("predictors")).size(); i++){
 			String predictor = (String)((JSONArray)configuration.get("predictors")).get(i);
 			
 			CNodeAddress cna = new CNodeAddress(predictor);
 			assertTrue(cnc.getPredictors().contains(cna));
 		}
 		
-		JSONObject target = (JSONObject) configuration.get("target");
-		cnc.setTargetURL(cnc.getTargetURL());
-		assertEquals(cnc.getTargetURL(),(String)target.get("url"));
+		cnc.setFeatures(cnc.getFeatures());
+		JSONArray featuresJSON = (JSONArray)configuration.get("features");
+		for(int i=0; i<(featuresJSON).size(); i++){
+			JSONObject featureJSON = (JSONObject)featuresJSON.get(i);
+			SensorConfig feature = new SensorConfig(featureJSON);
+			
+			assertTrue(cnc.getFeatures().contains(feature));
+		}
 		
-		cnc.setTargetFormat(cnc.getTargetFormat());
-		assertEquals(cnc.getTargetFormat(),(String)target.get("format"));
 		
-		cnc.setTargetRegEx(cnc.getTargetRegEx());
-		assertEquals(cnc.getTargetRegEx(),(String)target.get("reg_ex"));
+		JSONObject targetJSON = (JSONObject)configuration.get("target");
+		SensorConfig target = new SensorConfig(targetJSON);
+		cnc.setTarget(target);
 		
-		cnc.setTargetPathExpression(cnc.getTargetPathExpression());
-		assertEquals(cnc.getTargetPathExpression(),(String)target.get("path_expression"));
+		assertEquals(cnc.getTarget().getURL(), (String)targetJSON.get("url"));
+		assertEquals(cnc.getTarget().getFormat(), (String)targetJSON.get("format"));
+		assertEquals(cnc.getTarget().getRegEx(), (String)targetJSON.get("reg_ex"));
+		assertEquals(cnc.getTarget().getPathExpression(), (String)targetJSON.get("path_expression"));
 		
-		JSONObject translator = (JSONObject) target.get("translator");
-		cnc.setTranslator(cnc.getTranslator());
-		assertEquals(cnc.getTranslator().getClass().getCanonicalName(),translator.get("classname"));
-		
-		cnc.setTranslatorOptions(cnc.getTranslatorOptions());
-		assertEquals(cnc.getTranslatorOptions(),translator.get("options"));
+		JSONObject translatorJSON = (JSONObject)targetJSON.get("translator");
+		assertTrue(translatorJSON != null); // TODO: Is this actually a problem? It probably makes sense that only some sensors need translators
+		assertEquals(cnc.getTarget().getTranslator().getClass().getCanonicalName(), (String)translatorJSON.get("classname"));
+		assertEquals(cnc.getTarget().getTranslator().getClass().getCanonicalName(), (String)translatorJSON.get("classname"));
+		assertEquals(cnc.getTarget().getTranslatorOptions(), translatorJSON.get("options"));
+
 		
 		JSONObject polling = (JSONObject) configuration.get("polling");
 		cnc.setPollingMinInterval(cnc.getPollingMinInterval());
@@ -91,8 +97,6 @@ public class CNodeConfigurationTest {
 		cnc.setPollingPolicy(cnc.getPollingPolicy());
 		assertEquals(cnc.getPollingPolicy().toString(),polling.get("policy"));
 		
-		assertEquals(cnc.toJSONObject(),configuration);
-		
+		assertEquals(cnc.toJSONObject(),configuration);		
 	}
-
 }
