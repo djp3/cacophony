@@ -8,11 +8,11 @@
 	<classpathentry kind="lib" path="lib/annotations.jar"/>
 	<classpathentry kind="lib" path="lib/json-path-0.8.0.jar"/>
 	<classpathentry kind="lib" path="lib/jtidy-r938.jar"/>
-	<classpathentry kind="lib" path="lib/p2p4java.jar"/>
+	<classpathentry kind="lib" path="lib/p2p4java.jar" sourcepath="/p2p4java"/>
 	<classpathentry kind="lib" path="lib/p2p4java/bcprov-ext-jdk15on-147.jar"/>
 	<classpathentry kind="lib" path="lib/p2p4java/httptunnel-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/p2p4java/netty-3.2.3.Final.jar"/>
-	<classpathentry kind="lib" path="lib/weka.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.launching.macosx.MacOSXType/Java SE 6"/>
+	<classpathentry kind="lib" path="/Users/djp3/Development/Mac/EclipseWorkspaceCacophony/weka/weka.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

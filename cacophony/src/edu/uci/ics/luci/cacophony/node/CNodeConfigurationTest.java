@@ -93,6 +93,7 @@ public class CNodeConfigurationTest {
 		assertEquals(cnc.getPollingPolicy().toString(),polling.get("policy"));
 		
 		assertEquals(cnc.toJSONObject(),configuration);
+		System.out.println(cnc.toJSONObject());
 		
 	}
 
