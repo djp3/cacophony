@@ -119,69 +119,135 @@ public class ResponderConfigurationLoaderTest {
 		
 		JSONObject wrapper = new JSONObject();
 		JSONArray configurations = new JSONArray();
+		
+		/*** c_node_01 ***/
 		JSONObject configuration = new JSONObject();
 		configuration.put("c_node_name", "c_node_01");
+		
 		JSONArray predictors = new JSONArray();
 		predictors.add("p2p://"+myServerName+"/c_node_03");
 		configuration.put("predictors", predictors);
+		
+		JSONArray features = new JSONArray();
+		JSONObject feature = new JSONObject();
+		feature.put("name", "feature 1");
+		feature.put("url", "http://www.cnn.com");
+		feature.put("format", "html");
+		feature.put("path_expression", "//*[@id=\"cnn_ftrcntntinner\"]/div[9]/div[1]/text()[2]");
+		feature.put("reg_ex", "(.*)");
+		JSONObject featureTranslator = new JSONObject();
+		featureTranslator.put("classname", "edu.uci.ics.luci.cacophony.node.TranslatorString");
+		JSONObject featureOptions = new JSONObject();
+		featureOptions.put("a", "thing");
+		featureTranslator.put("options", featureOptions);
+		feature.put("translator", featureTranslator);
+		features.add(feature);
+		configuration.put("features", features);
+		
 		JSONObject target = new JSONObject();
-		target.put("url","http://cnn.com");
+		target.put("name", "name of target");
+		target.put("url","http://www.cnn.com");
 		target.put("format","html");
-		target.put("path_expression", "/*/*");
-		target.put("reg_ex", "temp=(.*)");
-		JSONObject translator = new JSONObject();
-		translator.put("classname","edu.uci.ics.luci.cacophony.node.TranslatorString");
-		JSONObject options = new JSONObject();
-		options.put("a", "thing");
-		translator.put("options",options);
-		target.put("translator", translator);
+		//target.put("path_expression", "//*[@id=\\\"cnn_ftrcntntinner\\\"]/div[9]/div[1]/text()[2]");
+		//target.put("reg_ex", "temp=(.*)");
+		target.put("path_expression", "//*[@id=\"cnn_ftrcntntinner\"]/div[9]/div[1]/text()[2]");
+		target.put("reg_ex", "(.*)");
+		JSONObject targetTranslator = new JSONObject();
+		targetTranslator.put("classname","edu.uci.ics.luci.cacophony.node.TranslatorString");
+		JSONObject targetOptions = new JSONObject();
+		targetOptions.put("a", "thing");
+		targetTranslator.put("options",targetOptions);
+		target.put("translator", targetTranslator);
 		configuration.put("target", target);
+		
 		JSONObject polling = new JSONObject();
 		polling.put("policy", PollingPolicy.ON_CHANGE.toString());
 		polling.put("min_interval", "5000");
 		configuration.put("polling", polling);
 		configurations.add(configuration);
 		
+		/*** c_node_02 ***/
 		configuration = new JSONObject();
 		configuration.put("c_node_name", "c_node_02");
+		
 		predictors = new JSONArray();
 		predictors.add("p2p://"+myServerName+"/c_node_01");
 		configuration.put("predictors", predictors);
+		
+		features = new JSONArray();
+		feature = new JSONObject();
+		feature.put("name", "feature 1");
+		feature.put("url", "http://www.cnn.com");
+		feature.put("format", "html");
+		feature.put("path_expression", "//*[@id=\"cnn_ftrcntntinner\"]/div[9]/div[1]/text()[2]");
+		feature.put("reg_ex", "(.*)");
+		featureTranslator = new JSONObject();
+		featureTranslator.put("classname", "edu.uci.ics.luci.cacophony.node.TranslatorString");
+		featureOptions = new JSONObject();
+		featureOptions.put("a", "thing");
+		featureTranslator.put("options", featureOptions);
+		feature.put("translator", featureTranslator);
+		features.add(feature);
+		configuration.put("features", features);
+		
 		target = new JSONObject();
+		target.put("name", "name of target");
 		target.put("url","http://cnn.com");
 		target.put("format","html");
-		target.put("path_expression", "/*/*");
+		target.put("path_expression", "//*[@id=\\\"cnn_ftrcntntinner\\\"]/div[9]/div[1]/text()[2]");
 		target.put("reg_ex", "temp=(.*)");
-		translator = new JSONObject();
-		translator.put("classname","edu.uci.ics.luci.cacophony.node.TranslatorString");
-		options = new JSONObject();
-		options.put("b", "other thing");
-		translator.put("options",options);
-		target.put("translator", translator);
+		targetTranslator = new JSONObject();
+		targetTranslator.put("classname","edu.uci.ics.luci.cacophony.node.TranslatorString");
+		targetOptions = new JSONObject();
+		targetOptions.put("b", "other thing");
+		targetTranslator.put("options",targetOptions);
+		target.put("translator", targetTranslator);
 		configuration.put("target", target);
+		
 		polling = new JSONObject();
 		polling.put("policy", PollingPolicy.ON_CHANGE.toString());
 		polling.put("min_interval", "5000");
 		configuration.put("polling", polling);
 		configurations.add(configuration);
 		
+		/*** c_node_03 ***/
 		configuration = new JSONObject();
 		configuration.put("c_node_name", "c_node_03");
+		
 		predictors = new JSONArray();
 		predictors.add("p2p://"+myServerName+"/c_node_02");
 		configuration.put("predictors", predictors);
+		
+		features = new JSONArray();
+		feature = new JSONObject();
+		feature.put("name", "feature 1");
+		feature.put("url", "http://www.cnn.com");
+		feature.put("format", "html");
+		feature.put("path_expression", "//*[@id=\"cnn_ftrcntntinner\"]/div[9]/div[1]/text()[2]");
+		feature.put("reg_ex", "(.*)");
+		featureTranslator = new JSONObject();
+		featureTranslator.put("classname", "edu.uci.ics.luci.cacophony.node.TranslatorString");
+		featureOptions = new JSONObject();
+		featureOptions.put("a", "thing");
+		featureTranslator.put("options", featureOptions);
+		feature.put("translator", featureTranslator);
+		features.add(feature);
+		configuration.put("features", features);
+		
 		target = new JSONObject();
+		target.put("name", "name of target");
 		target.put("url","http://cnn.com");
 		target.put("format","html");
-		target.put("path_expression", "/*/*");
+		target.put("path_expression", "//*[@id=\\\"cnn_ftrcntntinner\\\"]/div[9]/div[1]/text()[2]");
 		target.put("reg_ex", "temp=(.*)");
-		translator = new JSONObject();
-		translator.put("classname","edu.uci.ics.luci.cacophony.node.TranslatorString");
-		options = new JSONObject();
-		options.put("c", "yet another thing");
-		translator.put("options",options);
-		target.put("translator", translator);
+		targetTranslator = new JSONObject();
+		targetTranslator.put("classname","edu.uci.ics.luci.cacophony.node.TranslatorString");
+		targetOptions = new JSONObject();
+		targetOptions.put("c", "yet another thing");
+		targetTranslator.put("options",targetOptions);
+		target.put("translator", targetTranslator);
 		configuration.put("target", target);
+		
 		polling = new JSONObject();
 		polling.put("policy", PollingPolicy.ON_CHANGE.toString());
 		polling.put("min_interval", "5000");

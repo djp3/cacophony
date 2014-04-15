@@ -9,12 +9,8 @@ import net.minidev.json.JSONObject;
 public class CNodeConfiguration {
 	private String myPath;
 	private Set<CNodeAddress> predictors = new HashSet<CNodeAddress>();
-	private String targetURL;
-	private String targetFormat;
-	private String targetRegEx;
-	private String targetPathExpression;
-	private Translator translator;
-	private JSONObject translatorOptions;
+	private SensorConfig target;
+	private Set<SensorConfig> features = new HashSet<SensorConfig>();
 	private Long pollingMinInterval;
 	private PollingPolicy pollingPolicy;
 	
@@ -23,29 +19,23 @@ public class CNodeConfiguration {
 	}
 	
 	public JSONObject toJSONObject(){
-		
 		JSONObject configuration = new JSONObject();
 		configuration.put("c_node_name", myPath);
 		
 		JSONArray predictorsJSON = new JSONArray();
-		
 		for(CNodeAddress cna : predictors){
 			predictorsJSON.add(cna.toString());
 		}
 		configuration.put("predictors", predictorsJSON);
 		
-		JSONObject target = new JSONObject();
-		target.put("url",targetURL);
-		target.put("format",targetFormat);
-		target.put("path_expression", targetPathExpression);
-		target.put("reg_ex", targetRegEx);
+		configuration.put("target", target.serializeToJSON());
 		
-		JSONObject translatorJSON = new JSONObject();
-		translatorJSON.put("classname",translator.getClass().getCanonicalName());
-		translatorJSON.put("options",translatorOptions);
-		target.put("translator", translatorJSON);
-		
-		configuration.put("target", target);
+		JSONArray featuresJSON = new JSONArray();
+		for(SensorConfig feature : features){
+			JSONObject featureJSON = feature.serializeToJSON();
+			featuresJSON.add(featureJSON);
+		}
+		configuration.put("features", featuresJSON);
 		
 		JSONObject polling = new JSONObject();
 		polling.put("policy", pollingPolicy.toString());
@@ -66,109 +56,53 @@ public class CNodeConfiguration {
 		}
 		myPath = myPathString;
 		
-		JSONArray predictorsJSON = (JSONArray) jo.get("predictors");
+		JSONArray predictorsJSON = (JSONArray)jo.get("predictors");
 		if(predictors != null){
 			for(int i = 0; i < predictorsJSON.size(); i++){
-				String predictor = (String) predictorsJSON.get(i);
+				String predictor = (String)predictorsJSON.get(i);
 				try{
-					CNodeAddress cna = new CNodeAddress(predictor);
-					predictors.add(cna);
+					predictors.add(new CNodeAddress(predictor));
 				}
 				catch(IllegalArgumentException e){
 					throw new IllegalArgumentException("Unable to load configuration for "+myPath+" because the predictor didn't parse correctly: "+predictor);
 				}
-				
 			}
 		}
 		
-		JSONObject target = (JSONObject) jo.get("target");
-		if(target == null){
-			throw new IllegalArgumentException("Unable to load configuration for "+myPath+" because the target didn't exist.");
+		target = new SensorConfig((JSONObject)jo.get("target"));
+
+		JSONArray featuresJSON = (JSONArray)jo.get("features"); 
+		for(int i = 0; i < featuresJSON.size(); i++){
+			JSONObject featureJSON = (JSONObject)featuresJSON.get(i);
+			features.add(new SensorConfig(featureJSON));
+		}
+		
+		JSONObject polling = (JSONObject)jo.get("polling");
+		if(polling == null){
+			throw new IllegalArgumentException("Unable to load configuration for "+myPath+" because the polling parameters didn't exist.");
 		}
 		else{
-			targetURL = (String) target.get("url");
-			if(targetURL == null){
-				throw new IllegalArgumentException("Unable to load configuration for "+myPath+" because the target url didn't exist.");
+			String pollingMinIntervalString = (String) polling.get("min_interval");
+			if(pollingMinIntervalString == null){
+				throw new IllegalArgumentException("Unable to load configuration for "+myPath+" because the polling min interval didn't exist.");
 			}
 			
-			targetFormat = (String) target.get("format");
-			if(targetFormat == null){
-				throw new IllegalArgumentException("Unable to load configuration for "+myPath+" because the target format didn't exist.");
+			try{
+				pollingMinInterval = Long.valueOf(pollingMinIntervalString);
 			}
-			if(!targetFormat.equals("html") && !targetFormat.equals("json")){
-				throw new IllegalArgumentException("Unable to load configuration for "+myPath+" because the target format must be \"json\" or \"html\" not "+targetFormat);
-			}
-			
-			targetPathExpression = (String) target.get("path_expression");
-			if(targetPathExpression == null){
-				throw new IllegalArgumentException("Unable to load configuration for "+myPath+" because the target path_expression didn't exist.");
+			catch(NumberFormatException e){
+				throw new IllegalArgumentException("Unable to load configuration for "+myPath+" because the polling min interval look like a long."+e);
 			}
 			
-			targetRegEx = (String) target.get("reg_ex");
-			if(targetRegEx == null){
-				throw new IllegalArgumentException("Unable to load configuration for "+myPath+" because the target reg_ex didn't exist.");
+			String pollingPolicyString = (String)polling.get("policy");
+			if(pollingPolicyString == null){
+				throw new IllegalArgumentException("Unable to load configuration for "+myPath+" because the polling policy didn't exist.");
 			}
-			
-			JSONObject translatorJSON = (JSONObject) target.get("translator");
-			if(translatorJSON == null){
-				throw new IllegalArgumentException("Unable to load configuration for "+myPath+" because the target translator didn't exist.");
+			try{
+				pollingPolicy = (PollingPolicy) PollingPolicy.fromString(pollingPolicyString);
 			}
-			
-			String name = (String)translatorJSON.get("classname");
-			if(name == null){
-				throw new IllegalArgumentException("Unable to load configuration for "+myPath+" because the target translator classname didn't exist.");
-			}
-			
-			translatorOptions = (JSONObject) translatorJSON.get("options");
-			if(translatorOptions == null){
-				throw new IllegalArgumentException("Unable to load configuration for "+myPath+" because the target translator options didn't exist.");
-			}
-			
-			try {
-				translator= (Translator) Class.forName(name).newInstance();
-			} catch (InstantiationException e) {
-				throw new IllegalArgumentException("Unable to load configuration for "+myPath+" because the target translator couldn't be instatiated :"+name+"\n"+e);
-			} catch (IllegalAccessException e) {
-				throw new IllegalArgumentException("Unable to load configuration for "+myPath+" because the target translator couldn't be instatiated :"+name+"\n"+e);
-			} catch (ClassNotFoundException e) {
-				throw new IllegalArgumentException("Unable to load configuration for "+myPath+" because the target translator couldn't be instatiated :"+name+"\n"+e);
-			}
-
-// TODO: leaving this commented out until we need to add support for it.
-//			try{
-//				translator.initialize(translatorOptions);
-//			} catch (RuntimeException e) {
-//				throw new IllegalArgumentException("Unable to load configuration for "+myPath+" because the target translator couldn't be initialized with :"+translatorOptions.toJSONString()+"\n"+e);
-//			}
-			
-			
-			JSONObject polling = (JSONObject) jo.get("polling");
-			if(polling == null){
-				throw new IllegalArgumentException("Unable to load configuration for "+myPath+" because the polling parameters didn't exist.");
-			}
-			else{
-				String pollingMinIntervalString = (String) polling.get("min_interval");
-				if(pollingMinIntervalString == null){
-					throw new IllegalArgumentException("Unable to load configuration for "+myPath+" because the polling min interval didn't exist.");
-				}
-				
-				try{
-					pollingMinInterval = Long.valueOf(pollingMinIntervalString);
-				}
-				catch(NumberFormatException e){
-					throw new IllegalArgumentException("Unable to load configuration for "+myPath+" because the polling min interval look like a long."+e);
-				}
-				
-				String pollingPolicyString = (String)polling.get("policy");
-				if(pollingPolicyString == null){
-					throw new IllegalArgumentException("Unable to load configuration for "+myPath+" because the polling policy didn't exist.");
-				}
-				try{
-					pollingPolicy = (PollingPolicy) PollingPolicy.fromString(pollingPolicyString);
-				}
-				catch(IllegalArgumentException e){
-					throw new IllegalArgumentException("Unable to load configuration for "+myPath+" because the polling policy was unknown."+e);
-				}
+			catch(IllegalArgumentException e){
+				throw new IllegalArgumentException("Unable to load configuration for "+myPath+" because the polling policy was unknown."+e);
 			}
 		}
 	}
@@ -189,54 +123,22 @@ public class CNodeConfiguration {
 		this.predictors = predictors;
 	}
 
-	public String getTargetURL() {
-		return targetURL;
-	}
-
-	public void setTargetURL(String targetURL) {
-		this.targetURL = targetURL;
-	}
-
-	public String getTargetFormat() {
-		return targetFormat;
-	}
-
-	public void setTargetFormat(String targetFormat) {
-		this.targetFormat = targetFormat;
-	}
-
-	public String getTargetRegEx() {
-		return targetRegEx;
-	}
-
-	public void setTargetRegEx(String targetRegEx) {
-		this.targetRegEx = targetRegEx;
-	}
-
-	public String getTargetPathExpression() {
-		return targetPathExpression;
-	}
-
-	public void setTargetPathExpression(String targetPathExpression) {
-		this.targetPathExpression = targetPathExpression;
-	}
-
-	public Translator getTranslator() {
-		return translator;
-	}
-
-	public void setTranslator(Translator translator) {
-		this.translator = translator;
+	public SensorConfig getTarget() {
+		return target;
 	}
 	
-	public JSONObject getTranslatorOptions() {
-		return translatorOptions;
+	public void setTarget(SensorConfig target) {
+		this.target = target; 
 	}
 
-	public void setTranslatorOptions(JSONObject translatorOptions) {
-		this.translatorOptions = translatorOptions;
+	public Set<SensorConfig> getFeatures() {
+		return features;
 	}
 
+	public void setFeatures(Set<SensorConfig> features) {
+		this.features = features;
+	}
+	
 	public Long getPollingMinInterval() {
 		return pollingMinInterval;
 	}

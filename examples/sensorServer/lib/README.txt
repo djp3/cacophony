@@ -18,5 +18,6 @@ This is what needs to be in this directory on a working distribution
 	jars without a well described pedigree:
 		log4j-1.2.14.jar
 		annotations.jar (From FindBugs)
+		json.jar
 		jsr305.jar (From FindBugs I think)
 		junit.jar
