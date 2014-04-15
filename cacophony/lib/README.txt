@@ -11,11 +11,15 @@ This is what is in this directory on a working distribution
 			 tool for cleaning up malformed and faulty HTML. In addition, JTidy
 			 provides a DOM parser for real-world HTML." 
 			 
-		json-path-0.8.0.jar
+		json-path-0.9.0.jar
 			json-path: https://code.google.com/p/json-path/
 			"JsonPath is to JSON what XPATH is to XML, a simple way to extract parts of a given document. JsonPath is available in many programming languages such as Javascript, Python and PHP. Now also in Java!"
 
-			NOTE: json-path-0.8.0.jar depends on json-smart-1.1.jar. This can be found in json-path-0.8.0-dependencies.zip at the above Google code site's downloads page.
+			NOTE: json-path-0.9.0.jar has dependencies as well. These can be found in dependencies zip at the above Google code site's downloads page.
+				currently that includes:
+					json-smart-1.2.jar
+					slf4j-api-1.7.5.jar
+
 
 		luci-utility.jar
 			https://github.com/djp3/luci-utility

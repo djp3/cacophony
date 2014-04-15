@@ -85,7 +85,7 @@ public class ResponderConfigurationTest {
 			
 			
 			/* Send the request we are testing */
-			p2pSinkTest.addPassPhrase("{\"responses\":[{\"predictors\":[\"p2p://"+cNodeServer.getServerName()+"01/c_node_02\"],\"c_node_name\":\"c_node_03\",\"target\":{\"translator\":{\"classname\":\"edu.uci.ics.luci.cacophony.node.TranslatorString\",\"options\":{\"c\":\"yet another thing\"}},\"path_expression\":\"/*/*\",\"reg_ex\":\"temp=(.*)\",\"format\":\"html\",\"url\":\"http://cnn.com\"},\"polling\":{\"min_interval\":\"5000\",\"policy\":\"ON_CHANGE\"}}]}");
+			p2pSinkTest.addPassPhrase("{\"responses\":[{\"predictors\":[\"p2p://"+cNodeServer.getServerName()+"01/c_node_02\"],\"c_node_name\":\"c_node_03\",\"features\":[{\"translator\":{\"classname\":\"edu.uci.ics.luci.cacophony.node.TranslatorString\",\"options\":{\"a\":\"thing\"}},\"path_expression\":\"//*[@id=\\\"cnn_ftrcntntinner\\\"]/div[9]/div[1]/text()[2]\",\"name\":\"feature 1\",\"reg_ex\":\"(.*)\",\"format\":\"html\",\"url\":\"http://www.cnn.com\"}],\"target\":{\"translator\":{\"classname\":\"edu.uci.ics.luci.cacophony.node.TranslatorString\",\"options\":{\"c\":\"yet another thing\"}},\"path_expression\":\"//*[@id=\\\\\\\"cnn_ftrcntntinner\\\\\\\"]/div[9]/div[1]/text()[2]\",\"name\":\"name of target\",\"reg_ex\":\"temp=(.*)\",\"format\":\"html\",\"url\":\"http://cnn.com\"},\"polling\":{\"min_interval\":\"5000\",\"policy\":\"ON_CHANGE\"}}]}");
 			request.put("request","configuration");
 			JSONObject data = new JSONObject();
 			data.put("c_node","c_node_03");
