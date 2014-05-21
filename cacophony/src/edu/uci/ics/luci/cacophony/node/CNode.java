@@ -1,5 +1,6 @@
 package edu.uci.ics.luci.cacophony.node;
 
+import java.io.File;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,6 +11,10 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+
+import com.almworks.sqlite4java.SQLiteConnection;
+import com.almworks.sqlite4java.SQLiteException;
+import com.almworks.sqlite4java.SQLiteStatement;
 
 
 public class CNode implements Runnable{
@@ -30,15 +35,16 @@ public class CNode implements Runnable{
 
 	@Override
 	public void run() {
-		// TODO: use getNextUpdateTime() to decide when to reader target sensor
+		// TODO: use getNextUpdateTime() to decide when to read target sensor
     SensorReader targetReader = new SensorReader(configuration.getTarget()); 
+    SensorReading targetReading = null;
     try {
-			SensorReading targetReading = targetReader.call();
+			targetReading = targetReader.call();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
     
-    // TODO: don't retrieve feature values unless the target value has changed
+    // TODO: don't retrieve feature values unless the target value is non-null and has changed
 		List<Callable<SensorReading>> tasks = new ArrayList<Callable<SensorReading>>(); 
     for(SensorConfig feature : configuration.getFeatures()){
       tasks.add(new SensorReader(feature));
@@ -52,35 +58,46 @@ public class CNode implements Runnable{
 			// TODO: Figure out if some of the tasks completed successfully.
 		}
 		
+		List<SensorReading> sensorReadings = new ArrayList<SensorReading>();
     for(Future<SensorReading> future : futures) {
       try {
-      	SensorReading sensorReading = future.get();
-      	if (sensorReading.getRawValue() != null){
-    			WekaAttributeTypeValuePair wekaTypeValuePair = sensorReading.getSensorConfig().getTranslator().translate(sensorReading.getRawValue());
-    			Object targetData = wekaTypeValuePair.getValue();
-    			System.out.println(targetData);
-          // TODO: store raw value in sqlite DB
-    		}
+      	sensorReadings.add(future.get());
       } catch (InterruptedException e) {
         e.printStackTrace();
     	} catch (ExecutionException e) {
         e.printStackTrace();
       }
     }
+    sensorReadings.add(targetReading);
+    SensorReadingsDAO.store(sensorReadings);
+    
     //shut down the executor service now
     executor.shutdown();
 		
 		trainModel();
-		Object prediction = predict();
+		Object prediction = predict(sensorReadings);
 		// store predicted value
 	}
 	
 	private void trainModel() {
-		//TODO: implement training here
+		List<SensorConfig> sensors = new ArrayList<SensorConfig>(configuration.getFeatures());
+		sensors.add(configuration.getTarget());
+		List<Observation> observationsRaw = SensorReadingsDAO.retrieve(sensors);
+		
+		for (Observation obs : observationsRaw){
+			List<WekaAttributeTypeValuePair> featuresTranslated = new ArrayList<WekaAttributeTypeValuePair>();
+			for (SensorReading reading : obs.getFeatures()) {
+				if (reading.getRawValue() != null){
+						featuresTranslated.add(reading.getTranslatedValue());
+				}
+			}
+			WekaAttributeTypeValuePair translatedTarget = obs.getTarget().getTranslatedValue();
+			// TODO: Need to pass translated values to actual Weka code for training model
+		}
 	}
 	
-	private Object predict() {
-		//TODO: implement. Should this return String instead of Object?
+	private Object predict(List<SensorReading> featureValues) {
+		//TODO: Implement. Should this take a model as a parameter?.
 		return null;
 	}
 	
