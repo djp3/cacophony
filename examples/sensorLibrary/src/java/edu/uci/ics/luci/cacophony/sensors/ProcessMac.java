@@ -24,8 +24,9 @@ package edu.uci.ics.luci.cacophony.sensors;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import edu.uci.ics.luci.utility.datastructure.ListComparable;
 
@@ -34,7 +35,7 @@ public class ProcessMac extends Process{
     private static transient volatile Logger log = null;
 	public static Logger getLog(){
 		if(log == null){
-			log = Logger.getLogger(ProcessMac.class);
+			log = LogManager.getLogger(ProcessMac.class);
 		}
 		return log;
 	}

@@ -59,7 +59,7 @@ public class ServerTest {
 			RequestDispatcher dispatcher = new RequestDispatcher(requestHandlerRegistry);
 			ws = new WebServer(dispatcher, SensorServerGlobals.DEFAULT_PORT, false, new AccessControl());
 			ws.start();
-			Globals.getGlobals().addQuittables(ws);
+			Globals.getGlobals().addQuittable(ws);
 		} catch (RuntimeException e) {
 			fail("Couldn't start webserver"+e);
 		}
@@ -112,7 +112,7 @@ public class ServerTest {
 			RequestDispatcher dispatcher = new RequestDispatcher(requestHandlerRegistry);
 			ws = new WebServer(dispatcher, SensorServerGlobals.DEFAULT_PORT, false, new AccessControl());
 			ws.start();
-			Globals.getGlobals().addQuittables(ws);
+			Globals.getGlobals().addQuittable(ws);
 		} catch (RuntimeException e) {
 			fail("Couldn't start webserver"+e);
 		}

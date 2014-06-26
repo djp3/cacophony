@@ -7,14 +7,15 @@ import java.net.URLClassLoader;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class ClassLoaderNative {
 	
 	private static transient volatile Logger log = null;
 	public static Logger getLog(){
 		if(log == null){
-			log = Logger.getLogger(ClassLoaderNative.class);
+			log = LogManager.getLogger(ClassLoaderNative.class);
 		}
 		return log;
 	}

@@ -33,8 +33,9 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import edu.uci.ics.luci.utility.Quittable;
 import edu.uci.ics.luci.utility.datastructure.ListComparable;
@@ -46,7 +47,7 @@ public final class SensorNet {
 	private static transient volatile Logger log = null;
 	public static Logger getLog(){
 		if(log == null){
-				log = Logger.getLogger(SensorNet.class);
+				log = LogManager.getLogger(SensorNet.class);
 		}
 		return log;
 	}

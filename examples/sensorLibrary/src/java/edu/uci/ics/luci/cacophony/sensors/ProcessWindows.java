@@ -24,7 +24,8 @@ package edu.uci.ics.luci.cacophony.sensors;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import edu.uci.ics.luci.utility.datastructure.ListComparable;
 
@@ -33,7 +34,7 @@ public class ProcessWindows extends Process{
     private static transient volatile Logger log = null;
 	public static Logger getLog(){
 		if(log == null){
-			log = Logger.getLogger(ProcessWindows.class);
+			log = LogManager.getLogger(ProcessWindows.class);
 		}
 		return log;
 	}

@@ -23,7 +23,8 @@ package edu.uci.ics.luci.cacophony.sensors;
 
 import java.util.HashMap;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import edu.uci.ics.luci.utility.datastructure.MapComparable;
 import edu.uci.ics.luci.utility.datastructure.Pair;
@@ -33,7 +34,7 @@ public class WiFiWindows extends WiFi {
 	 private static transient volatile Logger log = null;
 	 public static Logger getLog(){
 		if(log == null){
-			log = Logger.getLogger(WiFiWindows.class);
+			log = LogManager.getLogger(WiFiWindows.class);
 		}
 		return log;
 	}

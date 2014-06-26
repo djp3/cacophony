@@ -30,8 +30,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import edu.uci.ics.luci.utility.datastructure.ListComparable;
 import edu.uci.ics.luci.utility.datastructure.MapComparable;
@@ -44,7 +45,7 @@ private static final long serialVersionUID = -6855888492539831371L;
 private static transient volatile Logger log = null;
 public static Logger getLog(){
 	if(log == null){
-		log = Logger.getLogger(Record.class);
+		log = LogManager.getLogger(Record.class);
 	}
 	return log;
 }

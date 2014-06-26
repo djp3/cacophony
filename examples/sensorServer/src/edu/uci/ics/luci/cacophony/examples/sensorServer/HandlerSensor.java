@@ -26,7 +26,8 @@ import static org.apache.commons.lang.StringEscapeUtils.escapeHtml;
 import java.net.InetAddress;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -51,7 +52,7 @@ public class HandlerSensor extends HandlerAbstract {
 	private static transient volatile Logger log = null;
 	public static Logger getLog(){
 		if(log == null){
-			log = Logger.getLogger(HandlerSensor.class);
+			log = LogManager.getLogger(HandlerSensor.class);
 		}
 		return log;
 	}

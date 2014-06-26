@@ -22,8 +22,9 @@
 
 package edu.uci.ics.luci.cacophony.sensors;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import edu.uci.ics.luci.utility.Globals;
 import edu.uci.ics.luci.utility.datastructure.ListComparable;
@@ -33,7 +34,7 @@ public abstract class Process extends Abstract{
 	private static transient volatile Logger log = null;
 	public static Logger getLog(){
 		if(log == null){
-			log = Logger.getLogger(Process.class);
+			log = LogManager.getLogger(Process.class);
 		}
 		return log;
 	}
@@ -99,7 +100,7 @@ public abstract class Process extends Abstract{
 						break;
 					default:break;
 				}
-				Globals.getGlobals().addQuittables(sensor);
+				Globals.getGlobals().addQuittable(sensor);
 			}
 			return sensor;
 		}

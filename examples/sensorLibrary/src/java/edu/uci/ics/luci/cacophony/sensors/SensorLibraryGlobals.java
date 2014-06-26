@@ -5,7 +5,8 @@ import java.util.List;
 import java.util.TimeZone;
 
 import org.apache.commons.configuration.XMLPropertiesConfiguration;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import edu.uci.ics.luci.utility.CalendarCache;
 import edu.uci.ics.luci.utility.Globals;
@@ -13,8 +14,7 @@ import edu.uci.ics.luci.utility.Globals;
 
 public class SensorLibraryGlobals extends Globals{
 	
-	private static final String PROPERTY_FILENAME_DEFAULT = "sensorLibrary.log4j.properties";
-	public static final String CONFIG_FILENAME_DEFAULT = "sensorLibrary.properties";
+	private static final String PROPERTY_FILENAME_DEFAULT = "sensorLibrary.log4j.xml";
 	public static final int DEFAULT_PORT = 2011;
 	private static transient volatile Logger log = null;
 		
@@ -35,7 +35,7 @@ public class SensorLibraryGlobals extends Globals{
 	
 	public static synchronized Logger getLog(){
 		if(log == null){
-			log = Logger.getLogger(SensorLibraryGlobals.class);
+			log = LogManager.getLogger(SensorLibraryGlobals.class);
 		}
 		return log;
 	}
@@ -94,9 +94,7 @@ public class SensorLibraryGlobals extends Globals{
 	
 
 	public SensorLibraryGlobals() {
-		super(PROPERTY_FILENAME_DEFAULT);
-		super.setPropertyFileName(PROPERTY_FILENAME_DEFAULT);
-		super.reloadLog4jProperties();
+		super.setLog4JPropertyFileName(PROPERTY_FILENAME_DEFAULT);
 	}
 }
 

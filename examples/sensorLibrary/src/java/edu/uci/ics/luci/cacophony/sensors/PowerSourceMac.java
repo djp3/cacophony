@@ -25,15 +25,16 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class PowerSourceMac extends PowerSource{
 	
     private static transient volatile Logger log = null;
 	public static Logger getLog(){
 		if(log == null){
-			log = Logger.getLogger(PowerSourceMac.class);
+			log = LogManager.getLogger(PowerSourceMac.class);
 		}
 		return log;
 	}

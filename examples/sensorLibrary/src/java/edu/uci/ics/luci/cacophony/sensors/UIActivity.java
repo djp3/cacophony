@@ -21,7 +21,8 @@
 
 package edu.uci.ics.luci.cacophony.sensors;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import edu.uci.ics.luci.utility.Globals;
 
@@ -30,7 +31,7 @@ public abstract class UIActivity extends Abstract{
 	private static transient volatile Logger log = null;
 	public static Logger getLog(){
 		if(log == null){
-				log = Logger.getLogger(UIActivity.class);
+				log = LogManager.getLogger(UIActivity.class);
 		}
 		return log;
 	}
@@ -96,7 +97,7 @@ public abstract class UIActivity extends Abstract{
 						break;
 					default:break;
 				}
-				Globals.getGlobals().addQuittables(sensor);
+				Globals.getGlobals().addQuittable(sensor);
 			}
 			return sensor;
 		}

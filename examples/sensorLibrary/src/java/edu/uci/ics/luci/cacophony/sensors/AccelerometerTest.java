@@ -28,7 +28,8 @@ import static org.junit.Assert.fail;
 
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -42,7 +43,7 @@ public class AccelerometerTest {
 	private static transient volatile Logger log = null;
 	public static Logger getLog(){
 			if(log == null){
-					log = Logger.getLogger(AccelerometerTest.class);
+					log = LogManager.getLogger(AccelerometerTest.class);
 			}
 			return log;
 	}

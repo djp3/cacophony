@@ -21,14 +21,15 @@
 
 package edu.uci.ics.luci.cacophony.sensors;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class PowerSourceWindows extends PowerSource{
 	
     private static transient volatile Logger log = null;
 	public static Logger getLog(){
 		if(log == null){
-			log = Logger.getLogger(PowerSourceWindows.class);
+			log = LogManager.getLogger(PowerSourceWindows.class);
 		}
 		return log;
 	}

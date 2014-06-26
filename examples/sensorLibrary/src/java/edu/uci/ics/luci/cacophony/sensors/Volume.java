@@ -24,7 +24,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import edu.uci.ics.luci.utility.Globals;
 
@@ -33,7 +34,7 @@ public class Volume extends Abstract {
 	private static transient volatile Logger log = null;
 	public static Logger getLog(){
 		if(log == null){
-			log = Logger.getLogger(Volume.class);
+			log = LogManager.getLogger(Volume.class);
 		}
 		return log;
 	}
@@ -96,7 +97,7 @@ public class Volume extends Abstract {
 					default:
 						sensor = new Volume();
 				}
-				Globals.getGlobals().addQuittables(sensor);
+				Globals.getGlobals().addQuittable(sensor);
 			}
 			return sensor;
 		}

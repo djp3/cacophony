@@ -3,7 +3,8 @@ package edu.uci.ics.luci.cacophony.examples.sensorServer;
 import java.net.InetAddress;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -21,7 +22,7 @@ public class HandlerShutdown extends HandlerAbstract{
 	
 	public static Logger getLog(){
 		if(log == null){
-			log = Logger.getLogger(HandlerShutdown.class);
+			log = LogManager.getLogger(HandlerShutdown.class);
 		}
 		return log;
 	}

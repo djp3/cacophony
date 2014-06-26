@@ -23,7 +23,8 @@ package edu.uci.ics.luci.cacophony.examples.sensorServer;
 
 import java.util.HashMap;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import edu.uci.ics.luci.utility.Globals;
 import edu.uci.ics.luci.utility.Quittable;
@@ -40,7 +41,7 @@ public class Server implements Quittable{
 	private static transient volatile Logger log = null;
 	public static Logger getLog(){
 		if(log == null){
-			log = Logger.getLogger(Server.class);
+			log = LogManager.getLogger(Server.class);
 		}
 		return log;
 	}
@@ -58,7 +59,7 @@ public class Server implements Quittable{
 		
 	
 	public void initialize(){
-		Globals.getGlobals().addQuittables(this);
+		Globals.getGlobals().addQuittable(this);
 		try {
 			requestHandlerRegistry = new HashMap<String, HandlerAbstract>();
 			requestHandlerRegistry.put(null,new HandlerFileServer(edu.uci.ics.luci.utility.Globals.class,"/www/"));
@@ -72,7 +73,7 @@ public class Server implements Quittable{
 			RequestDispatcher dispatcher = new RequestDispatcher(requestHandlerRegistry);
 			ws = new WebServer(dispatcher, SensorServerGlobals.DEFAULT_PORT, false, new AccessControl());
 			ws.start();
-			Globals.getGlobals().addQuittables(ws);
+			Globals.getGlobals().addQuittable(ws);
 		} catch (RuntimeException e) {
 			getLog().error("Couldn't start webserver"+e);
 		}
