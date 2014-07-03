@@ -1,6 +1,5 @@
 package edu.uci.ics.luci.cacophony.node;
 
-import java.io.File;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,10 +11,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import com.almworks.sqlite4java.SQLiteConnection;
-import com.almworks.sqlite4java.SQLiteException;
-import com.almworks.sqlite4java.SQLiteStatement;
-
 
 public class CNode implements Runnable{
 	
@@ -25,12 +20,13 @@ public class CNode implements Runnable{
 		return configuration;
 	}
 
-	public void setConfiguration(CNodeConfiguration configuration) {
-		this.configuration = configuration;
-	}
-
 	public CNode(CNodeConfiguration configuration){
 		this.configuration = configuration;
+		
+		List<SensorConfig> sensorConfigs = new ArrayList<SensorConfig>();
+		sensorConfigs.addAll(configuration.getFeatures());
+		sensorConfigs.add(configuration.getTarget());
+		SensorReadingsDAO.initializeDBIfNecessary(sensorConfigs);
 	}
 
 	@Override

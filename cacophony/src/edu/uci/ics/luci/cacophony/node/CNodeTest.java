@@ -41,9 +41,7 @@ public class CNodeTest {
 	@Test
 	public void test() {
 		try{
-			CNode cn = new CNode(null);
-			assertTrue(cn.getConfiguration() == null);
-			
+			CNode cn = null;
 			CNodeConfiguration cnn = null;
 			try{
 				JSONObject js = ResponderConfigurationLoaderTest.makeLoadConfigurationRequest(CNodeServerTest.makeARandomP2PServerAddress(), "p2p://foo/bar");
@@ -51,7 +49,7 @@ public class CNodeTest {
 				JSONArray configurations = (JSONArray) data.get("configurations");
 				JSONObject configuration = (JSONObject) configurations.get(0);
 				cnn = new CNodeConfiguration(configuration);
-				cn.setConfiguration(cnn);
+				cn = new CNode(cnn);
 				assertTrue(cn.getConfiguration() == cnn);
 			}
 			catch(IllegalArgumentException e){

@@ -1,49 +1,52 @@
 package edu.uci.ics.luci.cacophony.node;
 
 import java.io.File;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import com.almworks.sqlite4java.SQLiteConnection;
 import com.almworks.sqlite4java.SQLiteException;
 import com.almworks.sqlite4java.SQLiteStatement;
 import edu.uci.ics.luci.utility.StringStuff;
 
-/** WARNING! WARNING! WARNING!
- * Be mindful of SQL injection attacks when modifying this code! 
- * 
- */
 
-/** TODO: This code is taking sensor names (presumably) input by a user, and using them as column names.
-/* This raises issues with:
- *   (1) changes to sensor names: how do we map DB columns to sensors in the Cacophony configuration if the name of a sensor changes?
- *       (a) Possible solutions include making column names immutable
- *       (b) having some immutable unique ID besides the displayed sensor name, and using that immutable unique ID as the column name
- *   (2) SQL injection: escaping the values being inserted into the DB shouldn't be an issue as long as we use the bind syntax. But
- *       what about column names? These are currently based on user input. We're sanitizing these column names below, but if we're
- *       overlooking something, little Bobby Tables might find us.
- */
-
+// TODO: Add comments documenting public methods
 public class SensorReadingsDAO {
-	private static final File DATABASE_FILE = new File("cacophony_db");
+	private static final File DATABASE_FILE = new File("cacophony_db.sqlite3");
 	private static final String SENSOR_READINGS_TABLE = "SensorReadings";
-		
+	private static final String SENSOR_COLUMN_NAMES_TABLE = "SensorColumnNames";
+	
+	
+	public static void initializeDBIfNecessary(List<SensorConfig> sensorConfigs) {
+		createColumnNamesTableIfMissing();
+		createSensorReadingsTableIfMissing(sensorConfigs);	
+		populateColumnNamesTable(sensorConfigs);
+	}
+	
 	/**
 	 * 
 	 * @param Sensor readings to store
 	 */
-	public static int store(List<SensorReading> sensorReadings) {
+	public static void store(List<SensorReading> sensorReadings) {
 		SQLiteConnection db = null;
 		SQLiteStatement st = null;
+		
+		Map<String,String> featureIDtoColumnNameMap = getFeatureIDtoColumnNameMap();
+		List<String> columnNames = new ArrayList<String>();
+		for (SensorConfig sc : SensorReading.flattenSensorReadingsIntoConfigs(sensorReadings)){
+			columnNames.add(featureIDtoColumnNameMap.get(sc.getID()));
+		}
+		
     try {
     	db = new SQLiteConnection(DATABASE_FILE);
-			db.open(true);
-			List<SensorConfig> sensorConfigs = SensorReading.flattenSensorReadingsIntoConfigs(sensorReadings);
-			createTableIfMissing(sensorConfigs);
-			
-	    st = db.prepare("INSERT INTO " + sanitizeIdentifier(SENSOR_READINGS_TABLE)
-	    								+ " (" + buildColumnsString(sensorConfigs) + ")"
+			db.open(false);
+
+			st = db.prepare("INSERT INTO " + SENSOR_READINGS_TABLE
+	    								+ " (" + StringStuff.join(", ", columnNames) + ")"
 	    								+ " VALUES (" + buildQuestionMarkString(sensorReadings.size()) + ")");
 	    for(int i=0; i < sensorReadings.size(); ++i) {
 	    	st.bind(i+1, sensorReadings.get(i).getRawValue());
@@ -52,16 +55,12 @@ public class SensorReadingsDAO {
 		} catch (SQLiteException e) {
 			// TODO: log error
 			e.printStackTrace();
-		} catch (SqlSanitizingException e) {
-			// TODO: log error?
-			e.printStackTrace();
 		} finally {
 			if (st != null) {
 				st.dispose();
 			}
 			db.dispose();
 		}
-    return 0; // TODO: this should return the ID of the inserted row
 	}
 	
 	/**
@@ -71,11 +70,18 @@ public class SensorReadingsDAO {
 	public static List<Observation> retrieve(List<SensorConfig> sensors) {
 		SQLiteConnection db = null;
 		SQLiteStatement st = null;
+		
+		Map<String,String> featureIDtoColumnNameMap = getFeatureIDtoColumnNameMap();
+		List<String> columnNames = new ArrayList<String>();
+		for (SensorConfig sc : sensors){
+			columnNames.add(featureIDtoColumnNameMap.get(sc.getID()));
+		}
+		
     List<Observation> allObservations = null;
     try {
     	db = new SQLiteConnection(DATABASE_FILE);
-			db.open(true);
-	    st = db.prepare("SELECT " + buildColumnsString(sensors) + " FROM " + sanitizeIdentifier(SENSOR_READINGS_TABLE));
+			db.open(false);
+	    st = db.prepare("SELECT " + StringStuff.join(", ", columnNames) + " FROM " + SENSOR_READINGS_TABLE);
 	    allObservations = new ArrayList<Observation>();
 	    while (st.step()){
 	    	List<SensorReading> readings = new ArrayList<SensorReading>();
@@ -89,9 +95,6 @@ public class SensorReadingsDAO {
 		} catch (SQLiteException e) {
 			// TODO: log error
 			e.printStackTrace();
-		} catch (SqlSanitizingException e) {
-			// TODO: log error?
-			e.printStackTrace();
 		} finally {
 			if (st != null) {
 				st.dispose();
@@ -101,14 +104,12 @@ public class SensorReadingsDAO {
     return allObservations;
 	}
 	
-	private static void createTableIfMissing(List<SensorConfig> sensorConfigs) throws SqlSanitizingException {
+	private static void createColumnNamesTableIfMissing() {
 		List<String> columns = new ArrayList<String>();
-		columns.add("id INTEGER PRIMARY KEY AUTOINCREMENT");
 		columns.add("insert_time DATETIME DEFAULT(STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW')) NOT NULL");
-		for (SensorConfig sensor : sensorConfigs){
-			columns.add(sanitizeIdentifier(sensor.getName()) + " TEXT");
-		}		
-		String createTableSql = String.format("CREATE TABLE IF NOT EXISTS %s (%s)", sanitizeIdentifier(SENSOR_READINGS_TABLE), StringStuff.join(",\n", columns));
+		columns.add("feature_ID TEXT NOT NULL UNIQUE");
+		columns.add("column_name TEXT NOT NULL");
+		String createTableSql = String.format("CREATE TABLE IF NOT EXISTS %s (%s)", SENSOR_COLUMN_NAMES_TABLE, StringStuff.join(",\n", columns));
 		
 		SQLiteConnection db = null;
 		SQLiteStatement st = null;
@@ -128,43 +129,96 @@ public class SensorReadingsDAO {
 		}
 	}
 	
-	private static String buildColumnsString(List<SensorConfig> sensorConfigs) throws SqlSanitizingException {
-		List<String> sensorNames = new ArrayList<String>(); 
-		for(SensorConfig sensor : sensorConfigs){
-			sensorNames.add(sanitizeIdentifier(sensor.getName()));
+	private static void populateColumnNamesTable(List<SensorConfig> sensorConfigs) {
+		SQLiteConnection db = null;
+		SQLiteStatement st = null;
+    try {
+    	db = new SQLiteConnection(DATABASE_FILE);
+			db.open(true);
+		
+			// Figure out which features are currently in the DB table that maps feature IDs to column names
+			// and add any that are missing.
+			st = db.prepare("SELECT feature_ID FROM " + SENSOR_COLUMN_NAMES_TABLE);
+	    Set<String> featureIDsFound = new HashSet<String>();
+			while (st.step()){
+	    	featureIDsFound.add(st.columnString(0));
+	    }
+						 
+			int nextColumnNumber = featureIDsFound.size();
+			for(SensorConfig sc : sensorConfigs) {
+				if (!featureIDsFound.contains(sc.getID())) {
+					st = db.prepare("INSERT INTO " + SENSOR_COLUMN_NAMES_TABLE + " (feature_ID, column_name) VALUES (?,?)");
+		    	st.bind(1, sc.getID());
+		    	st.bind(2, "column" + nextColumnNumber);
+		    	st.step();
+		    	++nextColumnNumber;
+				}
+	    }
+		} catch (SQLiteException e) {
+			// TODO: log error
+			e.printStackTrace();
+		} finally {
+			if (st != null) {
+				st.dispose();
+			}
+			db.dispose();
 		}
-		return StringStuff.join(",", sensorNames);
+	}
+
+	private static void createSensorReadingsTableIfMissing(List<SensorConfig> sensorConfigs) {
+		List<String> columns = new ArrayList<String>();
+		columns.add("id INTEGER PRIMARY KEY AUTOINCREMENT");
+		columns.add("insert_time DATETIME DEFAULT(STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW')) NOT NULL");
+		for (int i=0; i < sensorConfigs.size(); ++i){
+			columns.add("column" + i + " TEXT");
+		}		
+		String createTableSql = String.format("CREATE TABLE IF NOT EXISTS %s (%s)", SENSOR_READINGS_TABLE, StringStuff.join(",\n", columns));
+		
+		SQLiteConnection db = null;
+		SQLiteStatement st = null;
+		try {
+			db = new SQLiteConnection(DATABASE_FILE);
+			db.open(true);
+			st = db.prepare(createTableSql);
+			st.step();
+		} catch (SQLiteException e) {
+			// TODO: log error
+			e.printStackTrace();
+		} finally {
+			if (st != null) {
+				st.dispose();
+			}
+			db.dispose();
+		}
+	}
+	
+	private static Map<String,String> getFeatureIDtoColumnNameMap() {
+		SQLiteConnection db = null;
+		SQLiteStatement st = null;
+    Map<String,String> featureIDtoColumnNameMap = new HashMap<String,String>();
+    try {
+    	db = new SQLiteConnection(DATABASE_FILE);
+			db.open(false);
+	    st = db.prepare("SELECT feature_ID, column_name FROM " + SENSOR_COLUMN_NAMES_TABLE);
+	    while (st.step()){
+	    	String featureID = st.columnString(0);
+	    	String columnName = st.columnString(1);
+	    	featureIDtoColumnNameMap.put(featureID, columnName);
+	    }
+		} catch (SQLiteException e) {
+			// TODO: log error
+			e.printStackTrace();
+		} finally {
+			if (st != null) {
+				st.dispose();
+			}
+			db.dispose();
+		}
+    return featureIDtoColumnNameMap;
 	}
 	
 	private static String buildQuestionMarkString(int numberOfQuestionMarks) {
 		String s = StringStuff.repeatString("?,", numberOfQuestionMarks);
 		return s.substring(0,s.length()-1);
-	}
-	
-	private static String sanitizeIdentifier(String identifier) throws SqlSanitizingException {
-		/* Based on logic at http://stackoverflow.com/a/6701665
-		 * Be careful about modifying this due to potential vulnerability to SQL injection. Here be dragons.
-		 */
-		
-		// Make sure the string can be encoded in UTF-8
-		byte[] b;
-		String sanitized = null;
-		try {
-			b = identifier.getBytes("UTF-8");
-			sanitized = new String(b, "UTF-8");
-		} catch (UnsupportedEncodingException ex) {
-			throw new SqlSanitizingException("The identifier string is not valid UTF-8", ex);
-		}
-		
-		// Check the string for any null terminator characters
-		if (sanitized.contains("\0")) {
-			throw new SqlSanitizingException("The identifier string contains a null terminator character");
-		}
-		
-		// Replace all " with "" (standard SQL escape sequence for double quotes)
-		sanitized = sanitized.replaceAll("\"", "\"\""); 
-		
-		// Wrap the identifier in double quotes
-		return "\"" + identifier + "\"";
 	}
 }

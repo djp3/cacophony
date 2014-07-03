@@ -43,7 +43,8 @@ This is what is in this directory on a working distribution
 		commons-configuration-1.9-sources.jar
 		commons-lang-2.6.jar
 		commons-lang-2.6-sources.jar
-		log4j-1.2.14.jar
+		log4j-api-2.0-rc2.jar
+		log4j-core-2.0-rc2.jar
 		annotations.jar (From FindBugs)
 
 
