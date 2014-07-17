@@ -218,7 +218,7 @@ public class CNode implements Runnable{
 			double stdDev = calculateStdDev(storageTimeIntervalsMilliseconds, mean);
 			double confidenceInterval = Double.valueOf(0.95);
 			double percentile = getPercentile(stdDev,storageTimeIntervalsMilliseconds.size(),confidenceInterval);
-			waitingTime = (long)(mean - percentile);
+			waitingTime = Math.abs((long)(mean - percentile));
 		}
 		catch(InvalidParameterException e){
 			waitingTime = DEFAULT_WAITING_TIME;
