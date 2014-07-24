@@ -71,8 +71,6 @@ public class Environment {
 	protected Preferences prefs = null;
 
 	public Environment(){
-		PropertyConfigurator.configure(Globals.getGlobals().getPropertyFileName()); //"sensorLibrary.log4j.properties");
-		
 		try {
 			String s = "working directory"+Environment.class.getResource("/").getPath();
 		    getLog().debug(s);

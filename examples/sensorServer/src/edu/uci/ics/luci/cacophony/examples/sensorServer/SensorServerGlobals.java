@@ -14,8 +14,7 @@ import edu.uci.ics.luci.utility.Globals;
 
 public class SensorServerGlobals extends Globals{
 	
-	private static final String PROPERTY_FILENAME_DEFAULT = "sensorServer.log4j.properties";
-	public static final String CONFIG_FILENAME_DEFAULT = "sensorServer.properties";
+	private static final String PROPERTY_FILENAME_DEFAULT = "sensorServer.log4j.xml";
 	public static final int DEFAULT_PORT = 2011;
 	private static transient volatile Logger log = null;
 		
@@ -95,9 +94,7 @@ public class SensorServerGlobals extends Globals{
 	
 
 	public SensorServerGlobals() {
-		super(PROPERTY_FILENAME_DEFAULT);
-		super.setPropertyFileName(PROPERTY_FILENAME_DEFAULT);
-		super.reloadLog4jProperties();
+		super.setLog4JPropertyFileName(PROPERTY_FILENAME_DEFAULT);
 	}
 }
 
