@@ -32,8 +32,9 @@ import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import edu.uci.ics.luci.utility.Globals;
 
@@ -42,7 +43,7 @@ public class IPAddress extends Abstract {
 	private static transient volatile Logger log = null;
 	public static Logger getLog(){
 			if(log == null){
-					log = Logger.getLogger(IPAddress.class);
+					log = LogManager.getLogger(IPAddress.class);
 			}
 			return log;
 	}
@@ -105,7 +106,7 @@ public class IPAddress extends Abstract {
 					default:
 						sensor = new IPAddress();
 				}
-				Globals.getGlobals().addQuittables(sensor);
+				Globals.getGlobals().addQuittable(sensor);
 			}
 			return sensor;
 		}

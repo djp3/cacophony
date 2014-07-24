@@ -5,7 +5,8 @@ import java.util.List;
 import java.util.TimeZone;
 
 import org.apache.commons.configuration.XMLPropertiesConfiguration;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import edu.uci.ics.luci.utility.CalendarCache;
 import edu.uci.ics.luci.utility.Globals;
@@ -35,7 +36,7 @@ public class SensorServerGlobals extends Globals{
 	
 	public static synchronized Logger getLog(){
 		if(log == null){
-			log = Logger.getLogger(SensorServerGlobals.class);
+			log = LogManager.getLogger(SensorServerGlobals.class);
 		}
 		return log;
 	}

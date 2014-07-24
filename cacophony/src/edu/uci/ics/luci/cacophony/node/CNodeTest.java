@@ -3,8 +3,12 @@ package edu.uci.ics.luci.cacophony.node;
 import static org.junit.Assert.*;
 
 import java.security.InvalidParameterException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
@@ -41,9 +45,7 @@ public class CNodeTest {
 	@Test
 	public void test() {
 		try{
-			CNode cn = new CNode(null);
-			assertTrue(cn.getConfiguration() == null);
-			
+			CNode cn = null;
 			CNodeConfiguration cnn = null;
 			try{
 				JSONObject js = ResponderConfigurationLoaderTest.makeLoadConfigurationRequest(CNodeServerTest.makeARandomP2PServerAddress(), "p2p://foo/bar");
@@ -51,10 +53,12 @@ public class CNodeTest {
 				JSONArray configurations = (JSONArray) data.get("configurations");
 				JSONObject configuration = (JSONObject) configurations.get(0);
 				cnn = new CNodeConfiguration(configuration);
-				cn.setConfiguration(cnn);
+				cn = new CNode(cnn);
 				assertTrue(cn.getConfiguration() == cnn);
 			}
 			catch(IllegalArgumentException e){
+				fail("This shouldn't throw an exception");
+			} catch (StorageException e) {
 				fail("This shouldn't throw an exception");
 			}
 			
@@ -167,9 +171,8 @@ public class CNodeTest {
 	
 	@Test
 	public void testPercentiles() {
-		double percentile;
 		try{
-			percentile = CNode.getPercentile(0,1.0, 1 ,0.0);
+			CNode.getPercentile(1.0,1,0.0);
 			fail("This should fail on 0.0");
 		}
 		catch(InvalidParameterException e){
@@ -181,10 +184,8 @@ public class CNodeTest {
 		
 		
 		Double confidenceInterval = Double.valueOf(0.95);
-		List<Long> durations = new ArrayList<Long>();
-		
 		try{
-			percentile = CNode.getPercentile(0,1.0, -1 ,confidenceInterval);
+			CNode.getPercentile(1.0,-1,confidenceInterval);
 			fail("This should fail on -1");
 		}
 		catch(InvalidParameterException e){
@@ -195,7 +196,7 @@ public class CNodeTest {
 		}
 		
 		try{
-			percentile = CNode.getPercentile(0,1.0, 0 ,confidenceInterval);
+			CNode.getPercentile(1.0,0,confidenceInterval);
 			fail("This should fail on 0");
 		}
 		catch(InvalidParameterException e){
@@ -205,45 +206,67 @@ public class CNodeTest {
 			fail("This should not happen:"+e);
 		}
 		
-		assertTrue(Math.abs(1.96 - CNode.getPercentile(0,1.0, 1 ,confidenceInterval)) < EPSILON);
-		
+		assertTrue(Math.abs(1.96 - CNode.getPercentile(1.0,1,confidenceInterval)) < EPSILON);
 	}
 	
 	@Test
 	public void testWaitingTimes() {
-		List<Long> durations = new ArrayList<Long>();
+		List<Date> dates = new ArrayList<Date>();
+		assertEquals(CNode.DEFAULT_WAITING_TIME, CNode.getWaitingTime(dates));
 		
-		//This should "fail" because durations has no entries
-		assertEquals(CNode.DEFAULT_WAITING_TIME, CNode.getWaitingTime(durations));
-		
-		durations.add(10L);
-		
-		assertEquals(10L, CNode.getWaitingTime(durations));
-		
-		durations.add(10L);
-		durations.add(10L);
-		durations.add(10L);
-		durations.add(10L);
-		
-		assertEquals(10L, CNode.getWaitingTime(durations));
-		
-		durations = new ArrayList<Long>();
-		durations.add(10L);
-		durations.add(20L);
-		
-		assertEquals(8L, CNode.getWaitingTime(durations));
+    SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.ROOT);
+    dateFormatter.setLenient(false);
+    
+    try{
+	    Date d0 = dateFormatter.parse("2014-07-10 23:45:00.000");
+	    Date d1 = dateFormatter.parse("2014-07-10 23:45:00.010");
+			Date d2 = dateFormatter.parse("2014-07-10 23:45:00.020");
+			Date d3 = dateFormatter.parse("2014-07-10 23:45:00.030");
+			Date d4 = dateFormatter.parse("2014-07-10 23:45:00.040");
+			
+			dates.add(d0);
+			assertEquals(CNode.DEFAULT_WAITING_TIME, CNode.getWaitingTime(dates));
+			
+			dates.add(d1);
+			dates.add(d2);
+			dates.add(d3);
+			dates.add(d4);
+			
+			assertEquals(10L, CNode.getWaitingTime(dates));
+			
+			dates = new ArrayList<Date>();
+			dates.add(d0);
+			dates.add(d1);
+			dates.add(d3);
+			
+			assertEquals(8L, CNode.getWaitingTime(dates));
+    }
+    catch (ParseException e){
+    	fail("Error when trying to parse test dates: " + e);
+    }
 	}
 	
 	@Test
 	public void testNextUpdateTimes() {
-		List<Long> durations = new ArrayList<Long>();
+		List<Date> dates = new ArrayList<Date>();
+    SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.ROOT);
+    dateFormatter.setLenient(false);
 		
-		durations.add(10000L);
-		durations.add(20000L);
-		
-		Long guess = System.currentTimeMillis()+8000;
-		Long toleranceInMS = 500L;
-		assertTrue(Math.abs(guess - CNode.getNextUpdateTime(durations)) < toleranceInMS);
+    try{
+	    Date d0 = dateFormatter.parse("2014-07-10 23:45:00.000");
+	    Date d1 = dateFormatter.parse("2014-07-10 23:45:10.000");
+	    Date d2 = dateFormatter.parse("2014-07-10 23:45:30.000");
+	    dates.add(d0);
+	    dates.add(d1);
+			dates.add(d2);
+			
+			Long guess = 8000L;
+			Long toleranceInMS = 500L;
+			assertTrue(Math.abs(guess - CNode.getWaitingTime(dates)) < toleranceInMS);
+    }
+    catch (ParseException e){
+    	fail("Error when trying to parse test dates: " + e);
+    }
 	}
 
 }

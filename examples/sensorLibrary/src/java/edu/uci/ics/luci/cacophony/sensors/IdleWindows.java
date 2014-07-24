@@ -21,7 +21,8 @@
 
 package edu.uci.ics.luci.cacophony.sensors;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 public class IdleWindows extends Idle {
@@ -29,7 +30,7 @@ public class IdleWindows extends Idle {
     private static transient volatile Logger log = null;
 	public static Logger getLog(){
 		if(log == null){
-			log = Logger.getLogger(IdleWindows.class);
+			log = LogManager.getLogger(IdleWindows.class);
 		}
 		return log;
 	}

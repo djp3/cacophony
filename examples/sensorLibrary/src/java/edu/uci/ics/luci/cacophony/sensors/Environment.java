@@ -25,11 +25,9 @@ import java.io.File;
 import java.util.Random;
 import java.util.prefs.Preferences;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
-
-import edu.uci.ics.luci.utility.Globals;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 public class Environment {
@@ -37,7 +35,7 @@ public class Environment {
 	private static transient volatile Logger log = null;
 	public static Logger getLog(){
 		if(log == null){
-			log = Logger.getLogger(Environment.class);
+			log = LogManager.getLogger(Environment.class);
 		}
 		return log;
 	}

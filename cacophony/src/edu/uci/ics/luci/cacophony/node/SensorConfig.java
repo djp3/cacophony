@@ -4,6 +4,7 @@ import edu.uci.ics.luci.utility.datastructure.HashCodeUtil;
 import net.minidev.json.JSONObject;
 
 public class SensorConfig{
+	private final String ID;
 	private final String name;
 	private final String URL;
 	private final String format;
@@ -12,7 +13,8 @@ public class SensorConfig{
 	private final Translator translator;
 	private final JSONObject translatorOptions;
 	
-	public SensorConfig(String name, String URL, String format, String regEx, String pathExpression, Translator translator, JSONObject translatorOptions){
+	public SensorConfig(String ID, String name, String URL, String format, String regEx, String pathExpression, Translator translator, JSONObject translatorOptions){
+		this.ID = ID;
 		this.name = name;
 		this.URL = URL;
 		this.format = format;
@@ -27,6 +29,11 @@ public class SensorConfig{
 			throw new IllegalArgumentException("JSONObject passed to SensorConfig constructor is null.");
 		}
 
+		ID = (String)jo.get("ID");
+		if(ID == null){
+			throw new IllegalArgumentException("Unable to deserialize SensorConfig JSON because the sensor's ID is null.");
+		}
+		
 		name = (String)jo.get("name");
 		if(name == null){
 			throw new IllegalArgumentException("Unable to deserialize SensorConfig JSON because the sensor's name is null.");
@@ -91,6 +98,7 @@ public class SensorConfig{
 	
 	public JSONObject serializeToJSON() {
 		JSONObject sensorJSON = new JSONObject();
+		sensorJSON.put("ID", ID);
 		sensorJSON.put("name", name);
 		sensorJSON.put("url", URL);
 		sensorJSON.put("format", format);
@@ -103,6 +111,10 @@ public class SensorConfig{
 		sensorJSON.put("translator", translatorJSON);
 		
 		return sensorJSON;
+	}
+	
+	public String getID() {
+		return ID;
 	}
 	
 	public String getName() {
@@ -141,7 +153,8 @@ public class SensorConfig{
 
 		SensorConfig that = (SensorConfig)_that;
 		
-		return this.name.equals(that.name)
+		return this.ID.equals(that.ID)
+				&& this.name.equals(that.name)
 				&& this.URL.equals(that.URL)
 				&& this.format.equals(that.format)
 				&& this.regEx.equals(that.regEx)
@@ -154,6 +167,7 @@ public class SensorConfig{
 	public int hashCode(){
 		int result = HashCodeUtil.SEED;
 
+		result = HashCodeUtil.hash(result, this.ID);
 		result = HashCodeUtil.hash(result, this.name);
 		result = HashCodeUtil.hash(result, this.URL);
 		result = HashCodeUtil.hash(result, this.format);

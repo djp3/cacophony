@@ -16,7 +16,8 @@ This is what needs to be in this directory on a working distribution
 			http://commons.apache.org/lang/
 
 	jars without a well described pedigree:
-		log4j-1.2.14.jar
+		log4j-api-2.0-rc2.jar
+		log4j-core-2.0-rc2.jar
 		annotations.jar (From FindBugs)
 		json.jar
 		jsr305.jar (From FindBugs I think)

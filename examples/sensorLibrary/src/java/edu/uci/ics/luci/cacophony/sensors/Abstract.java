@@ -1,7 +1,8 @@
 package edu.uci.ics.luci.cacophony.sensors;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import edu.uci.ics.luci.cacophony.sensors.Environment.OSTypes;
 import edu.uci.ics.luci.utility.Quittable;
@@ -28,7 +29,7 @@ public abstract class Abstract implements Quittable{
 	private static transient volatile Logger log = null;
 	public static Logger getLog(){
 		if(log == null){
-			log = Logger.getLogger(Abstract.class);
+			log = LogManager.getLogger(Abstract.class);
 		}
 		return log;
 	}

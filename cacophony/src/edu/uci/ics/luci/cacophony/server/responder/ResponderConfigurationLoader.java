@@ -7,6 +7,7 @@ import net.minidev.json.JSONObject;
 import net.minidev.json.JSONStyle;
 import edu.uci.ics.luci.cacophony.node.CNode;
 import edu.uci.ics.luci.cacophony.node.CNodeConfiguration;
+import edu.uci.ics.luci.cacophony.node.StorageException;
 import edu.uci.ics.luci.cacophony.server.CNodeServer;
 
 public class ResponderConfigurationLoader extends CNodeServerResponder {
@@ -81,6 +82,8 @@ public class ResponderConfigurationLoader extends CNodeServerResponder {
 							parentServer.launch(cNodeName);
 							appendResponse(cNodeName+":OK");
 						}catch(RuntimeException e){
+							appendResponse(cNodeName+":FAIL");
+						}catch (StorageException e) {
 							appendResponse(cNodeName+":FAIL");
 						}
 					}

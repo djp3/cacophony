@@ -2,6 +2,8 @@ package edu.uci.ics.luci.cacophony.node;
 
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,31 +16,33 @@ import java.util.concurrent.Future;
 
 public class CNode implements Runnable{
 	
+	int STORAGE_TIME_WINDOW_SIZE = 10; 	
 	CNodeConfiguration configuration;
 	
 	public CNodeConfiguration getConfiguration() {
 		return configuration;
 	}
 
-	public void setConfiguration(CNodeConfiguration configuration) {
+	public CNode(CNodeConfiguration configuration) throws StorageException{
 		this.configuration = configuration;
-	}
-
-	public CNode(CNodeConfiguration configuration){
-		this.configuration = configuration;
+		
+		List<SensorConfig> sensorConfigs = new ArrayList<SensorConfig>();
+		sensorConfigs.addAll(configuration.getFeatures());
+		sensorConfigs.add(configuration.getTarget());
+		SensorReadingsDAO.initializeDBIfNecessary(sensorConfigs);
 	}
 
 	@Override
 	public void run() {
-		// TODO: use getNextUpdateTime() to decide when to reader target sensor
     SensorReader targetReader = new SensorReader(configuration.getTarget()); 
+    SensorReading targetReading = null;
     try {
-			SensorReading targetReading = targetReader.call();
+			targetReading = targetReader.call();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
     
-    // TODO: don't retrieve feature values unless the target value has changed
+    // TODO: don't retrieve feature values unless the target value is non-null and has changed
 		List<Callable<SensorReading>> tasks = new ArrayList<Callable<SensorReading>>(); 
     for(SensorConfig feature : configuration.getFeatures()){
       tasks.add(new SensorReader(feature));
@@ -52,35 +56,72 @@ public class CNode implements Runnable{
 			// TODO: Figure out if some of the tasks completed successfully.
 		}
 		
+		List<SensorReading> sensorReadings = new ArrayList<SensorReading>();
     for(Future<SensorReading> future : futures) {
       try {
-      	SensorReading sensorReading = future.get();
-      	if (sensorReading.getRawValue() != null){
-    			WekaAttributeTypeValuePair wekaTypeValuePair = sensorReading.getSensorConfig().getTranslator().translate(sensorReading.getRawValue());
-    			Object targetData = wekaTypeValuePair.getValue();
-    			System.out.println(targetData);
-          // TODO: store raw value in sqlite DB
-    		}
+      	sensorReadings.add(future.get());
       } catch (InterruptedException e) {
         e.printStackTrace();
     	} catch (ExecutionException e) {
         e.printStackTrace();
       }
     }
+    sensorReadings.add(targetReading);
+    try {
+			SensorReadingsDAO.store(sensorReadings);
+		} catch (StorageException e) {
+		// TODO: log the error and figure out what action to take
+			e.printStackTrace();
+		}
+    
     //shut down the executor service now
     executor.shutdown();
 		
-		trainModel();
-		Object prediction = predict();
+		try {
+			trainModel();
+		} catch (UnknownSensorException e) {
+			// TODO: log the error and figure out what action to take
+			e.printStackTrace();
+		} catch (StorageException e) {
+			// TODO: log the error and figure out what action to take
+			e.printStackTrace();
+		}
+		Object prediction = predict(sensorReadings);
 		// store predicted value
+		
+		List<Date> storageTimes;
+		try {
+			storageTimes = SensorReadingsDAO.retrieveStorageTimes(STORAGE_TIME_WINDOW_SIZE);
+			Thread.sleep(getWaitingTime(storageTimes));
+		} catch (StorageException e) {
+			// TODO: log the error and figure out what action to take
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			// TODO: log the error and figure out what action to take
+			e.printStackTrace();
+		}
 	}
 	
-	private void trainModel() {
-		//TODO: implement training here
+	private void trainModel() throws UnknownSensorException, StorageException {
+		List<SensorConfig> sensors = new ArrayList<SensorConfig>(configuration.getFeatures());
+		sensors.add(configuration.getTarget());
+		List<Observation> observationsRaw;
+		observationsRaw = SensorReadingsDAO.retrieve(sensors);
+		
+		for (Observation obs : observationsRaw){
+			List<WekaAttributeTypeValuePair> featuresTranslated = new ArrayList<WekaAttributeTypeValuePair>();
+			for (SensorReading reading : obs.getFeatures()){
+				if (reading.getRawValue() != null){
+						featuresTranslated.add(reading.getTranslatedValue());
+				}
+			}
+			WekaAttributeTypeValuePair translatedTarget = obs.getTarget().getTranslatedValue();
+			// TODO: Need to pass translated values to actual Weka code for training model
+		}
 	}
 	
-	private Object predict() {
-		//TODO: implement. Should this return String instead of Object?
+	private Object predict(List<SensorReading> featureValues) {
+		//TODO: Implement. Should this take a model as a parameter?.
 		return null;
 	}
 	
@@ -133,39 +174,50 @@ public class CNode implements Runnable{
 	/**
 	 * 
 	 * See: http://en.wikipedia.org/wiki/Confidence_interval
-	 * @param durationTimes a list of samples
+	 * @param stdDev the standard deviation of the samples
+	 * @param n the number of samples
 	 * @param percentile 0 - 100
 	 * @return value above which percentile of the samples are expected to occur 
 	 */
-	protected static Double getPercentile(double mean, double stdDev, int n, Double percentile){
-		
+	protected static Double getPercentile(double stdDev, int n, Double percentile){
 		if(n <= 0){
 			throw new InvalidParameterException("There needs to be samples");
 		}
 		
 		Double zTableLookup = ztable.get(percentile);
-		
 		if(zTableLookup == null){
 			throw new InvalidParameterException("We only support a few percentiles right now, and not: "+percentile);
 		}
-		
 		double stdErrOfMean = stdDev / Math.sqrt(n);
-		
 		return zTableLookup * stdErrOfMean;
 	}
 
-
-	protected static long getWaitingTime(List<Long> durationTimes) {
+	/**
+	 * Get the time to wait before checking for a change in a sensor's value.
+	 * @param A list of Dates, where each Date is the time an observation was stored in the DB (which should roughly be the same time the observation was made)
+	 * @return The amount of time, in milliseconds, to wait before checking for a change in the sensor's value 
+	 */
+	protected static long getWaitingTime(List<Date> storageTimes) {
+		if (storageTimes.size() < 2) {		
+			return DEFAULT_WAITING_TIME;
+		}
+		
+		// Want list of times in descending order (newest to oldest) so we can find intervals between each time
+		Collections.sort(storageTimes);
+		Collections.reverse(storageTimes);
+		List<Long> storageTimeIntervalsMilliseconds = new ArrayList<Long>();
+		for (int i=0; i<storageTimes.size()-1; ++i) {
+			Date newer = storageTimes.get(i);
+			Date older = storageTimes.get(i+1);
+			storageTimeIntervalsMilliseconds.add(newer.getTime() - older.getTime());
+		}
+		
 		long waitingTime;
-		
 		try{
-			double mean = calculateMean(durationTimes);
-		
-			double stdDev = calculateStdDev(durationTimes, mean);
-		
-			Double confidenceInterval = Double.valueOf(0.95);
-		
-			double percentile = getPercentile(mean,stdDev,durationTimes.size(),confidenceInterval);
+			double mean = calculateMean(storageTimeIntervalsMilliseconds);
+			double stdDev = calculateStdDev(storageTimeIntervalsMilliseconds, mean);
+			double confidenceInterval = Double.valueOf(0.95);
+			double percentile = getPercentile(stdDev,storageTimeIntervalsMilliseconds.size(),confidenceInterval);
 			waitingTime = (long)(mean - percentile);
 		}
 		catch(InvalidParameterException e){
@@ -173,11 +225,4 @@ public class CNode implements Runnable{
 		}
 		return waitingTime;
 	}
-
-	public static Long getNextUpdateTime(List<Long> durationTimes){
-		long waitingTime = getWaitingTime(durationTimes);
-		
-		return System.currentTimeMillis() + waitingTime;
-	}
-
 }

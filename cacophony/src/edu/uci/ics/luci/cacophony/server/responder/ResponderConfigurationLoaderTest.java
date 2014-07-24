@@ -130,6 +130,7 @@ public class ResponderConfigurationLoaderTest {
 		
 		JSONArray features = new JSONArray();
 		JSONObject feature = new JSONObject();
+		feature.put("ID", "ID of feature 1");
 		feature.put("name", "feature 1");
 		feature.put("url", "http://www.cnn.com");
 		feature.put("format", "html");
@@ -145,6 +146,7 @@ public class ResponderConfigurationLoaderTest {
 		configuration.put("features", features);
 		
 		JSONObject target = new JSONObject();
+		target.put("ID", "ID of target");
 		target.put("name", "name of target");
 		target.put("url","http://www.cnn.com");
 		target.put("format","html");
@@ -176,6 +178,7 @@ public class ResponderConfigurationLoaderTest {
 		
 		features = new JSONArray();
 		feature = new JSONObject();
+		feature.put("ID", "ID of feature 1");
 		feature.put("name", "feature 1");
 		feature.put("url", "http://www.cnn.com");
 		feature.put("format", "html");
@@ -191,6 +194,7 @@ public class ResponderConfigurationLoaderTest {
 		configuration.put("features", features);
 		
 		target = new JSONObject();
+		target.put("ID", "ID of target");
 		target.put("name", "name of target");
 		target.put("url","http://cnn.com");
 		target.put("format","html");
@@ -220,6 +224,7 @@ public class ResponderConfigurationLoaderTest {
 		
 		features = new JSONArray();
 		feature = new JSONObject();
+		feature.put("ID", "ID of feature 1");
 		feature.put("name", "feature 1");
 		feature.put("url", "http://www.cnn.com");
 		feature.put("format", "html");
@@ -235,6 +240,7 @@ public class ResponderConfigurationLoaderTest {
 		configuration.put("features", features);
 		
 		target = new JSONObject();
+		target.put("ID", "ID of target");
 		target.put("name", "name of target");
 		target.put("url","http://cnn.com");
 		target.put("format","html");

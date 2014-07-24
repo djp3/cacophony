@@ -6,6 +6,7 @@ import java.util.Set;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 
+// TODO: predictors and features: are they the same thing?
 public class CNodeConfiguration {
 	private String myPath;
 	private Set<CNodeAddress> predictors = new HashSet<CNodeAddress>();

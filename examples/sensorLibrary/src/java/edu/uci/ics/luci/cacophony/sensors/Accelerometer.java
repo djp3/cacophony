@@ -22,7 +22,8 @@
 package edu.uci.ics.luci.cacophony.sensors;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import edu.uci.ics.luci.utility.Globals;
 
@@ -31,7 +32,7 @@ public abstract class Accelerometer extends Abstract {
 	private static transient volatile Logger log = null;
 	public static Logger getLog(){
 		if(log == null){
-				log = Logger.getLogger(Accelerometer.class);
+				log = LogManager.getLogger(Accelerometer.class);
 		}
 		return log;
 	}
@@ -97,7 +98,7 @@ public abstract class Accelerometer extends Abstract {
 						break;
 					default:break;
 				}
-				Globals.getGlobals().addQuittables(sensor);
+				Globals.getGlobals().addQuittable(sensor);
 			}
 			return sensor;
 		}

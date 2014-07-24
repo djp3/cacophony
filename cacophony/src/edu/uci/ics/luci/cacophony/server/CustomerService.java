@@ -8,7 +8,8 @@ import net.minidev.json.JSONObject;
 import net.minidev.json.JSONStyle;
 import net.minidev.json.JSONValue;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import edu.uci.ics.luci.cacophony.node.CNode;
 import edu.uci.ics.luci.cacophony.server.responder.CNodeServerResponder;
@@ -26,7 +27,7 @@ public class CustomerService implements P2PSink{
 	private static transient volatile Logger log = null;
 	public static Logger getLog(){
 		if(log == null){
-			log = Logger.getLogger(CustomerService.class);
+			log = LogManager.getLogger(CustomerService.class);
 		}
 		return log;
 	}

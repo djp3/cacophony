@@ -24,14 +24,15 @@ package edu.uci.ics.luci.cacophony.sensors;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class LightWindows extends Light {
 	
 	private static transient volatile Logger log = null;
 	public static Logger getLog(){
 		if(log == null){
-			log = Logger.getLogger(IdleWindows.class);
+			log = LogManager.getLogger(IdleWindows.class);
 		}
 		return log;
 	}
