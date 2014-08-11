@@ -15,9 +15,9 @@ import java.util.concurrent.Future;
 
 
 public class CNode implements Runnable{
-	
 	int STORAGE_TIME_WINDOW_SIZE = 10; 	
 	CNodeConfiguration configuration;
+	Model mModel;
 	
 	public CNodeConfiguration getConfiguration() {
 		return configuration;
@@ -78,7 +78,7 @@ public class CNode implements Runnable{
     executor.shutdown();
 		
 		try {
-			trainModel();
+			mModel = trainModel();
 		} catch (UnknownSensorException e) {
 			// TODO: log the error and figure out what action to take
 			e.printStackTrace();
@@ -86,8 +86,6 @@ public class CNode implements Runnable{
 			// TODO: log the error and figure out what action to take
 			e.printStackTrace();
 		}
-		Object prediction = predict(sensorReadings);
-		// store predicted value
 		
 		List<Date> storageTimes;
 		try {
@@ -102,29 +100,18 @@ public class CNode implements Runnable{
 		}
 	}
 	
-	private void trainModel() throws UnknownSensorException, StorageException {
+	private Model trainModel() throws UnknownSensorException, StorageException {
 		List<SensorConfig> sensors = new ArrayList<SensorConfig>(configuration.getFeatures());
 		sensors.add(configuration.getTarget());
-		List<Observation> observationsRaw;
-		observationsRaw = SensorReadingsDAO.retrieve(sensors);
+		Model model = new ModelConstant();
+		model.train(SensorReadingsDAO.retrieve(sensors));
+		return model;
+	}
 		
-		for (Observation obs : observationsRaw){
-			List<WekaAttributeTypeValuePair> featuresTranslated = new ArrayList<WekaAttributeTypeValuePair>();
-			for (SensorReading reading : obs.getFeatures()){
-				if (reading.getRawValue() != null){
-						featuresTranslated.add(reading.getTranslatedValue());
-				}
-			}
-			WekaAttributeTypeValuePair translatedTarget = obs.getTarget().getTranslatedValue();
-			// TODO: Need to pass translated values to actual Weka code for training model
-		}
-	}
-	
 	private Object predict(List<SensorReading> featureValues) {
-		//TODO: Implement. Should this take a model as a parameter?.
-		return null;
+		Observation observation = new Observation(null, featureValues, null);
+		return mModel.predict(observation);
 	}
-	
 
 	protected static double calculateMean(List<Long> durationTimes) {
 		if((durationTimes == null) || (durationTimes.size() == 0)){
