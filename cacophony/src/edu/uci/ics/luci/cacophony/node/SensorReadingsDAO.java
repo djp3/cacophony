@@ -20,7 +20,7 @@ import edu.uci.ics.luci.utility.StringStuff;
 
 
 public class SensorReadingsDAO {
-	private static final File DATABASE_FILE = new File("cacophony_db.sqlite3");
+	private static final File DATABASE_FILE = (SensorReadingsDAOTest.currentlyTesting ? new File("cacophony_db_test.sqlite3") : new File("cacophony_db.sqlite3"));
 	private static final String SENSOR_READINGS_TABLE = "SensorReadings";
 	private static final String SENSOR_COLUMN_NAMES_TABLE = "SensorColumnNames";
 	

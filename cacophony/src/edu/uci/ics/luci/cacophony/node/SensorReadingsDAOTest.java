@@ -15,15 +15,19 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class SensorReadingsDAOTest {
+	public static boolean currentlyTesting = false;
+	
 	final String FEATURE_VALUE = "a man a plan a canal panama";
 	final String TARGET_VALUE = "foobar";
 	
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
+		currentlyTesting = true;
 	}
 
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
+		currentlyTesting = false;
 	}
 
 	@Before
