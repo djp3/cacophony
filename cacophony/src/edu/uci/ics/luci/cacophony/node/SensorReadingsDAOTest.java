@@ -124,11 +124,11 @@ public class SensorReadingsDAOTest {
 	}
 	
 	private List<SensorConfig> makeSensorConfigs() {
-		Translator translator = new TranslatorString();
-		JSONObject translatorOptions = new JSONObject();
-		SensorConfig sensorConfig = new SensorConfig("TestID", "TestName", "TestURL", "html", ".*", "", translator, translatorOptions);
+		SensorConfig sensorConfigFeature = new SensorConfig("Feature_TestID", "Feature_TestName", "Feature_TestURL", "html", ".*", "", new TranslatorString(), new JSONObject());
+		SensorConfig sensorConfigTarget = new SensorConfig("Target_TestID", "Target_TestName", "Target_TestURL", "html", ".*", "", new TranslatorString(), new JSONObject());
 		List<SensorConfig> sensorConfigs = new ArrayList<SensorConfig>();
-		sensorConfigs.add(sensorConfig);
+		sensorConfigs.add(sensorConfigFeature);
+		sensorConfigs.add(sensorConfigTarget);
 		
 		return sensorConfigs;
 	}

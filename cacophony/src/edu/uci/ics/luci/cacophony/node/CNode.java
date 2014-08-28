@@ -109,7 +109,7 @@ public class CNode implements Runnable{
 	}
 
 	private Object predict(List<SensorReading> featureValues) {
-		Observation observation = new Observation(null, featureValues, null);
+		Observation observation = new Observation(featureValues);
 		return mModel.predict(observation);
 	}
 
