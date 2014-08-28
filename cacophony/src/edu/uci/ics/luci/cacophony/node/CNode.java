@@ -107,7 +107,7 @@ public class CNode implements Runnable{
 		model.train(SensorReadingsDAO.retrieve(sensors));
 		return model;
 	}
-		
+
 	private Object predict(List<SensorReading> featureValues) {
 		Observation observation = new Observation(null, featureValues, null);
 		return mModel.predict(observation);

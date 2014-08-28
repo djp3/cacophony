@@ -19,13 +19,18 @@ import com.almworks.sqlite4java.SQLiteStatement;
 import edu.uci.ics.luci.utility.StringStuff;
 
 
-// TODO: Add comments documenting public methods
 public class SensorReadingsDAO {
 	private static final File DATABASE_FILE = new File("cacophony_db.sqlite3");
 	private static final String SENSOR_READINGS_TABLE = "SensorReadings";
 	private static final String SENSOR_COLUMN_NAMES_TABLE = "SensorColumnNames";
 	
-	
+
+	/**
+	 * Initializes the database for the given sensors. This only needs to be called once during the lifetime of the database, unless there are new sensors for which to store readings.
+	 * Calling this method more than once will not harm anything, even if there aren't any new sensors. 
+	 * @param sensorConfigs Configuration info for the sensors for which we're storing sensor readings
+	 * @throws StorageException
+	 */
 	public static void initializeDBIfNecessary(List<SensorConfig> sensorConfigs) throws StorageException {
 		try {
 			createColumnNamesTableIfMissing();
@@ -37,8 +42,8 @@ public class SensorReadingsDAO {
 	}
 	
 	/**
-	 * 
-	 * @param Sensor readings to store
+	 * Stores sensor readings in the DB.
+	 * @param sensorReadings sensor readings to store
 	 * @throws StorageException 
 	 */
 	public static void store(List<SensorReading> sensorReadings) throws StorageException {
@@ -78,7 +83,8 @@ public class SensorReadingsDAO {
 	}
 	
 	/**
-	 * 
+	 * Retrieves previously-stored sensor readings from the DB.
+	 * @param sensors a list of sensor configurations for the sensors we want to retrieve previously-stored data for
 	 * @return stored sensor readings for the given list of sensors
 	 * @throws UnknownSensorException 
 	 * @throws StorageException 
@@ -137,7 +143,8 @@ public class SensorReadingsDAO {
 	}
 	
 	/**
-	 * 
+	 * Retrieves timestamps for when the most recent n observations were stored in the DB.
+	 * @param n The number of storage times to retrieve, starting from the most recent
 	 * @return storage times for the previous n observations
 	 * @throws StorageException 
 	 */
