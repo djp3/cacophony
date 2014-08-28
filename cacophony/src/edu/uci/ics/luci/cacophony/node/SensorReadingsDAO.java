@@ -177,6 +177,20 @@ public class SensorReadingsDAO {
     return storageTimes;
 	}
 	
+	/**
+	 * Deletes the database.
+	 * @param confirmationText you must enter the correct confirmation text in order for the deletion to take place
+	 * @return true if the database was deleted, false if it was not deleted (possibly because it didn't exist in the first place)
+	 */
+	public static boolean deleteDatabase(String confirmationText) {
+		final String REQUIRED_TEXT = "Yes, I know this will delete all of the data stored in the database. I'm not stupid.";
+		
+		if (confirmationText.equals(REQUIRED_TEXT) && DATABASE_FILE.exists()) {
+			return DATABASE_FILE.delete();
+		}
+		return false;
+	}
+	
 	private static void createColumnNamesTableIfMissing() throws SQLiteException {
 		List<String> columns = new ArrayList<String>();
 		columns.add("insert_time DATETIME DEFAULT(STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW', 'UTC')) NOT NULL");
