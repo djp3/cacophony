@@ -9,7 +9,7 @@ import net.minidev.json.JSONObject;
 import org.junit.Test;
 
 public class ModelLinearRegressionTest {
-	private Model model;
+	private static Model model;
 	private final Double FEATURE_VALUE_1 = 2.4;
 	private final Double FEATURE_VALUE_2 = 5.0;
 	private final Double TARGET_VALUE = 7.0;
@@ -26,7 +26,7 @@ public class ModelLinearRegressionTest {
 		List<Observation> observations = new ArrayList<Observation>();
 		observations.add(observation);
 		
-		Model model = new ModelLinearRegression();
+		model = new ModelLinearRegression();
 		model.train(observations);
 	}
 
@@ -40,13 +40,24 @@ public class ModelLinearRegressionTest {
 		if (!prediction.equals(TARGET_VALUE)) {
 			fail(String.format("The linear regression model's prediction was wrong. Expected {0}, but got {1}.", TARGET_VALUE, prediction));
 		}
+		
+		sensorConfigs = makeSensorConfigs();
+		sensorReadings = makeSensorReadings(sensorConfigs, FEATURE_VALUE_1, 42.0, null);	
+		observation = new Observation(sensorReadings);
+		
+		prediction = (Double)model.predict(observation);
+		if (prediction.equals(TARGET_VALUE)) {
+			fail("The linear regression model's prediction should not have matched.");
+		}
 	}
 
 	private List<SensorConfig> makeSensorConfigs() {
-		SensorConfig sensorConfigFeature = new SensorConfig("Feature_TestID", "Feature_TestName", "Feature_TestURL", "html", ".*", "", new TranslatorNumeric(), new JSONObject());
+		SensorConfig sensorConfigFeature1 = new SensorConfig("Feature_TestID1", "Feature_TestName1", "Feature_TestURL1", "html", ".*", "", new TranslatorNumeric(), new JSONObject());
+		SensorConfig sensorConfigFeature2 = new SensorConfig("Feature_TestID2", "Feature_TestName2", "Feature_TestURL2", "html", ".*", "", new TranslatorNumeric(), new JSONObject());
 		SensorConfig sensorConfigTarget = new SensorConfig("Target_TestID", "Target_TestName", "Target_TestURL", "html", ".*", "", new TranslatorNumeric(), new JSONObject());
 		List<SensorConfig> sensorConfigs = new ArrayList<SensorConfig>();
-		sensorConfigs.add(sensorConfigFeature);
+		sensorConfigs.add(sensorConfigFeature1);
+		sensorConfigs.add(sensorConfigFeature2);
 		sensorConfigs.add(sensorConfigTarget);
 		
 		return sensorConfigs;

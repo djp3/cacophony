@@ -124,9 +124,8 @@ public class SensorReadingsDAO {
 	    	for (int i=1; i < sensors.size(); ++i) {
 	    		readings.add(new SensorReading(sensors.get(i), st.columnString(i)));
 	    	}
-	    	// assuming target is last column 
-	    	SensorReading target = readings.get(readings.size()-1);
-	    	readings.remove(readings.size()-1); 
+	    	// target should be the last sensor in the list of sensors configurations 
+	    	SensorReading target = new SensorReading(sensors.get(sensors.size()-1), st.columnString(sensors.size()));
 	    	allObservations.add(new Observation(storageTime, readings, target));
 	    }
 		} catch (SQLiteException e) {

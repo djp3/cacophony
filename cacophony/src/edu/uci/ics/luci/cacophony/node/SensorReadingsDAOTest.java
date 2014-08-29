@@ -51,23 +51,10 @@ public class SensorReadingsDAOTest {
 	}
 
 	@Test
-	public void testStore() {
+	public void testStoreAndRetrieve() {
 		List<SensorConfig> sensorConfigs = makeSensorConfigs();
 		List<SensorReading> sensorReadings = makeSensorReadings(sensorConfigs);
-		
-		try {
-			SensorReadingsDAO.initializeDBIfNecessary(sensorConfigs);
-			SensorReadingsDAO.store(sensorReadings);
-		} catch (StorageException e) {
-			fail("Encountered a StorageException: " + e.getMessage());
-		}
-	}
 
-	@Test
-	public void testRetrieve() {
-		List<SensorConfig> sensorConfigs = makeSensorConfigs();
-		List<SensorReading> sensorReadings = makeSensorReadings(sensorConfigs);
-		
 		try {
 			SensorReadingsDAO.initializeDBIfNecessary(sensorConfigs);
 			SensorReadingsDAO.store(sensorReadings);
