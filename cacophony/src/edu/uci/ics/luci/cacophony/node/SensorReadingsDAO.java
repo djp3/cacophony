@@ -114,7 +114,7 @@ public class SensorReadingsDAO {
 			db.open(false);
 			String query = "SELECT insert_time, " + StringStuff.join(", ", columnNames) + " FROM " + SENSOR_READINGS_TABLE;
 	    st = db.prepare("SELECT insert_time, " + StringStuff.join(", ", columnNames) + " FROM " + SENSOR_READINGS_TABLE);
-	    SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.ROOT);
+	    SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ROOT);
 	    dateFormatter.setLenient(false);
 	    dateFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
 	    allObservations = new ArrayList<Observation>();
@@ -192,7 +192,7 @@ public class SensorReadingsDAO {
 	
 	private static void createColumnNamesTableIfMissing() throws SQLiteException {
 		List<String> columns = new ArrayList<String>();
-		columns.add("insert_time DATETIME DEFAULT(STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW', 'UTC')) NOT NULL");
+		columns.add("insert_time DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL");
 		columns.add("feature_ID TEXT NOT NULL UNIQUE");
 		columns.add("column_name TEXT NOT NULL");
 		String createTableSql = String.format("CREATE TABLE IF NOT EXISTS %s (%s)", SENSOR_COLUMN_NAMES_TABLE, StringStuff.join(",\n", columns));
