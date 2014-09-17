@@ -1,15 +1,17 @@
 package edu.uci.ics.luci.cacophony.node;
 
 import java.util.List;
-import weka.classifiers.functions.LinearRegression;
+
+import weka.classifiers.trees.RandomForest;
 import weka.core.Attribute;
 import weka.core.FastVector;
 import weka.core.Instance;
 import weka.core.Instances;
 
-public class ModelLinearRegression extends ModelWeka {
-	private LinearRegression mLinearRegressionModel = new LinearRegression();
 
+public class ModelRandomForest extends ModelWeka {
+	private RandomForest mRandomForestModel = new RandomForest();
+	private FastVector mWekaAttributes = null;
 	
 	@Override
 	public void train(List<Observation> observations) {
@@ -34,9 +36,9 @@ public class ModelLinearRegression extends ModelWeka {
 			trainingSet.add(instance);
 		}
 		
-		mLinearRegressionModel = new LinearRegression();
+		mRandomForestModel = new RandomForest();
 		try {
-			mLinearRegressionModel.buildClassifier(trainingSet);
+			mRandomForestModel.buildClassifier(trainingSet);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -45,12 +47,12 @@ public class ModelLinearRegression extends ModelWeka {
 
 	@Override
 	public Object predict(Observation obs) {
-		if (mLinearRegressionModel == null || mWekaAttributes == null) {
+		if (mRandomForestModel == null || mWekaAttributes == null) {
 			throw new IllegalStateException("Unable to make prediction because model has not been trained.");
 		}
 		Instance instance = createWekaInstance(obs);
 		try {
-			return mLinearRegressionModel.classifyInstance(instance);
+			return mRandomForestModel.classifyInstance(instance);
 		} catch (Exception e) {
 			return null;
 		}
