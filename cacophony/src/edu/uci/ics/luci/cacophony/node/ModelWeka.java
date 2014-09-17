@@ -1,6 +1,9 @@
 package edu.uci.ics.luci.cacophony.node;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import weka.core.Attribute;
 import weka.core.FastVector;
@@ -43,9 +46,32 @@ public abstract class ModelWeka implements Model {
 				FastVector attributeValues = null;
 				attribute = new Attribute(reading.getSensorConfig().getID(), attributeValues);
 				break;
-			case Attribute.DATE:
 			case Attribute.NOMINAL:
-				throw new UnsupportedOperationException("The model does not currently support date or nominal (i.e., categorical) types.");
+				List<SensorConfig> sensorList = new ArrayList<SensorConfig>();
+				sensorList.add(reading.getSensorConfig());
+				List<Observation> observations;
+				try {
+					observations = SensorReadingsDAO.retrieve(sensorList);
+				} catch (UnknownSensorException e) {
+					throw new UnsupportedOperationException("The sensor is unknown..");
+				} catch (StorageException e) {
+					// TODO log error
+					return null;
+				}
+				Set<String> uniqueValues = new HashSet<String>();
+				for (Observation obs : observations) {
+					String value = obs.getTarget().getTranslatedValue().getValue().toString();
+					if (!uniqueValues.contains(value)) {
+						uniqueValues.add(value);
+					}
+				}
+				FastVector categories = new FastVector(uniqueValues.size());
+				for (String value : uniqueValues) {
+					categories.addElement(value);
+				}
+				attribute = new Attribute(reading.getSensorConfig().getID(), categories);
+			case Attribute.DATE:
+				throw new UnsupportedOperationException("The model does not currently support date types.");
 			default:
 				throw new UnsupportedOperationException(String.format("Encountered unknown attribute type: %i", translation.getWekaAttributeType()));
 		}
@@ -61,9 +87,11 @@ public abstract class ModelWeka implements Model {
 		case Attribute.STRING:
 			instance.setValue(attribute, translation.getValue().toString());
 			break;
-		case Attribute.DATE:
 		case Attribute.NOMINAL:
-			throw new UnsupportedOperationException("The model does not currently support date or nominal (i.e., categorical) types.");
+			instance.setValue(attribute, translation.getValue().toString());
+			break;
+		case Attribute.DATE:
+			throw new UnsupportedOperationException("The model does not currently support date types.");
 		default:
 			throw new UnsupportedOperationException(String.format("Encountered unknown attribute type: %i", translation.getWekaAttributeType()));
 		}

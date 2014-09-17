@@ -11,7 +11,6 @@ import weka.core.Instances;
 
 public class ModelRandomForest extends ModelWeka {
 	private RandomForest mRandomForestModel = new RandomForest();
-	private FastVector mWekaAttributes = null;
 	
 	@Override
 	public void train(List<Observation> observations) {
