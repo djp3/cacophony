@@ -2,7 +2,7 @@ package edu.uci.ics.luci.cacophony.node;
 
 import net.minidev.json.JSONObject;
 
-public interface Translator {	
+public interface Translator<T> {	
 
 	/**
 	 * 
@@ -15,6 +15,6 @@ public interface Translator {
 	 * @param s
 	 * @return the value
 	 */
-	WekaAttributeTypeValuePair translate(String s);
+	T translate(String s);
 }
 

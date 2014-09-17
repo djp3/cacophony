@@ -1,24 +1,62 @@
 package edu.uci.ics.luci.cacophony.node;
 
-import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Date;
 import java.util.List;
-import java.util.Set;
 
+import weka.classifiers.Classifier;
 import weka.core.Attribute;
 import weka.core.FastVector;
 import weka.core.Instance;
+import weka.core.Instances;
 
-public abstract class ModelWeka implements Model {
+public class ModelWeka implements Model {
 	protected FastVector mWekaAttributes = null;
+	protected Classifier mWekaClassifier = null;
 	
-	@Override
+	public ModelWeka(Classifier wekaClassifier) {
+		mWekaClassifier = wekaClassifier;
+	}
+	
 	public void train(List<Observation> observations) {
+		if (observations.size() == 0) {
+			return;
+		}
+		
+		// To set the properties of the Weka attributes, we need to know the data type for each sensor. We
+		// arbitrarily look at the sensor readings in the first observation to get this information.
+		Observation firstObservation = observations.get(0);  
+		mWekaAttributes = new FastVector(firstObservation.getFeatures().size());
+		for (SensorReading reading : firstObservation.getFeatures()){
+			mWekaAttributes.addElement(createWekaAttribute(reading));
+		}
+		Attribute targetAttribute = createWekaAttribute(firstObservation.getTarget());
+		mWekaAttributes.addElement(targetAttribute);
+		
+		Instances trainingSet = new Instances("Cacophony", mWekaAttributes, observations.size()); // "Cacophony" name is arbitrary
+		trainingSet.setClassIndex(mWekaAttributes.size() - 1);
+		for (Observation obs : observations) {
+			Instance instance = createWekaInstance(obs);
+			trainingSet.add(instance);
+		}
+
+		try {
+			mWekaClassifier.buildClassifier(trainingSet);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
-	@Override
 	public Object predict(Observation observation) {
-		return null;
+		if (mWekaClassifier == null || mWekaAttributes == null) {
+			throw new IllegalStateException("Unable to make prediction because model has not been trained.");
+		}
+		Instance instance = createWekaInstance(observation);
+		try {
+			return mWekaClassifier.classifyInstance(instance);
+		} catch (Exception e) {
+			return null;
+		}
 	}
 
 	protected Instance createWekaInstance(Observation obs) {
@@ -36,64 +74,50 @@ public abstract class ModelWeka implements Model {
 	}
 
 	protected Attribute createWekaAttribute(SensorReading reading) {
-		WekaAttributeTypeValuePair translation = reading.getTranslatedValue();
+		Object translation = reading.getTranslatedValue();
 		Attribute attribute;
-		switch (translation.getWekaAttributeType()){
-			case Attribute.NUMERIC:
-				attribute = new Attribute(reading.getSensorConfig().getID());
-				break;
-			case Attribute.STRING:
-				FastVector attributeValues = null;
-				attribute = new Attribute(reading.getSensorConfig().getID(), attributeValues);
-				break;
-			case Attribute.NOMINAL:
-				List<SensorConfig> sensorList = new ArrayList<SensorConfig>();
-				sensorList.add(reading.getSensorConfig());
-				List<Observation> observations;
-				try {
-					observations = SensorReadingsDAO.retrieve(sensorList);
-				} catch (UnknownSensorException e) {
-					throw new UnsupportedOperationException("The sensor is unknown..");
-				} catch (StorageException e) {
-					// TODO log error
-					return null;
-				}
-				Set<String> uniqueValues = new HashSet<String>();
-				for (Observation obs : observations) {
-					String value = obs.getTarget().getTranslatedValue().getValue().toString();
-					if (!uniqueValues.contains(value)) {
-						uniqueValues.add(value);
-					}
-				}
-				FastVector categories = new FastVector(uniqueValues.size());
-				for (String value : uniqueValues) {
-					categories.addElement(value);
-				}
-				attribute = new Attribute(reading.getSensorConfig().getID(), categories);
-			case Attribute.DATE:
-				throw new UnsupportedOperationException("The model does not currently support date types.");
-			default:
-				throw new UnsupportedOperationException(String.format("Encountered unknown attribute type: %i", translation.getWekaAttributeType()));
+		if (translation instanceof Double) {
+			attribute = new Attribute(reading.getSensorConfig().getID());
+		}
+		else if (translation instanceof String) {
+			FastVector attributeValues = null;
+			attribute = new Attribute(reading.getSensorConfig().getID(), attributeValues);
+		}
+		else if (translation instanceof Categorical<?>) {
+			@SuppressWarnings("unchecked")
+			List<String> possibleCategories = ((Categorical<String>)translation).getPossibleCategories();
+			FastVector categories = new FastVector(possibleCategories.size());
+			for (String category : possibleCategories)
+				categories.addElement(category);
+			attribute = new Attribute(reading.getSensorConfig().getID(), categories);
+		}
+		else if (translation instanceof Date) {
+			throw new UnsupportedOperationException("The model does not currently support date types.");
+		}
+		else {
+			throw new UnsupportedOperationException(String.format("Encountered unknown attribute type: %i", translation.getClass()));
 		}
 		return attribute;
 	}
 	
 	protected void setValueInInstance(Instance instance, Attribute attribute, SensorReading reading) {
-		WekaAttributeTypeValuePair translation = reading.getTranslatedValue();
-		switch (translation.getWekaAttributeType()){
-		case Attribute.NUMERIC:
-			instance.setValue(attribute, (Double)translation.getValue());
-			break;
-		case Attribute.STRING:
-			instance.setValue(attribute, translation.getValue().toString());
-			break;
-		case Attribute.NOMINAL:
-			instance.setValue(attribute, translation.getValue().toString());
-			break;
-		case Attribute.DATE:
+		Object translation = reading.getTranslatedValue();
+		if (translation instanceof Double) {
+			instance.setValue(attribute, (Double)translation);
+		}
+		else if (translation instanceof String) {
+			instance.setValue(attribute, translation.toString());
+		}
+		else if (translation instanceof Categorical<?>) {
+			@SuppressWarnings("unchecked")
+			String value = ((Categorical<String>)translation).getCategory();
+			instance.setValue(attribute, value);
+		}
+		else if (translation instanceof Date) {
 			throw new UnsupportedOperationException("The model does not currently support date types.");
-		default:
-			throw new UnsupportedOperationException(String.format("Encountered unknown attribute type: %i", translation.getWekaAttributeType()));
+		}
+		else {
+			throw new UnsupportedOperationException(String.format("Encountered unknown attribute type: %i", translation.getClass()));
 		}
 	}
 }

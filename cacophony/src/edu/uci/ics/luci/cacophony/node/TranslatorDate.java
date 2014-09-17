@@ -1,11 +1,11 @@
 package edu.uci.ics.luci.cacophony.node;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import net.minidev.json.JSONObject;
-import weka.core.Attribute;
 
-public class TranslatorDate implements Translator {
+public class TranslatorDate implements Translator<Date> {
 	final public static String DATE_FORMAT = "yyyy-MM-dd";
 	
 	
@@ -14,18 +14,16 @@ public class TranslatorDate implements Translator {
 	}
 	
 	@Override
-	public WekaAttributeTypeValuePair translate(String s) {
+	public Date translate(String s) {
 		if (s == null) {
 			return null;
 		}
 		
 		try {
-			new SimpleDateFormat(DATE_FORMAT).parse(s);
+			return new SimpleDateFormat(DATE_FORMAT).parse(s);
 		}
 		catch (ParseException e) {
 			return null;
 		}
-		
-		return new WekaAttributeTypeValuePair(Attribute.DATE, s);
 	}
 }

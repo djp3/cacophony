@@ -112,8 +112,7 @@ public class SensorReadingsDAO {
     List<Observation> allObservations = null;
     try {
     	db = new SQLiteConnection(DATABASE_FILE);
-			db.open(false);
-			String query = "SELECT insert_time, " + StringStuff.join(", ", columnNames) + " FROM " + SENSOR_READINGS_TABLE;
+		db.open(false);
 	    st = db.prepare("SELECT insert_time, " + StringStuff.join(", ", columnNames) + " FROM " + SENSOR_READINGS_TABLE);
 	    SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ROOT);
 	    dateFormatter.setLenient(false);

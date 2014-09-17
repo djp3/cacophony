@@ -10,10 +10,10 @@ public class SensorConfig{
 	private final String format;
 	private final String regEx;
 	private final String pathExpression;
-	private final Translator translator;
+	private final Translator<?> translator;
 	private final JSONObject translatorOptions;
 	
-	public SensorConfig(String ID, String name, String URL, String format, String regEx, String pathExpression, Translator translator, JSONObject translatorOptions){
+	public SensorConfig(String ID, String name, String URL, String format, String regEx, String pathExpression, Translator<?> translator, JSONObject translatorOptions){
 		this.ID = ID;
 		this.name = name;
 		this.URL = URL;
@@ -74,7 +74,7 @@ public class SensorConfig{
 		}
 		
 		try {
-			translator = (Translator)Class.forName(classname).newInstance();
+			translator = (Translator<?>)Class.forName(classname).newInstance();
 		} catch (InstantiationException e) {
 			throw new IllegalArgumentException("Unable to deserialize SensorConfig JSON because the sensor's translator couldn't be instatiated :"+classname+"\n"+e);
 		} catch (IllegalAccessException e) {
@@ -137,7 +137,7 @@ public class SensorConfig{
 		return pathExpression;
 	}
 	
-	public Translator getTranslator() {
+	public Translator<?> getTranslator() {
 		return translator;
 	}
 	
