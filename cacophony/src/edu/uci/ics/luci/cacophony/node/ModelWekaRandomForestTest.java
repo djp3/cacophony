@@ -45,10 +45,10 @@ public class ModelWekaRandomForestTest {
 		Double prediction = (Double)model.predict(observation);
 		// TODO: this needs to be rewritten once we've determined how categorical values work (i.e., how is the list of possible categories determined?)
 		if (prediction != 0) {
-			fail(String.format("The random forest model's prediction was wrong. Expected {0}, but got {1}.", 0, prediction));
+			fail(String.format("The random forest model's prediction was wrong. Expected %d, but got %d.", 0, prediction));
 		}
 //		if (!prediction.equals(TARGET_VALUE)) {
-//			fail(String.format("The random forest model's prediction was wrong. Expected {0}, but got {1}.", TARGET_VALUE, prediction));
+//			fail(String.format("The random forest model's prediction was wrong. Expected %d, but got %d.", TARGET_VALUE, prediction));
 //		}
 		
 		sensorConfigs = makeSensorConfigs();
@@ -57,7 +57,7 @@ public class ModelWekaRandomForestTest {
 		
 		prediction = (Double)model.predict(observation);
 		if (prediction == 0) {
-			fail(String.format("The random forest model's prediction was wrong. Expected {0}, but got {1}.", 0, prediction));
+			fail(String.format("The random forest model's prediction was wrong. Expected %d, but got %d.", 0, prediction));
 		}
 //		if (prediction.equals(TARGET_VALUE)) {
 //			fail("The random forest model's prediction should not have matched.");
