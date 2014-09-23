@@ -121,11 +121,11 @@ public class SensorReadingsDAO {
 	    	int id = st.columnInt(0);
 	    	Date storageTime = dateFormatter.parse(st.columnString(1));
 	    	List<SensorReading> readings = new ArrayList<SensorReading>();
-	    	for (int i=2; i < sensors.size(); ++i) {
-	    		readings.add(new SensorReading(sensors.get(i), st.columnString(i)));
+	    	for (int i=0; i < sensors.size()-1; ++i) {
+	    		readings.add(new SensorReading(sensors.get(i), st.columnString(i+2)));
 	    	}
 	    	// target should be the last sensor in the list of sensors configurations 
-	    	SensorReading target = new SensorReading(sensors.get(sensors.size()-1), st.columnString(sensors.size()));
+	    	SensorReading target = new SensorReading(sensors.get(sensors.size()-1), st.columnString(sensors.size()+1));
 	    	allObservations.add(new Observation(id, storageTime, readings, target));
 	    }
 		} catch (SQLiteException e) {
