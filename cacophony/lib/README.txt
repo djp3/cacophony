@@ -20,6 +20,11 @@ This is what is in this directory on a working distribution
 					json-smart-1.2.jar
 					slf4j-api-1.7.5.jar
 
+		jsoup-1.8.1.jar
+			http://jsoup.org/
+			"jsoup is a Java library for working with real-world HTML. It provides a very convenient API for extracting and manipulating data, using the best of DOM, CSS, and jquery-like methods.
+			jsoup implements the WHATWG HTML5 specification, and parses HTML to the same DOM as modern browsers do."
+
 
 		luci-utility.jar
 			https://github.com/djp3/luci-utility
