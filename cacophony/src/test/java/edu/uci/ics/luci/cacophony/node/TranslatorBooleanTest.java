@@ -9,8 +9,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import weka.core.Attribute;
-
 public class TranslatorBooleanTest {
 
 	@BeforeClass
@@ -48,16 +46,15 @@ public class TranslatorBooleanTest {
 		
 		TranslatorBoolean tb = new TranslatorBoolean();
 		
-		assertEquals(Attribute.NUMERIC, tb.translate(t1).getWekaAttributeType());
-		assertTrue((Double)tb.translate(t1).getValue() == 1);
-		assertTrue((Double)tb.translate(t2).getValue() == 1);
-		assertTrue((Double)tb.translate(t3).getValue() == 1);
-		assertTrue((Double)tb.translate(t4).getValue() == 1);
+		assertTrue(tb.translate(t1) == true);
+		assertTrue(tb.translate(t2) == true);
+		assertTrue(tb.translate(t3) == true);
+		assertTrue(tb.translate(t4) == true);
 		
-		assertTrue((Double)tb.translate(f1).getValue() == 0);
-		assertTrue((Double)tb.translate(f2).getValue() == 0);
-		assertTrue((Double)tb.translate(f3).getValue() == 0);
-		assertTrue((Double)tb.translate(f4).getValue() == 0);
+		assertTrue(tb.translate(f1) == false);
+		assertTrue(tb.translate(f2) == false);
+		assertTrue(tb.translate(f3) == false);
+		assertTrue(tb.translate(f4) == false);
 		
 		assertTrue(tb.translate(x1) == null);
 		assertTrue(tb.translate(x2) == null);

@@ -34,69 +34,75 @@ public class CNode implements Runnable{
 
 	@Override
 	public void run() {
-    SensorReader targetReader = new SensorReader(configuration.getTarget()); 
-    SensorReading targetReading = null;
-    try {
-			targetReading = targetReader.call();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-    
-    // TODO: don't retrieve feature values unless the target value is non-null and has changed
-		List<Callable<SensorReading>> tasks = new ArrayList<Callable<SensorReading>>(); 
-    for(SensorConfig feature : configuration.getFeatures()){
-      tasks.add(new SensorReader(feature));
-    }
-    ExecutorService executor = Executors.newCachedThreadPool();
-    List<Future<SensorReading>> futures = null;
-		try {
-			futures = executor.invokeAll(tasks); // returns when all tasks are complete
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-			// TODO: Figure out if some of the tasks completed successfully.
-		}
-		
-		List<SensorReading> sensorReadings = new ArrayList<SensorReading>();
-    for(Future<SensorReading> future : futures) {
-      try {
-      	sensorReadings.add(future.get());
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-    	} catch (ExecutionException e) {
-        e.printStackTrace();
-      }
-    }
-    sensorReadings.add(targetReading);
-    try {
-			SensorReadingsDAO.store(sensorReadings);
-		} catch (StorageException e) {
-		// TODO: log the error and figure out what action to take
-			e.printStackTrace();
-		}
-    
-    //shut down the executor service now
-    executor.shutdown();
-		
-		try {
-			mModel = trainModel();
-		} catch (UnknownSensorException e) {
-			// TODO: log the error and figure out what action to take
-			e.printStackTrace();
-		} catch (StorageException e) {
-			// TODO: log the error and figure out what action to take
-			e.printStackTrace();
-		}
-		
-		List<Date> storageTimes;
-		try {
-			storageTimes = SensorReadingsDAO.retrieveStorageTimes(STORAGE_TIME_WINDOW_SIZE);
-			Thread.sleep(getWaitingTime(storageTimes));
-		} catch (StorageException e) {
-			// TODO: log the error and figure out what action to take
-			e.printStackTrace();
-		} catch (InterruptedException e) {
-			// TODO: log the error and figure out what action to take
-			e.printStackTrace();
+		boolean done = false;
+		while (!done) {
+		    SensorReader targetReader = new SensorReader(configuration.getTarget()); 
+		    SensorReading targetReading = null;
+		    try {
+					targetReading = targetReader.call();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+		    
+		    // TODO: don't retrieve feature values unless the target value is non-null and has changed
+			List<Callable<SensorReading>> tasks = new ArrayList<Callable<SensorReading>>(); 
+		    for(SensorConfig feature : configuration.getFeatures()){
+		      tasks.add(new SensorReader(feature));
+		    }
+		    ExecutorService executor = Executors.newCachedThreadPool();
+		    List<Future<SensorReading>> futures = null;
+			try {
+				futures = executor.invokeAll(tasks); // returns when all tasks are complete
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+				// TODO: Figure out if some of the tasks completed successfully.
+			}
+			
+			List<SensorReading> sensorReadings = new ArrayList<SensorReading>();
+		    for(Future<SensorReading> future : futures) {
+		      try {
+		      	sensorReadings.add(future.get());
+		      } catch (InterruptedException e) {
+		        e.printStackTrace();
+		    	} catch (ExecutionException e) {
+		        e.printStackTrace();
+		      }
+		    }
+		    
+		    sensorReadings.add(targetReading);
+		    try {
+				SensorReadingsDAO.store(sensorReadings);
+				} catch (StorageException e) {
+				// TODO: log the error and figure out what action to take
+					e.printStackTrace();
+				}
+		    
+		    //shut down the executor service now
+		    executor.shutdown();
+			
+			try {
+				mModel = trainModel();
+				
+			} catch (UnknownSensorException e) {
+				// TODO: log the error and figure out what action to take
+				e.printStackTrace();
+			} catch (StorageException e) {
+				// TODO: log the error and figure out what action to take
+				e.printStackTrace();
+			}
+			
+			List<Date> storageTimes;
+			try {
+				storageTimes = SensorReadingsDAO.retrieveStorageTimes(STORAGE_TIME_WINDOW_SIZE);
+				long sleepTime = Math.max(getWaitingTime(storageTimes), 5000); // TODO: 5 second minimum sleep time is arbitrary. Remove it?
+				Thread.sleep(sleepTime);
+			} catch (StorageException e) {
+				// TODO: log the error and figure out what action to take
+				e.printStackTrace();
+			} catch (InterruptedException e) {
+				// TODO: log the error and figure out what action to take
+				e.printStackTrace();
+			}
 		}
 	}
 	
@@ -104,13 +110,14 @@ public class CNode implements Runnable{
 		List<SensorConfig> sensors = new ArrayList<SensorConfig>(configuration.getFeatures());
 		sensors.add(configuration.getTarget());
 		Model model = new ModelConstant();
-		model.train(SensorReadingsDAO.retrieve(sensors));
+		List<Observation> observations = SensorReadingsDAO.retrieve(sensors);
+		model.train(observations);
+		
+		for (Observation obs : observations) {
+			Object prediction = model.predict(obs);
+			SensorReadingsDAO.updatePrediction(obs.getID(), prediction);
+		}		
 		return model;
-	}
-
-	private Object predict(List<SensorReading> featureValues) {
-		Observation observation = new Observation(featureValues);
-		return mModel.predict(observation);
 	}
 
 	protected static double calculateMean(List<Long> durationTimes) {

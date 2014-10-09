@@ -16,6 +16,7 @@ import java.util.TimeZone;
 import com.almworks.sqlite4java.SQLiteConnection;
 import com.almworks.sqlite4java.SQLiteException;
 import com.almworks.sqlite4java.SQLiteStatement;
+
 import edu.uci.ics.luci.utility.StringStuff;
 
 
@@ -61,16 +62,15 @@ public class SensorReadingsDAO {
 			columnNames.add(featureIDtoColumnNameMap.get(sc.getID()));
 		}
 		
-    try {
-    	db = new SQLiteConnection(DATABASE_FILE);
+		try {
+	    	db = new SQLiteConnection(DATABASE_FILE);
 			db.open(false);
-
 			st = db.prepare("INSERT INTO " + SENSOR_READINGS_TABLE
 	    								+ " (" + StringStuff.join(", ", columnNames) + ")"
 	    								+ " VALUES (" + buildQuestionMarkString(sensorReadings.size()) + ")");
-	    for(int i=0; i < sensorReadings.size(); ++i) {
-	    	st.bind(i+1, sensorReadings.get(i).getRawValue());
-	    }
+		    for(int i=0; i < sensorReadings.size(); ++i) {
+		    	st.bind(i+1, sensorReadings.get(i).getRawValue());
+		    }
 			st.step();
 		} catch (SQLiteException e) {
 			throw new StorageException("Unable to store sensor readings.", e);
@@ -111,22 +111,22 @@ public class SensorReadingsDAO {
     List<Observation> allObservations = null;
     try {
     	db = new SQLiteConnection(DATABASE_FILE);
-			db.open(false);
-			String query = "SELECT insert_time, " + StringStuff.join(", ", columnNames) + " FROM " + SENSOR_READINGS_TABLE;
-	    st = db.prepare("SELECT insert_time, " + StringStuff.join(", ", columnNames) + " FROM " + SENSOR_READINGS_TABLE);
+		db.open(false);
+	    st = db.prepare("SELECT id, insert_time, " + StringStuff.join(", ", columnNames) + " FROM " + SENSOR_READINGS_TABLE + " ORDER BY insert_time DESC");
 	    SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ROOT);
 	    dateFormatter.setLenient(false);
 	    dateFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
 	    allObservations = new ArrayList<Observation>();
 	    while (st.step()){
-	    	Date storageTime = dateFormatter.parse(st.columnString(0));
+	    	int id = st.columnInt(0);
+	    	Date storageTime = dateFormatter.parse(st.columnString(1));
 	    	List<SensorReading> readings = new ArrayList<SensorReading>();
-	    	for (int i=1; i < sensors.size(); ++i) {
-	    		readings.add(new SensorReading(sensors.get(i), st.columnString(i)));
+	    	for (int i=0; i < sensors.size()-1; ++i) {
+	    		readings.add(new SensorReading(sensors.get(i), st.columnString(i+2)));
 	    	}
 	    	// target should be the last sensor in the list of sensors configurations 
-	    	SensorReading target = new SensorReading(sensors.get(sensors.size()-1), st.columnString(sensors.size()));
-	    	allObservations.add(new Observation(storageTime, readings, target));
+	    	SensorReading target = new SensorReading(sensors.get(sensors.size()-1), st.columnString(sensors.size()+1));
+	    	allObservations.add(new Observation(id, storageTime, readings, target));
 	    }
 		} catch (SQLiteException e) {
 			throw new StorageException("Unable to retrieve sensor data.", e);
@@ -139,6 +139,33 @@ public class SensorReadingsDAO {
 			db.dispose();
 		}
     return allObservations;
+	}
+	
+	/**
+	 * Updates observation in the DB.
+	 * @param ID The ID of the observation for which we're updating the prediction
+	 * @param prediction The prediction to store
+	 * @throws StorageException 
+	 */
+	public static void updatePrediction(int ID, Object prediction) throws StorageException {
+	// TODO: write a unit test for this method
+		SQLiteConnection db = null;
+		SQLiteStatement st = null;
+		try {
+	    	db = new SQLiteConnection(DATABASE_FILE);
+			db.open(false);
+			st = db.prepare("UPDATE " + SENSOR_READINGS_TABLE + " SET prediction = ? WHERE ID = ");
+			st.bind(1, prediction.toString());
+			st.bind(2, ID);
+			st.step();
+		} catch (SQLiteException e) {
+			throw new StorageException("Unable to update prediction.", e);
+		} finally {
+			if (st != null) {
+				st.dispose();
+			}
+			db.dispose();
+		}
 	}
 	
 	/**
@@ -244,14 +271,16 @@ public class SensorReadingsDAO {
 			db.dispose();
 		}
 	}
-
+	
 	private static void createSensorReadingsTableIfMissing(List<SensorConfig> sensorConfigs) throws SQLiteException {
 		List<String> columns = new ArrayList<String>();
 		columns.add("id INTEGER PRIMARY KEY AUTOINCREMENT");
 		columns.add("insert_time DATETIME DEFAULT(STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW', 'UTC')) NOT NULL");
 		for (int i=0; i < sensorConfigs.size(); ++i){
 			columns.add("column" + i + " TEXT");
-		}		
+		}
+		columns.add("prediction TEXT");
+		
 		String createTableSql = String.format("CREATE TABLE IF NOT EXISTS %s (%s)", SENSOR_READINGS_TABLE, StringStuff.join(",\n", columns));
 		
 		SQLiteConnection db = null;

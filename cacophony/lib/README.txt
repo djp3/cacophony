@@ -9,7 +9,6 @@ This is what is in this directory on a working distribution
 			 tool for cleaning up malformed and faulty HTML. In addition, JTidy
 			 provides a DOM parser for real-world HTML." 
 			 
-
 		luci-utility.jar
 			https://github.com/djp3/luci-utility
 			A collection of utilities to support LUCI projects

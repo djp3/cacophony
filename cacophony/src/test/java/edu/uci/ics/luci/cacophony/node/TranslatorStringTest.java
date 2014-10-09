@@ -9,8 +9,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import weka.core.Attribute;
-
 public class TranslatorStringTest {
 
 	@BeforeClass
@@ -44,16 +42,15 @@ public class TranslatorStringTest {
 		
 		TranslatorString ts = new TranslatorString();
 		
-		assertEquals(Attribute.STRING, ts.translate(t1).getWekaAttributeType());
-		assertEquals(t1, ts.translate(t1).getValue());
-		assertEquals(t2, ts.translate(t2).getValue());
-		assertEquals(t3, ts.translate(t3).getValue());
-		assertEquals(f1, ts.translate(f1).getValue());
-		assertEquals(f2, ts.translate(f2).getValue());
-		assertEquals(f3, ts.translate(f3).getValue());
-		assertEquals(x1, ts.translate(x1).getValue());
-		assertEquals(x2, ts.translate(x2).getValue());
-		assertEquals(x3, ts.translate(x3).getValue());
+		assertEquals(t1, ts.translate(t1));
+		assertEquals(t2, ts.translate(t2));
+		assertEquals(t3, ts.translate(t3));
+		assertEquals(f1, ts.translate(f1));
+		assertEquals(f2, ts.translate(f2));
+		assertEquals(f3, ts.translate(f3));
+		assertEquals(x1, ts.translate(x1));
+		assertEquals(x2, ts.translate(x2));
+		assertEquals(x3, ts.translate(x3));
 		assertEquals(null, ts.translate(null));
 	}
 }

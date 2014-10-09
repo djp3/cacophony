@@ -12,7 +12,7 @@ public class SensorReading {
 		this.rawValue = rawValue;
 	}
 	
-	public WekaAttributeTypeValuePair getTranslatedValue() {
+	public Object getTranslatedValue() {
 		return sensorConfig.getTranslator().translate(rawValue);
 	}
 	
