@@ -2,7 +2,6 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
-	<classpathentry kind="lib" path="lib/luci-utility.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-1.2.14.jar"/>
 	<classpathentry kind="lib" path="lib/annotations.jar"/>
 	<classpathentry kind="lib" path="lib/jtidy-r938.jar"/>
@@ -13,7 +12,17 @@
 	<classpathentry kind="lib" path="lib/json-path-0.9.0/json-path-0.9.0.jar"/>
 	<classpathentry kind="lib" path="lib/json-path-0.9.0/json-path-0.9.0-dependencies/json-smart-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/json-path-0.9.0/json-path-0.9.0-dependencies/slf4j-api-1.7.5.jar"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.launching.macosx.MacOSXType/Java SE 6"/>
+	<classpathentry kind="lib" path="lib/sqlite4java.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:platform:/resource/cacophony/lib/sqlite4java-docs.zip!/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.launching.macosx.MacOSXType/Java SE 6">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="cacophony/lib"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="lib" path="/Users/djp3/Development/Mac/EclipseWorkspaceCacophony/weka/weka.jar"/>
+	<classpathentry kind="lib" path="/luci-utility/luci-utility.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

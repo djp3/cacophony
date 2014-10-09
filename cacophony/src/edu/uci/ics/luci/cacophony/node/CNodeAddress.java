@@ -1,7 +1,5 @@
 package edu.uci.ics.luci.cacophony.node;
 
-import edu.uci.ics.luci.utility.datastructure.HashCodeUtil;
-
 /**
  * @author djp3
  * A full address is correctly formes like "p2p://server/this/is/the/path"
@@ -104,32 +102,38 @@ public class CNodeAddress implements Comparable<CNodeAddress>{
 		int s = this.server.compareTo(o.server);
 		return s == 0 ? this.path.compareTo(o.path): s; 
 	}
-	
-	@Override
-	public boolean equals(Object _that) {
-		
-		if(_that == null) return false;
-		if(this == _that) return true;
-		if(!(_that instanceof CNodeAddress)) return false; 
-		
-		CNodeAddress that = (CNodeAddress)_that;
-		
-		if(this.server.equals(that.server)){
-			return this.path.equals(that.path);
-		}
-		else{
-			return false;
-		}
-	}
-	
-	public int hashCode(){
-		int result = HashCodeUtil.SEED;
 
-		result = HashCodeUtil.hash(result,this.getServer());
-		result = HashCodeUtil.hash(result,this.getPath());
-		
-		return(result);
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((path == null) ? 0 : path.hashCode());
+		result = prime * result + ((server == null) ? 0 : server.hashCode());
+		return result;
 	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		CNodeAddress other = (CNodeAddress) obj;
+		if (path == null) {					//Shouldn't ever be null
+			if (other.path != null)
+				return false;
+		} else if (!path.equals(other.path))
+			return false;
+		if (server == null) {				//Shouldn't ever be null
+			if (other.server != null)
+				return false;
+		} else if (!server.equals(other.server))
+			return false;
+		return true;
+	}
+	
 
 
 

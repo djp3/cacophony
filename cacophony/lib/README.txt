@@ -33,6 +33,13 @@ This is what is in this directory on a working distribution
 					bcprov-ext-jdk15on-147.jar
 					httptunnel-1.0.jar
 					netty-3.2.3.Final.jar
+
+		sqlite4java libraries:
+			http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22com.github.axet.litedb%22
+				libsqlite4java-osx.jnilib
+				sqlite4java-docs.zip
+				sqlite4java.jar
+
 				
 		weka.jar
 			The Weka machine learning library
@@ -52,3 +59,4 @@ Not currently necessary to build, but likely in the future
 	JSAP-2.1.jar
 		Java Simple Argument Parser
 		http://sourceforge.net/projects/jsap/
+

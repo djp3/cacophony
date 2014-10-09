@@ -5,6 +5,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
+import net.minidev.json.JSONStyle;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -66,6 +67,7 @@ public class CNodeConfigurationTest {
 		
 		cnc.setFeatures(cnc.getFeatures());
 		JSONArray featuresJSON = (JSONArray)configuration.get("features");
+		System.out.println(featuresJSON.toString());
 		for(int i=0; i<(featuresJSON).size(); i++){
 			JSONObject featureJSON = (JSONObject)featuresJSON.get(i);
 			SensorConfig feature = new SensorConfig(featureJSON);

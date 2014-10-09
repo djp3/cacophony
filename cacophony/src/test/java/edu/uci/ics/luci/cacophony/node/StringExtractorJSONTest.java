@@ -111,11 +111,11 @@ public class StringExtractorJSONTest {
 
 	@Test
 	public void testFetchAndExtractData() {
-		String url = "http://data.mtgox.com/api/1/BTCUSD/ticker";
-		String jsonpath = "$.return.vol.currency";
+		String url = "http://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/significant_month.geojson";
+		String jsonpath = "$.metadata.title";
 		try {
 			String data = StringExtractorJSON.fetchAndExtract(url, jsonpath, "(.*)");
-			assertEquals("BTC", data);
+			assertEquals("USGS Significant Earthquakes, Past Month", data);
 		} catch (MalformedURLException e) {
 			fail("The URL '" + url + "' is invalid\n" + e);
 		} catch (IOException e) {

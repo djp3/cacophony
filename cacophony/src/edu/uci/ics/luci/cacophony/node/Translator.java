@@ -16,5 +16,9 @@ public interface Translator {
 	 * @return the value
 	 */
 	WekaAttributeTypeValuePair translate(String s);
+	
+	public int hashCode();
+	public boolean equals(Object obj);
+	
 }
 

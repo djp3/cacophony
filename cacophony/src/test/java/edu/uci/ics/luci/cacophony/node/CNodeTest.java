@@ -59,7 +59,7 @@ public class CNodeTest {
 			catch(IllegalArgumentException e){
 				fail("This shouldn't throw an exception");
 			} catch (StorageException e) {
-				fail("This shouldn't throw an exception");
+				fail("This shouldn't throw an exception:"+e);
 			}
 			
 			Thread t = new Thread(cn);

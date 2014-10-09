@@ -1,6 +1,5 @@
 package edu.uci.ics.luci.cacophony.node;
 
-import edu.uci.ics.luci.utility.datastructure.HashCodeUtil;
 import net.minidev.json.JSONObject;
 
 public class SensorConfig{
@@ -146,36 +145,78 @@ public class SensorConfig{
 	}
 
 	@Override
-	public boolean equals(Object _that) {
-		if(_that == null) return false;
-		if(!(_that instanceof SensorConfig)) return false; 
-		if(this == _that) return true; 
-
-		SensorConfig that = (SensorConfig)_that;
-		
-		return this.ID.equals(that.ID)
-				&& this.name.equals(that.name)
-				&& this.URL.equals(that.URL)
-				&& this.format.equals(that.format)
-				&& this.regEx.equals(that.regEx)
-				&& this.pathExpression.equals(that.pathExpression)
-				&& this.translator.getClass().equals(that.translator.getClass())
-				&& this.translatorOptions.equals(that.translatorOptions);
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((ID == null) ? 0 : ID.hashCode());
+		result = prime * result + ((URL == null) ? 0 : URL.hashCode());
+		result = prime * result + ((format == null) ? 0 : format.hashCode());
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result
+				+ ((pathExpression == null) ? 0 : pathExpression.hashCode());
+		result = prime * result + ((regEx == null) ? 0 : regEx.hashCode());
+		result = prime * result
+				+ ((translator == null) ? 0 : translator.hashCode());
+		result = prime
+				* result
+				+ ((translatorOptions == null) ? 0 : translatorOptions
+						.hashCode());
+		return result;
 	}
-	
+
 	@Override
-	public int hashCode(){
-		int result = HashCodeUtil.SEED;
-
-		result = HashCodeUtil.hash(result, this.ID);
-		result = HashCodeUtil.hash(result, this.name);
-		result = HashCodeUtil.hash(result, this.URL);
-		result = HashCodeUtil.hash(result, this.format);
-		result = HashCodeUtil.hash(result, this.regEx);
-		result = HashCodeUtil.hash(result, this.pathExpression);
-		result = HashCodeUtil.hash(result, this.translator.getClass());
-		result = HashCodeUtil.hash(result, this.translatorOptions);
-		
-		return(result);
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (!(obj instanceof SensorConfig))
+			return false;
+		SensorConfig other = (SensorConfig) obj;
+		if (ID == null) {
+			if (other.ID != null)
+				return false;
+		} else if (!ID.equals(other.ID))
+			return false;
+		if (URL == null) {
+			if (other.URL != null)
+				return false;
+		} else if (!URL.equals(other.URL))
+			return false;
+		if (format == null) {
+			if (other.format != null)
+				return false;
+		} else if (!format.equals(other.format))
+			return false;
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
+			return false;
+		if (pathExpression == null) {
+			if (other.pathExpression != null)
+				return false;
+		} else if (!pathExpression.equals(other.pathExpression))
+			return false;
+		if (regEx == null) {
+			if (other.regEx != null)
+				return false;
+		} else if (!regEx.equals(other.regEx))
+			return false;
+		if (translator == null) {
+			if (other.translator != null)
+				return false;
+		} else if (!translator.equals(other.translator))
+			return false;
+		if (translatorOptions == null) {
+			if (other.translatorOptions != null)
+				return false;
+		} else if (!translatorOptions.equals(other.translatorOptions))
+			return false;
+		return true;
 	}
+
+	
+
+
 }
