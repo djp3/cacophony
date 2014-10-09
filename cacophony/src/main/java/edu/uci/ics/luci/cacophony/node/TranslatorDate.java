@@ -9,11 +9,9 @@ public class TranslatorDate implements Translator<Date> {
 	final public static String DATE_FORMAT = "yyyy-MM-dd";
 	
 	
-	@Override
 	public void initialize(JSONObject jo) {
 	}
 	
-	@Override
 	public Date translate(String s) {
 		if (s == null) {
 			return null;

@@ -32,7 +32,6 @@ public class CNode implements Runnable{
 		SensorReadingsDAO.initializeDBIfNecessary(sensorConfigs);
 	}
 
-	@Override
 	public void run() {
 		boolean done = false;
 		while (!done) {

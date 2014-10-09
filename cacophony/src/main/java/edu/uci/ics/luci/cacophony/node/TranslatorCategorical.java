@@ -6,11 +6,10 @@ import java.util.List;
 import net.minidev.json.JSONObject;
 
 public class TranslatorCategorical implements Translator<Categorical<String>> {
-	@Override
+	
 	public void initialize(JSONObject jo) {
 	}
 	
-	@Override
 	public Categorical<String> translate(String s) {
 		if (s == null) {
 			return null;

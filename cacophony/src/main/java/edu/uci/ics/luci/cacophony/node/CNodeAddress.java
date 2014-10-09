@@ -97,7 +97,6 @@ public class CNodeAddress implements Comparable<CNodeAddress>{
 		this.path = path;
 	}
 
-	@Override
 	public int compareTo(CNodeAddress o) {
 		int s = this.server.compareTo(o.server);
 		return s == 0 ? this.path.compareTo(o.path): s; 

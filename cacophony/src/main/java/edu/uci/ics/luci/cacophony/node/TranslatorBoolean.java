@@ -4,11 +4,9 @@ import net.minidev.json.JSONObject;
 
 public class TranslatorBoolean implements Translator<Boolean> {
 
-	@Override
 	public void initialize(JSONObject jo) {
 	}
 	
-	@Override
 	public Boolean translate(String s) {
 		if (s == null) {
 			return null;

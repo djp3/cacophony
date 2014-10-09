@@ -4,11 +4,9 @@ import net.minidev.json.JSONObject;
 
 public class TranslatorDouble implements Translator<Number> {
 	
-	@Override
 	public void initialize(JSONObject jo) {
 	}
 	
-	@Override
 	public Double translate(String s) {
 		if (s == null) {
 			return null;

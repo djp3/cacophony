@@ -155,7 +155,6 @@ public class CNodeServer implements Quittable{
 
 
 
-	@Override
 	public void setQuitting(boolean quitting) {
 		synchronized(getQuittingMonitor()){
 			if((!isQuitting) &&(quitting)){
@@ -168,7 +167,6 @@ public class CNodeServer implements Quittable{
 		}
 	}
 
-	@Override
 	public boolean isQuitting() {
 		synchronized(getQuittingMonitor()){
 			return this.isQuitting;
