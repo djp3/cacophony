@@ -9,9 +9,16 @@ examples/sensorLibrary/src/native/wifi/mac/wifi.dSYM
 
 #Anything in lib should be built or downloaded locally if needed
 cacophony/lib/*.jar
+cacophony/lib/*.zip
 cacophony/lib/json-path-0.9.0
 cacophony/lib/p2p4java/*.jar
 cacophony/lib/p2p4java/processing
+cacophony/lib/sqlite4java-282/*
+
+cacophony/target/*
+
+#test detritus
+cacophony/cacophony_db.sqlite3
 
 #p2p file system detritus
 tmp/*
