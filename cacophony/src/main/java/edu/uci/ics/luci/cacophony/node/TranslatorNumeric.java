@@ -3,7 +3,7 @@ package edu.uci.ics.luci.cacophony.node;
 import net.minidev.json.JSONObject;
 import weka.core.Attribute;
 
-public class TranslatorNumeric implements Translator {
+public class TranslatorNumeric extends Translator {
 	
 	@Override
 	public void initialize(JSONObject jo) {
@@ -26,4 +26,6 @@ public class TranslatorNumeric implements Translator {
 		}
 		return new WekaAttributeTypeValuePair(Attribute.NUMERIC, value);
 	}
+	
+
 }

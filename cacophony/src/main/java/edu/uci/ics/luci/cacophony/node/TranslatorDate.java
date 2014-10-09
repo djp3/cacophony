@@ -5,7 +5,7 @@ import java.text.SimpleDateFormat;
 import net.minidev.json.JSONObject;
 import weka.core.Attribute;
 
-public class TranslatorDate implements Translator {
+public class TranslatorDate extends Translator {
 	final public static String DATE_FORMAT = "yyyy-MM-dd";
 	
 	
@@ -28,4 +28,5 @@ public class TranslatorDate implements Translator {
 		
 		return new WekaAttributeTypeValuePair(Attribute.DATE, s);
 	}
+
 }

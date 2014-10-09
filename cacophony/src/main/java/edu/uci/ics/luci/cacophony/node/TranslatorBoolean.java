@@ -3,8 +3,8 @@ package edu.uci.ics.luci.cacophony.node;
 import net.minidev.json.JSONObject;
 import weka.core.Attribute;
 
-public class TranslatorBoolean implements Translator {
-
+public class TranslatorBoolean extends Translator {
+	
 	@Override
 	public void initialize(JSONObject jo) {
 	}

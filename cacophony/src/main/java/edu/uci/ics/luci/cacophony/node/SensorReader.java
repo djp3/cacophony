@@ -13,8 +13,7 @@ public class SensorReader implements Callable<SensorReading> {
 		this.sensorConfig = config;
 	}
 	
-	@Override
-	public SensorReading call() throws Exception {
+	public SensorReading call(){
 		String extractedString = null;
 		try {
 			if(sensorConfig.getFormat().equals("html")){
