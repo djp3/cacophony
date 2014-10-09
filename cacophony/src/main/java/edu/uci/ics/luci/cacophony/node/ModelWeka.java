@@ -5,6 +5,7 @@ import java.util.List;
 
 import weka.classifiers.Classifier;
 import weka.core.Attribute;
+import weka.core.DenseInstance;
 import weka.core.FastVector;
 import weka.core.Instance;
 import weka.core.Instances;
@@ -61,7 +62,7 @@ public class ModelWeka implements Model {
 
 	protected Instance createWekaInstance(Observation obs) {
 		int size = (obs.getTarget() == null ? obs.getFeatures().size() : obs.getFeatures().size() + 1);
-		Instance instance = new Instance(size);
+		Instance instance = new DenseInstance(size);
 		for (int i=0; i<obs.getFeatures().size(); ++i) {
 			SensorReading reading = obs.getFeatures().get(i);
 			Attribute attribute = (Attribute)mWekaAttributes.elementAt(i);
