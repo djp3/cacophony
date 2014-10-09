@@ -14,6 +14,14 @@ public class Observation {
 		this.target = target;
 	}
 	
+	public Observation(List<SensorReading> features, SensorReading target) {
+		this(null, features, target);
+	}
+	
+	public Observation(List<SensorReading> features) {
+		this(null, features, null);
+	}
+	
 	public Date getStorageTime() {
 		return storageTime;
 	}

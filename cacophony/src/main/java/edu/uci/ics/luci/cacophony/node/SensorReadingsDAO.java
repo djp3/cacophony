@@ -19,13 +19,18 @@ import com.almworks.sqlite4java.SQLiteStatement;
 import edu.uci.ics.luci.utility.StringStuff;
 
 
-// TODO: Add comments documenting public methods
 public class SensorReadingsDAO {
-	private static final File DATABASE_FILE = new File("cacophony_db.sqlite3");
+	private static final File DATABASE_FILE = (SensorReadingsDAOTest.currentlyTesting ? new File("cacophony_db_test.sqlite3") : new File("cacophony_db.sqlite3"));
 	private static final String SENSOR_READINGS_TABLE = "SensorReadings";
 	private static final String SENSOR_COLUMN_NAMES_TABLE = "SensorColumnNames";
 	
-	
+
+	/**
+	 * Initializes the database for the given sensors. This only needs to be called once during the lifetime of the database, unless there are new sensors for which to store readings.
+	 * Calling this method more than once will not harm anything, even if there aren't any new sensors. 
+	 * @param sensorConfigs Configuration info for the sensors for which we're storing sensor readings
+	 * @throws StorageException
+	 */
 	public static void initializeDBIfNecessary(List<SensorConfig> sensorConfigs) throws StorageException {
 		try {
 			createColumnNamesTableIfMissing();
@@ -37,8 +42,8 @@ public class SensorReadingsDAO {
 	}
 	
 	/**
-	 * 
-	 * @param Sensor readings to store
+	 * Stores sensor readings in the DB.
+	 * @param sensorReadings sensor readings to store
 	 * @throws StorageException 
 	 */
 	public static void store(List<SensorReading> sensorReadings) throws StorageException {
@@ -78,7 +83,8 @@ public class SensorReadingsDAO {
 	}
 	
 	/**
-	 * 
+	 * Retrieves previously-stored sensor readings from the DB.
+	 * @param sensors a list of sensor configurations for the sensors we want to retrieve previously-stored data for
 	 * @return stored sensor readings for the given list of sensors
 	 * @throws UnknownSensorException 
 	 * @throws StorageException 
@@ -108,7 +114,7 @@ public class SensorReadingsDAO {
 			db.open(false);
 			String query = "SELECT insert_time, " + StringStuff.join(", ", columnNames) + " FROM " + SENSOR_READINGS_TABLE;
 	    st = db.prepare("SELECT insert_time, " + StringStuff.join(", ", columnNames) + " FROM " + SENSOR_READINGS_TABLE);
-	    SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.ROOT);
+	    SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ROOT);
 	    dateFormatter.setLenient(false);
 	    dateFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
 	    allObservations = new ArrayList<Observation>();
@@ -118,9 +124,8 @@ public class SensorReadingsDAO {
 	    	for (int i=1; i < sensors.size(); ++i) {
 	    		readings.add(new SensorReading(sensors.get(i), st.columnString(i)));
 	    	}
-	    	// assuming target is last column 
-	    	SensorReading target = readings.get(readings.size()-1);
-	    	readings.remove(readings.size()-1); 
+	    	// target should be the last sensor in the list of sensors configurations 
+	    	SensorReading target = new SensorReading(sensors.get(sensors.size()-1), st.columnString(sensors.size()));
 	    	allObservations.add(new Observation(storageTime, readings, target));
 	    }
 		} catch (SQLiteException e) {
@@ -137,7 +142,8 @@ public class SensorReadingsDAO {
 	}
 	
 	/**
-	 * 
+	 * Retrieves timestamps for when the most recent n observations were stored in the DB.
+	 * @param n The number of storage times to retrieve, starting from the most recent
 	 * @return storage times for the previous n observations
 	 * @throws StorageException 
 	 */
@@ -170,9 +176,23 @@ public class SensorReadingsDAO {
     return storageTimes;
 	}
 	
+	/**
+	 * Deletes the database.
+	 * @param confirmationText you must enter the correct confirmation text in order for the deletion to take place
+	 * @return true if the database was deleted, false if it was not deleted (possibly because it didn't exist in the first place)
+	 */
+	public static boolean deleteDatabase(String confirmationText) {
+		final String REQUIRED_TEXT = "Yes, I know this will delete all of the data stored in the database. I'm not stupid.";
+		
+		if (confirmationText.equals(REQUIRED_TEXT) && DATABASE_FILE.exists()) {
+			return DATABASE_FILE.delete();
+		}
+		return false;
+	}
+	
 	private static void createColumnNamesTableIfMissing() throws SQLiteException {
 		List<String> columns = new ArrayList<String>();
-		columns.add("insert_time DATETIME DEFAULT(STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW', 'UTC')) NOT NULL");
+		columns.add("insert_time DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL");
 		columns.add("feature_ID TEXT NOT NULL UNIQUE");
 		columns.add("column_name TEXT NOT NULL");
 		String createTableSql = String.format("CREATE TABLE IF NOT EXISTS %s (%s)", SENSOR_COLUMN_NAMES_TABLE, StringStuff.join(",\n", columns));
