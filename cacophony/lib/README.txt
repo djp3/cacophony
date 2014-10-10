@@ -30,7 +30,7 @@ This is what is in this directory on a working distribution
 
 
 			
-	jars without a well described pedigree:
+	jars without a well described pedigree :
 		
 	maven dependencies (see pom.xml):
 	
