@@ -7,7 +7,6 @@ import edu.uci.ics.luci.cacophony.node.CNode;
 import edu.uci.ics.luci.cacophony.node.CNodeConfiguration;
 import edu.uci.ics.luci.cacophony.node.SensorConfig;
 import edu.uci.ics.luci.cacophony.node.StorageException;
-import edu.uci.ics.luci.cacophony.node.Translator;
 import edu.uci.ics.luci.cacophony.node.TranslatorString;
 import edu.uci.ics.luci.cacophony.server.CNodeServer;
 import edu.uci.ics.luci.utility.datastructure.Pair;
