@@ -8,12 +8,19 @@ import net.minidev.json.JSONObject;
 
 // TODO: predictors and features: are they the same thing?
 public class CNodeConfiguration {
-	private String myPath;
+	private String cNodePath;
 	private Set<CNodeAddress> predictors = new HashSet<CNodeAddress>();
 	private SensorConfig target;
 	private Set<SensorConfig> features = new HashSet<SensorConfig>();
 	private Long pollingMinInterval;
 	private PollingPolicy pollingPolicy;
+	
+	public CNodeConfiguration(String cNodePath, SensorConfig target){
+		this.cNodePath = cNodePath;
+		this.target = target;
+		this.pollingPolicy = PollingPolicy.ON_CHANGE;
+		this.pollingMinInterval = 5000L;
+	}
 	
 	public CNodeConfiguration(JSONObject jo){
 		this.fromJSONObject(jo);
@@ -21,7 +28,7 @@ public class CNodeConfiguration {
 	
 	public JSONObject toJSONObject(){
 		JSONObject configuration = new JSONObject();
-		configuration.put("c_node_name", myPath);
+		configuration.put("c_node_name", cNodePath);
 		
 		JSONArray predictorsJSON = new JSONArray();
 		for(CNodeAddress cna : predictors){
@@ -55,7 +62,7 @@ public class CNodeConfiguration {
 		if(myPathString == null){
 			throw new IllegalArgumentException("Configuration does not have a name");
 		}
-		myPath = myPathString;
+		cNodePath = myPathString;
 		
 		JSONArray predictorsJSON = (JSONArray)jo.get("predictors");
 		if(predictors != null){
@@ -65,7 +72,7 @@ public class CNodeConfiguration {
 					predictors.add(new CNodeAddress(predictor));
 				}
 				catch(IllegalArgumentException e){
-					throw new IllegalArgumentException("Unable to load configuration for "+myPath+" because the predictor didn't parse correctly: "+predictor);
+					throw new IllegalArgumentException("Unable to load configuration for "+cNodePath+" because the predictor didn't parse correctly: "+predictor);
 				}
 			}
 		}
@@ -80,40 +87,40 @@ public class CNodeConfiguration {
 		
 		JSONObject polling = (JSONObject)jo.get("polling");
 		if(polling == null){
-			throw new IllegalArgumentException("Unable to load configuration for "+myPath+" because the polling parameters didn't exist.");
+			throw new IllegalArgumentException("Unable to load configuration for "+cNodePath+" because the polling parameters didn't exist.");
 		}
 		else{
 			String pollingMinIntervalString = (String) polling.get("min_interval");
 			if(pollingMinIntervalString == null){
-				throw new IllegalArgumentException("Unable to load configuration for "+myPath+" because the polling min interval didn't exist.");
+				throw new IllegalArgumentException("Unable to load configuration for "+cNodePath+" because the polling min interval didn't exist.");
 			}
 			
 			try{
 				pollingMinInterval = Long.valueOf(pollingMinIntervalString);
 			}
 			catch(NumberFormatException e){
-				throw new IllegalArgumentException("Unable to load configuration for "+myPath+" because the polling min interval look like a long."+e);
+				throw new IllegalArgumentException("Unable to load configuration for "+cNodePath+" because the polling min interval look like a long."+e);
 			}
 			
 			String pollingPolicyString = (String)polling.get("policy");
 			if(pollingPolicyString == null){
-				throw new IllegalArgumentException("Unable to load configuration for "+myPath+" because the polling policy didn't exist.");
+				throw new IllegalArgumentException("Unable to load configuration for "+cNodePath+" because the polling policy didn't exist.");
 			}
 			try{
 				pollingPolicy = (PollingPolicy) PollingPolicy.fromString(pollingPolicyString);
 			}
 			catch(IllegalArgumentException e){
-				throw new IllegalArgumentException("Unable to load configuration for "+myPath+" because the polling policy was unknown."+e);
+				throw new IllegalArgumentException("Unable to load configuration for "+cNodePath+" because the polling policy was unknown."+e);
 			}
 		}
 	}
 
 	public String getMyPath() {
-		return myPath;
+		return cNodePath;
 	}
 
 	public void setMyPath(String myPath) {
-		this.myPath = myPath;
+		this.cNodePath = myPath;
 	}
 
 	public Set<CNodeAddress> getPredictors() {

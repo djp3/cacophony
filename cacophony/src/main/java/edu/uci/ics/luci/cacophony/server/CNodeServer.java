@@ -13,6 +13,7 @@ import edu.uci.ics.luci.cacophony.server.responder.ResponderCapabilities;
 import edu.uci.ics.luci.cacophony.server.responder.ResponderConfiguration;
 import edu.uci.ics.luci.cacophony.server.responder.ResponderConfigurationLoader;
 import edu.uci.ics.luci.cacophony.server.responder.ResponderShutdown;
+import edu.uci.ics.luci.cacophony.web.ConfigurationWebServer;
 import edu.uci.ics.luci.p2pinterface.P2PInterface;
 import edu.uci.ics.luci.utility.Quittable;
 
@@ -182,6 +183,7 @@ public class CNodeServer implements Quittable{
 	
 	public static void main(String[] args) {
 		CNodeServer cn = new CNodeServer();
+		ConfigurationWebServer.launch(cn, "localhost");
 		
 		/*Wait for the server to shutdown to shutdown */
 		synchronized(cn.getQuittingMonitor()){
