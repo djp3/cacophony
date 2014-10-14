@@ -3,6 +3,7 @@ package edu.uci.ics.luci.cacophony.web;
 import java.net.InetAddress;
 import java.util.Map;
 
+import net.minidev.json.JSONObject;
 import edu.uci.ics.luci.cacophony.node.CNode;
 import edu.uci.ics.luci.cacophony.node.CNodeConfiguration;
 import edu.uci.ics.luci.cacophony.node.SensorConfig;
@@ -39,13 +40,17 @@ public class HandlerCNodeLauncher extends HandlerAbstract {
 			cNode = new CNode(config);
 		} catch (StorageException e) {
 			e.printStackTrace();
-			return new Pair<byte[],byte[]>(HandlerAbstract.getContentTypeHeader_HTML(), "Error".getBytes());
+			JSONObject ret = new JSONObject();
+			ret.put("status", "Error");
+			return new Pair<byte[],byte[]>(HandlerAbstract.getContentTypeHeader_JSON(), ret.toString().getBytes());
 		}
 		cNodeServer.getCNodes().put(ID, cNode);
 		cNodeServer.launch(ID);
 		
-		Pair<byte[],byte[]> pair = new Pair<byte[],byte[]>(HandlerAbstract.getContentTypeHeader_HTML(), "CNode Launched".getBytes());
-		return pair;
+		JSONObject ret = new JSONObject();
+		ret.put("status", "CNode launched");
+		
+		return new Pair<byte[],byte[]>(HandlerAbstract.getContentTypeHeader_JSON(), ret.toString().getBytes());
 	}
 
 	@Override

@@ -50,7 +50,7 @@ public class HandlerConfigCreator extends HandlerAbstract {
 		div.attr("id", "cacophony_config");
 		Element button = div.appendElement("button");
 		button.attr("id", "show_cacophony_config");
-		button.text("Click some features and then click the button.");
+		button.text("Click on a target and then click the button to launch a CNode.");
 		
 		Pair<byte[],byte[]> pair = new Pair<byte[],byte[]>(HandlerAbstract.getContentTypeHeader_HTML(), doc.toString().getBytes());
 		return pair;

@@ -6,8 +6,15 @@ $(document).ready(function() {
 			$(this).effect('highlight', {color : "red"}, 1000)
 			xPath = getElementXPath($(this).get(0));
 	});
-	
-	$("#show_cacophony_config").click(launchCNode);
+
+    $("button[id='show_cacophony_config']").click(function(event) {
+            event.stopPropagation();
+            launchCNode();
+    });
+
+    $("div[id='cacophony_config']").click(function(event) {
+            event.stopPropagation();
+    });
 });
 
 function launchCNode() {
@@ -23,7 +30,7 @@ function launchCNode() {
 
 function handleResults(data, status) {
 	// TODO: check value of status
-	alert(data);
+	alert(data.status);
 }
 
 // From http://stackoverflow.com/questions/901115/how-can-i-get-query-string-values-in-javascript
