@@ -154,7 +154,7 @@ public class SensorReadingsDAO {
 		try {
 	    	db = new SQLiteConnection(DATABASE_FILE);
 			db.open(false);
-			st = db.prepare("UPDATE " + SENSOR_READINGS_TABLE + " SET prediction = ? WHERE ID = ");
+			st = db.prepare("UPDATE " + SENSOR_READINGS_TABLE + " SET prediction = ? WHERE ID = ?");
 			st.bind(1, prediction.toString());
 			st.bind(2, ID);
 			st.step();
