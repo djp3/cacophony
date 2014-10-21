@@ -10,6 +10,7 @@ import edu.uci.ics.luci.cacophony.node.CNode;
 import edu.uci.ics.luci.cacophony.node.CNodeConfiguration;
 import edu.uci.ics.luci.cacophony.node.StorageException;
 import edu.uci.ics.luci.cacophony.server.CNodeServer;
+import edu.uci.ics.luci.cacophony.server.ConfigurationsDAO;
 
 public class ResponderConfigurationLoader extends CNodeServerResponder {
 
@@ -78,9 +79,14 @@ public class ResponderConfigurationLoader extends CNodeServerResponder {
 					if(cNodes.size() < parentServer.getMaxCNodes()){
 						try{
 							CNodeConfiguration config = new CNodeConfiguration(incomingConfiguration);
-							CNode cNode = new CNode(config, UUID.randomUUID().toString());
+							String cnodeID = UUID.randomUUID().toString();
+							
+							ConfigurationsDAO.initializeDBIfNecessary();
+							ConfigurationsDAO.store(cnodeID, config);
+							CNode cNode = new CNode(config, cnodeID);
 							cNodes.put(cNodeName, cNode);
 							parentServer.launch(cNodeName);
+							
 							appendResponse(cNodeName+":OK");
 						}catch(RuntimeException e){
 							appendResponse(cNodeName+":FAIL");

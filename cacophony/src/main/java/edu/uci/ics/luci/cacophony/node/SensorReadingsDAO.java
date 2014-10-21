@@ -26,7 +26,7 @@ public class SensorReadingsDAO {
 	private File databaseFile;
 	private final String SENSOR_READINGS_TABLE = "SensorReadings";
 	private final String SENSOR_COLUMN_NAMES_TABLE = "SensorColumnNames";
-	private final String DATABASE_FILE_DIRECTORY = "databases";
+	private final String DATABASE_FILE_DIRECTORY = "cnode_databases";
 	private final String FILE_EXTENSION = "sqlite3";
 	
 	private SensorReadingsDAO(String databaseName) {

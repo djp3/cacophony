@@ -11,6 +11,7 @@ import edu.uci.ics.luci.cacophony.node.SensorConfig;
 import edu.uci.ics.luci.cacophony.node.StorageException;
 import edu.uci.ics.luci.cacophony.node.TranslatorString;
 import edu.uci.ics.luci.cacophony.server.CNodeServer;
+import edu.uci.ics.luci.cacophony.server.ConfigurationsDAO;
 import edu.uci.ics.luci.utility.datastructure.Pair;
 import edu.uci.ics.luci.utility.webserver.HandlerAbstract;
 import edu.uci.ics.luci.utility.webserver.RequestDispatcher.HTTPRequest;
@@ -39,6 +40,8 @@ public class HandlerCNodeLauncher extends HandlerAbstract {
 		CNode cNode;
 		String cnodeID = UUID.randomUUID().toString();
 		try {
+			ConfigurationsDAO.initializeDBIfNecessary();
+			ConfigurationsDAO.store(cnodeID, config);
 			cNode = new CNode(config, cnodeID);
 		} catch (StorageException e) {
 			e.printStackTrace();
