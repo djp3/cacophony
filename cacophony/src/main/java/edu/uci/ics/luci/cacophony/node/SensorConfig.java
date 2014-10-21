@@ -152,15 +152,10 @@ public class SensorConfig{
 		result = prime * result + ((URL == null) ? 0 : URL.hashCode());
 		result = prime * result + ((format == null) ? 0 : format.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
-		result = prime * result
-				+ ((pathExpression == null) ? 0 : pathExpression.hashCode());
+		result = prime * result	+ ((pathExpression == null) ? 0 : pathExpression.hashCode());
 		result = prime * result + ((regEx == null) ? 0 : regEx.hashCode());
-		result = prime * result
-				+ ((translator == null) ? 0 : translator.hashCode());
-		result = prime
-				* result
-				+ ((translatorOptions == null) ? 0 : translatorOptions
-						.hashCode());
+		result = prime * result	+ ((translator == null) ? 0 : translator.getClass().hashCode());
+		result = prime * result	+ ((translatorOptions == null) ? 0 : translatorOptions.hashCode());
 		return result;
 	}
 
@@ -206,7 +201,7 @@ public class SensorConfig{
 		if (translator == null) {
 			if (other.translator != null)
 				return false;
-		} else if (!translator.equals(other.translator))
+		} else if (!translator.getClass().equals(other.translator.getClass()))
 			return false;
 		if (translatorOptions == null) {
 			if (other.translatorOptions != null)

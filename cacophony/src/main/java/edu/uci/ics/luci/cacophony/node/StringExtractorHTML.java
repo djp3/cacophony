@@ -6,13 +6,11 @@ import java.net.MalformedURLException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.lang.model.type.UnknownTypeException;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.tidy.Tidy;
@@ -50,7 +48,7 @@ public class StringExtractorHTML {
 				}
 			}
 			else {
-				throw new IllegalArgumentException("Node is null. XPath may be incorrect or invalid.");
+				return null;
 			}
 		}
 		

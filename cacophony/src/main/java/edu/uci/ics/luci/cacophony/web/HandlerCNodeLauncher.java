@@ -2,6 +2,7 @@ package edu.uci.ics.luci.cacophony.web;
 
 import java.net.InetAddress;
 import java.util.Map;
+import java.util.UUID;
 
 import net.minidev.json.JSONObject;
 import edu.uci.ics.luci.cacophony.node.CNode;
@@ -31,24 +32,25 @@ public class HandlerCNodeLauncher extends HandlerAbstract {
 		// TODO: add support for translator
 		
 		TranslatorString translator = new TranslatorString();
-		String ID = name + "_" + url + "_" + path; // TODO: should ID parameter be something guaranteed to be unique? Should the name and ID be the same or different?
-		SensorConfig target = new SensorConfig(ID, name, url, format, regex, path, translator, null); 
+		String sensorID = UUID.randomUUID().toString();
+		SensorConfig target = new SensorConfig(sensorID, name, url, format, regex, path, translator, null); 
 		
-		CNodeConfiguration config = new CNodeConfiguration(ID, target);
+		CNodeConfiguration config = new CNodeConfiguration("some_path", target); //TODO: figure out what path should be
 		CNode cNode;
+		String cnodeID = UUID.randomUUID().toString();
 		try {
-			cNode = new CNode(config);
+			cNode = new CNode(config, cnodeID);
 		} catch (StorageException e) {
 			e.printStackTrace();
 			JSONObject ret = new JSONObject();
 			ret.put("status", "Error");
 			return new Pair<byte[],byte[]>(HandlerAbstract.getContentTypeHeader_JSON(), ret.toString().getBytes());
 		}
-		cNodeServer.getCNodes().put(ID, cNode);
-		cNodeServer.launch(ID);
+		cNodeServer.getCNodes().put(cnodeID, cNode);
+		cNodeServer.launch(cnodeID);
 		
 		JSONObject ret = new JSONObject();
-		ret.put("status", "CNode launched");
+		ret.put("status", "Launched CNode with ID " + cnodeID);
 		
 		return new Pair<byte[],byte[]>(HandlerAbstract.getContentTypeHeader_JSON(), ret.toString().getBytes());
 	}

@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
@@ -53,7 +54,7 @@ public class CNodeTest {
 				JSONArray configurations = (JSONArray) data.get("configurations");
 				JSONObject configuration = (JSONObject) configurations.get(0);
 				cnn = new CNodeConfiguration(configuration);
-				cn = new CNode(cnn);
+				cn = new CNode(cnn, UUID.randomUUID().toString());
 				assertTrue(cn.getConfiguration() == cnn);
 			}
 			catch(IllegalArgumentException e){
