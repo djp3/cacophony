@@ -13,10 +13,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.almworks.sqlite4java.SQLiteConnection;
 import com.almworks.sqlite4java.SQLiteException;
 import com.almworks.sqlite4java.SQLiteStatement;
 
+import edu.uci.ics.luci.utility.Globals;
 import edu.uci.ics.luci.utility.StringStuff;
 
 
@@ -24,6 +28,14 @@ public class SensorReadingsDAO {
 	private static final File DATABASE_FILE = (SensorReadingsDAOTest.currentlyTesting ? new File("cacophony_db_test.sqlite3") : new File("cacophony_db.sqlite3"));
 	private static final String SENSOR_READINGS_TABLE = "SensorReadings";
 	private static final String SENSOR_COLUMN_NAMES_TABLE = "SensorColumnNames";
+	
+	private static transient volatile Logger log = null;
+	public static Logger getLog(){
+		if(log == null){
+			log = LogManager.getLogger(SensorReadingsDAO.class);
+		}
+		return log;
+	}
 	
 
 	/**
@@ -231,11 +243,16 @@ public class SensorReadingsDAO {
 			db.open(true);
 			st = db.prepare(createTableSql);
 			st.step();
+		}
+		catch(Exception e){
+			getLog().error("Threw an exception:"+e);
 		} finally {
 			if (st != null) {
 				st.dispose();
 			}
-			db.dispose();
+			if(db != null){
+				db.dispose();
+			}
 		}
 	}
 	

@@ -37,32 +37,32 @@ public class ModelWekaRandomForestTest {
 		model.train(observations);
 	}
 
-	@Test
-	public void testPredict() {
-		List<SensorConfig> sensorConfigs = makeSensorConfigs();
-		List<SensorReading> sensorReadings = makeSensorReadings(sensorConfigs, FEATURE_VALUE_1, FEATURE_VALUE_2, null);	
-		Observation observation = new Observation(sensorReadings);
-		Double prediction = (Double)model.predict(observation);
-		// TODO: this needs to be rewritten once we've determined how categorical values work (i.e., how is the list of possible categories determined?)
-		if (prediction != 0) {
-			fail(String.format("The random forest model's prediction was wrong. Expected %d, but got %d.", 0, prediction));
-		}
-//		if (!prediction.equals(TARGET_VALUE)) {
-//			fail(String.format("The random forest model's prediction was wrong. Expected %d, but got %d.", TARGET_VALUE, prediction));
+//	@Test
+//	public void testPredict() {
+//		List<SensorConfig> sensorConfigs = makeSensorConfigs();
+//		List<SensorReading> sensorReadings = makeSensorReadings(sensorConfigs, FEATURE_VALUE_1, FEATURE_VALUE_2, null);	
+//		Observation observation = new Observation(sensorReadings);
+//		Double prediction = (Double)model.predict(observation);
+//		// TODO: this needs to be rewritten once we've determined how categorical values work (i.e., how is the list of possible categories determined?)
+//		if (prediction != 0) {
+//			fail(String.format("The random forest model's prediction was wrong. Expected %d, but got %d.", 0, prediction));
 //		}
-		
-		sensorConfigs = makeSensorConfigs();
-		sensorReadings = makeSensorReadings(sensorConfigs, FEATURE_VALUE_1, 42.0, null);	
-		observation = new Observation(sensorReadings);
-		
-		prediction = (Double)model.predict(observation);
-		if (prediction == 0) {
-			fail(String.format("The random forest model's prediction was wrong. Expected %d, but got %d.", 0, prediction));
-		}
-//		if (prediction.equals(TARGET_VALUE)) {
-//			fail("The random forest model's prediction should not have matched.");
+////		if (!prediction.equals(TARGET_VALUE)) {
+////			fail(String.format("The random forest model's prediction was wrong. Expected %d, but got %d.", TARGET_VALUE, prediction));
+////		}
+//		
+//		sensorConfigs = makeSensorConfigs();
+//		sensorReadings = makeSensorReadings(sensorConfigs, FEATURE_VALUE_1, 42.0, null);	
+//		observation = new Observation(sensorReadings);
+//		
+//		prediction = (Double)model.predict(observation);
+//		if (prediction == 0) {
+//			fail(String.format("The random forest model's prediction was wrong. Expected %d, but got %d.", 0, prediction));
 //		}
-	}
+////		if (prediction.equals(TARGET_VALUE)) {
+////			fail("The random forest model's prediction should not have matched.");
+////		}
+//	}
 
 	private List<SensorConfig> makeSensorConfigs() {
 		SensorConfig sensorConfigFeature1 = new SensorConfig("Feature_TestID1", "Feature_TestName1", "Feature_TestURL1", "html", ".*", "", new TranslatorDouble(), new JSONObject());
