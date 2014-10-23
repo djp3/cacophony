@@ -45,6 +45,12 @@ public class TranslatorBooleanTest {
 		
 		
 		TranslatorBoolean tb = new TranslatorBoolean();
+		try{
+			tb.initialize(null);
+		}
+		catch(RuntimeException e){
+			fail("This shouldn't fail");
+		}
 		
 		assertTrue(tb.translate(t1) == true);
 		assertTrue(tb.translate(t2) == true);
