@@ -1,9 +1,12 @@
 package edu.uci.ics.luci.cacophony.node;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.Arrays;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.junit.Test;
 
@@ -11,7 +14,7 @@ public class CategoricalTest {
 
 	@Test
 	public void testCategorical() {
-		List<String> categories = Arrays.asList("red", "blue", "green");
+		Set<String> categories = new HashSet<String>(Arrays.asList("red", "blue", "green"));
 		Categorical<String> categorical = new Categorical<String>("red", categories);
 		assertEquals(categorical.getCategory(), "red");
 		assertTrue(categorical.getPossibleCategories().contains("red"));
@@ -20,10 +23,9 @@ public class CategoricalTest {
 		
 		try {
 			categorical = new Categorical<String>("orange", categories);
+			fail("Should not have reached here; an IllegalArgumentException should have been thrown.");
 		}
 		catch (IllegalArgumentException e) {
-			return;
 		}
-		fail("Should not have reached here; an IllegalArgumentException should have been thrown.");
 	}
 }
