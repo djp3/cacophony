@@ -97,7 +97,14 @@ public class ModelWeka implements Model {
 			throw new UnsupportedOperationException("The model does not currently support date types.");
 		}
 		else {
-			throw new UnsupportedOperationException(String.format("Encountered unknown attribute type: %i", translation.getClass()));
+			String debugClass;
+			if(translation == null){
+				debugClass = "null";
+			}
+			else{
+				debugClass = translation.getClass().getCanonicalName();
+			}
+			throw new UnsupportedOperationException(String.format("Encountered unknown attribute type: %i", debugClass));
 		}
 		return attribute;
 	}
