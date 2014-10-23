@@ -201,7 +201,7 @@ public class SensorConfig{
 		if (translator == null) {
 			if (other.translator != null)
 				return false;
-		} else if (!translator.getClass().equals(other.translator.getClass()))
+		} else if ((other.translator == null) || (!translator.getClass().equals(other.translator.getClass())))					//Customized equals -djp3
 			return false;
 		if (translatorOptions == null) {
 			if (other.translatorOptions != null)
