@@ -13,7 +13,7 @@ import org.junit.Test;
 public class CategoricalTest {
 
 	@Test
-	public void testCategorical() {
+	public void testCategoricalString() {
 		Set<String> categories = new HashSet<String>(Arrays.asList("red", "blue", "green"));
 		Categorical<String> categorical = new Categorical<String>("red", categories);
 		assertEquals(categorical.getCategory(), "red");
@@ -22,7 +22,24 @@ public class CategoricalTest {
 		assertTrue(categorical.getPossibleCategories().contains("green"));
 		
 		try {
-			categorical = new Categorical<String>("orange", categories);
+			new Categorical<String>("orange", categories);
+			fail("Should not have reached here; an IllegalArgumentException should have been thrown.");
+		}
+		catch (IllegalArgumentException e) {
+		}
+	}
+	
+	@Test
+	public void testCategoricalInteger() {
+		Set<Integer> categories = new HashSet<Integer>(Arrays.asList(1,2,3));
+		Categorical<Integer> categorical = new Categorical<Integer>(1, categories);
+		assertEquals(categorical.getCategory(), new Integer(1));
+		assertTrue(categorical.getPossibleCategories().contains(1));
+		assertTrue(categorical.getPossibleCategories().contains(2));
+		assertTrue(categorical.getPossibleCategories().contains(3));
+		
+		try {
+			new Categorical<Integer>(4, categories);
 			fail("Should not have reached here; an IllegalArgumentException should have been thrown.");
 		}
 		catch (IllegalArgumentException e) {
