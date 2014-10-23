@@ -30,6 +30,30 @@ public class TranslatorDateTest {
 	public void tearDown() throws Exception {
 	}
 	
+
+	@Test
+	public void equalsTest(){
+		TranslatorDate tb1 = new TranslatorDate();
+		TranslatorDate tb2 = new TranslatorDate();
+		
+		assertTrue(!tb1.equals(null));
+		assertTrue(!tb1.equals("foo"));
+		
+		assertEquals(tb1,tb1);
+		assertEquals(tb1.hashCode(),tb1.hashCode());
+		
+		assertEquals(tb2,tb2);
+		assertEquals(tb2.hashCode(),tb2.hashCode());
+		
+		assertEquals(tb1,tb2);
+		assertEquals(tb2,tb1);
+		assertEquals(tb1.hashCode(),tb2.hashCode());
+		assertEquals(tb2.hashCode(),tb1.hashCode());
+		
+		
+	}
+	
+	
 	@Test
 	public void testTranslation(){	
 		TranslatorDate td = new TranslatorDate();

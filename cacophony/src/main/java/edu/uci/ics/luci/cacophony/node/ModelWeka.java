@@ -2,6 +2,7 @@ package edu.uci.ics.luci.cacophony.node;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import weka.classifiers.Classifier;
 import weka.core.Attribute;
@@ -86,7 +87,7 @@ public class ModelWeka implements Model {
 		}
 		else if (translation instanceof Categorical<?>) {
 			@SuppressWarnings("unchecked")
-			List<String> possibleCategories = ((Categorical<String>)translation).getPossibleCategories();
+			Set<String> possibleCategories = ((Categorical<String>)translation).getPossibleCategories();
 			FastVector categories = new FastVector(possibleCategories.size());
 			for (String category : possibleCategories)
 				categories.addElement(category);

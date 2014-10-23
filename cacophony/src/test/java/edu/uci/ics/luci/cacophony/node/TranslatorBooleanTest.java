@@ -28,6 +28,28 @@ public class TranslatorBooleanTest {
 	}
 	
 	@Test
+	public void equalsTest(){
+		TranslatorBoolean tb1 = new TranslatorBoolean();
+		TranslatorBoolean tb2 = new TranslatorBoolean();
+		
+		assertTrue(!tb1.equals(null));
+		assertTrue(!tb1.equals("foo"));
+		
+		assertEquals(tb1,tb1);
+		assertEquals(tb1.hashCode(),tb1.hashCode());
+		
+		assertEquals(tb2,tb2);
+		assertEquals(tb2.hashCode(),tb2.hashCode());
+		
+		assertEquals(tb1,tb2);
+		assertEquals(tb2,tb1);
+		assertEquals(tb1.hashCode(),tb2.hashCode());
+		assertEquals(tb2.hashCode(),tb1.hashCode());
+		
+		
+	}
+	
+	@Test
 	public void testTranslation(){
 		
 		String t1 = "truE";
