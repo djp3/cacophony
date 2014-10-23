@@ -33,6 +33,12 @@ public class TranslatorDateTest {
 	@Test
 	public void testTranslation(){	
 		TranslatorDate td = new TranslatorDate();
+		try{
+			td.initialize(null);
+		}
+		catch(RuntimeException e){
+			fail("This shouldn't fail");
+		}
 		Calendar cal = GregorianCalendar.getInstance();
 		cal.set(Calendar.MILLISECOND, 0);
 		cal.set(2013, Calendar.MAY, 03, 0, 0, 0);
