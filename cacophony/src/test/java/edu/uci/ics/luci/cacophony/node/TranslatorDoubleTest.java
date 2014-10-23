@@ -30,6 +30,12 @@ public class TranslatorDoubleTest {
 	@Test
 	public void testTranslation(){	
 		TranslatorDouble tn = new TranslatorDouble();
+		try{
+			tn.initialize(null);
+		}
+		catch(RuntimeException e){
+			fail("This shouldn't fail");
+		}
 		
 		assertTrue(tn.translate("3") == 3);
 		assertTrue(tn.translate("03") == 3);
