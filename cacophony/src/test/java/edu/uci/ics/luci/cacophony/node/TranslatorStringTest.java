@@ -41,6 +41,12 @@ public class TranslatorStringTest {
 		String x3 = "antifalse";
 		
 		TranslatorString ts = new TranslatorString();
+		try{
+			ts.initialize(null);
+		}
+		catch(RuntimeException e){
+			fail("This shouldn't fail");
+		}
 		
 		assertEquals(t1, ts.translate(t1));
 		assertEquals(t2, ts.translate(t2));
