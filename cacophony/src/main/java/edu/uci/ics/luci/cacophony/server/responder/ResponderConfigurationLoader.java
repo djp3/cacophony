@@ -1,6 +1,7 @@
 package edu.uci.ics.luci.cacophony.server.responder;
 
 import java.util.Map;
+import java.util.UUID;
 
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
@@ -77,7 +78,7 @@ public class ResponderConfigurationLoader extends CNodeServerResponder {
 					if(cNodes.size() < parentServer.getMaxCNodes()){
 						try{
 							CNodeConfiguration config = new CNodeConfiguration(incomingConfiguration);
-							CNode cNode = new CNode(config);
+							CNode cNode = new CNode(config, UUID.randomUUID().toString());
 							cNodes.put(cNodeName, cNode);
 							parentServer.launch(cNodeName);
 							appendResponse(cNodeName+":OK");

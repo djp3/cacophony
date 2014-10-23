@@ -1,0 +1,24 @@
+#cacophony_config {
+	line-height: 28px;
+	padding: 8px 10px 4px;
+	background-color: #fafafa;
+	width: 100%;
+	position: fixed;
+	top: 0;
+	left: 0;
+	z-index: 2147483500;
+	min-width: 960px;
+	height: 25px;
+	border-bottom: 1px solid #efefef;
+	display: inline-table;
+	font-family: Arial, sans-serif;
+	font-size: large;
+}
+
+body {
+	padding-top: 40px!important
+}
+
+#show_cacophony_config {
+	border: 2px outset buttonface;
+}

@@ -17,19 +17,21 @@ import java.util.concurrent.Future;
 public class CNode implements Runnable{
 	int STORAGE_TIME_WINDOW_SIZE = 10; 	
 	CNodeConfiguration configuration;
+	SensorReadingsDAO sensorReadingsDAO;
 	Model mModel;
 	
 	public CNodeConfiguration getConfiguration() {
 		return configuration;
 	}
 
-	public CNode(CNodeConfiguration configuration) throws StorageException{
+	public CNode(CNodeConfiguration configuration, String databaseName) throws StorageException{
 		this.configuration = configuration;
+		sensorReadingsDAO = SensorReadingsDAO.getInstance(databaseName);
 		
 		List<SensorConfig> sensorConfigs = new ArrayList<SensorConfig>();
 		sensorConfigs.addAll(configuration.getFeatures());
 		sensorConfigs.add(configuration.getTarget());
-		SensorReadingsDAO.initializeDBIfNecessary(sensorConfigs);
+		sensorReadingsDAO.initializeDBIfNecessary(sensorConfigs);
 	}
 
 	public void run() {
@@ -70,7 +72,7 @@ public class CNode implements Runnable{
 		    
 		    sensorReadings.add(targetReading);
 		    try {
-				SensorReadingsDAO.store(sensorReadings);
+				sensorReadingsDAO.store(sensorReadings);
 				} catch (StorageException e) {
 				// TODO: log the error and figure out what action to take
 					e.printStackTrace();
@@ -92,7 +94,7 @@ public class CNode implements Runnable{
 			
 			List<Date> storageTimes;
 			try {
-				storageTimes = SensorReadingsDAO.retrieveStorageTimes(STORAGE_TIME_WINDOW_SIZE);
+				storageTimes = sensorReadingsDAO.retrieveStorageTimes(STORAGE_TIME_WINDOW_SIZE);
 				long sleepTime = Math.max(getWaitingTime(storageTimes), 5000); // TODO: 5 second minimum sleep time is arbitrary. Remove it?
 				Thread.sleep(sleepTime);
 			} catch (StorageException e) {
@@ -109,12 +111,12 @@ public class CNode implements Runnable{
 		List<SensorConfig> sensors = new ArrayList<SensorConfig>(configuration.getFeatures());
 		sensors.add(configuration.getTarget());
 		Model model = new ModelConstant();
-		List<Observation> observations = SensorReadingsDAO.retrieve(sensors);
+		List<Observation> observations = sensorReadingsDAO.retrieve(sensors);
 		model.train(observations);
 		
 		for (Observation obs : observations) {
 			Object prediction = model.predict(obs);
-			SensorReadingsDAO.updatePrediction(obs.getID(), prediction);
+			sensorReadingsDAO.updatePrediction(obs.getID(), prediction);
 		}		
 		return model;
 	}

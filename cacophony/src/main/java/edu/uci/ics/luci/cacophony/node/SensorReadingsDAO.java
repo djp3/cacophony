@@ -25,9 +25,6 @@ import edu.uci.ics.luci.utility.StringStuff;
 
 
 public class SensorReadingsDAO {
-	private static final File DATABASE_FILE = (SensorReadingsDAOTest.currentlyTesting ? new File("cacophony_db_test.sqlite3") : new File("cacophony_db.sqlite3"));
-	private static final String SENSOR_READINGS_TABLE = "SensorReadings";
-	private static final String SENSOR_COLUMN_NAMES_TABLE = "SensorColumnNames";
 	
 	private static transient volatile Logger log = null;
 	public static Logger getLog(){
@@ -37,6 +34,25 @@ public class SensorReadingsDAO {
 		return log;
 	}
 	
+	private static Map<String, SensorReadingsDAO> daoInstances = new HashMap<String, SensorReadingsDAO>();
+	private File databaseFile;
+	private final String SENSOR_READINGS_TABLE = "SensorReadings";
+	private final String SENSOR_COLUMN_NAMES_TABLE = "SensorColumnNames";
+	private final String DATABASE_FILE_DIRECTORY = "databases";
+	private final String FILE_EXTENSION = "sqlite3";
+	
+	private SensorReadingsDAO(String databaseName) {
+		File directory = new File(DATABASE_FILE_DIRECTORY);
+		directory.mkdir();
+		databaseFile = new File(directory, databaseName + "." + FILE_EXTENSION);
+	}
+	
+	public static synchronized SensorReadingsDAO getInstance(String databaseName) {
+		if (!daoInstances.containsKey(databaseName)) {
+			daoInstances.put(databaseName, new SensorReadingsDAO(databaseName));
+		}
+		return daoInstances.get(databaseName); 
+	}
 
 	/**
 	 * Initializes the database for the given sensors. This only needs to be called once during the lifetime of the database, unless there are new sensors for which to store readings.
@@ -44,7 +60,7 @@ public class SensorReadingsDAO {
 	 * @param sensorConfigs Configuration info for the sensors for which we're storing sensor readings
 	 * @throws StorageException
 	 */
-	public static void initializeDBIfNecessary(List<SensorConfig> sensorConfigs) throws StorageException {
+	public void initializeDBIfNecessary(List<SensorConfig> sensorConfigs) throws StorageException {
 		try {
 			createColumnNamesTableIfMissing();
 			createSensorReadingsTableIfMissing(sensorConfigs);	
@@ -59,7 +75,7 @@ public class SensorReadingsDAO {
 	 * @param sensorReadings sensor readings to store
 	 * @throws StorageException 
 	 */
-	public static void store(List<SensorReading> sensorReadings) throws StorageException {
+	public void store(List<SensorReading> sensorReadings) throws StorageException {
 		SQLiteConnection db = null;
 		SQLiteStatement st = null;
 		
@@ -75,7 +91,7 @@ public class SensorReadingsDAO {
 		}
 		
 		try {
-	    	db = new SQLiteConnection(DATABASE_FILE);
+	    	db = new SQLiteConnection(databaseFile);
 			db.open(false);
 			st = db.prepare("INSERT INTO " + SENSOR_READINGS_TABLE
 	    								+ " (" + StringStuff.join(", ", columnNames) + ")"
@@ -101,7 +117,7 @@ public class SensorReadingsDAO {
 	 * @throws UnknownSensorException 
 	 * @throws StorageException 
 	 */
-	public static List<Observation> retrieve(List<SensorConfig> sensors) throws UnknownSensorException, StorageException {
+	public List<Observation> retrieve(List<SensorConfig> sensors) throws UnknownSensorException, StorageException {
 		SQLiteConnection db = null;
 		SQLiteStatement st = null;
 		
@@ -122,7 +138,7 @@ public class SensorReadingsDAO {
 		
     List<Observation> allObservations = null;
     try {
-    	db = new SQLiteConnection(DATABASE_FILE);
+    	db = new SQLiteConnection(databaseFile);
 		db.open(false);
 	    st = db.prepare("SELECT id, insert_time, " + StringStuff.join(", ", columnNames) + " FROM " + SENSOR_READINGS_TABLE + " ORDER BY insert_time DESC");
 	    SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ROOT);
@@ -159,14 +175,14 @@ public class SensorReadingsDAO {
 	 * @param prediction The prediction to store
 	 * @throws StorageException 
 	 */
-	public static void updatePrediction(int ID, Object prediction) throws StorageException {
+	public void updatePrediction(int ID, Object prediction) throws StorageException {
 	// TODO: write a unit test for this method
 		SQLiteConnection db = null;
 		SQLiteStatement st = null;
 		try {
-	    	db = new SQLiteConnection(DATABASE_FILE);
+	    	db = new SQLiteConnection(databaseFile);
 			db.open(false);
-			st = db.prepare("UPDATE " + SENSOR_READINGS_TABLE + " SET prediction = ? WHERE ID = ");
+			st = db.prepare("UPDATE " + SENSOR_READINGS_TABLE + " SET prediction = ? WHERE ID = ?");
 			st.bind(1, prediction.toString());
 			st.bind(2, ID);
 			st.step();
@@ -186,13 +202,13 @@ public class SensorReadingsDAO {
 	 * @return storage times for the previous n observations
 	 * @throws StorageException 
 	 */
-	public static List<Date> retrieveStorageTimes(int n) throws StorageException {
+	public List<Date> retrieveStorageTimes(int n) throws StorageException {
 		SQLiteConnection db = null;
 		SQLiteStatement st = null;
 
     List<Date> storageTimes = new ArrayList<Date>();
     try {
-    	db = new SQLiteConnection(DATABASE_FILE);
+    	db = new SQLiteConnection(databaseFile);
 			db.open(false);
 	    st = db.prepare("SELECT insert_time FROM " + SENSOR_READINGS_TABLE + " ORDER BY insert_time DESC LIMIT " + n);
 	    SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.ROOT);
@@ -220,16 +236,16 @@ public class SensorReadingsDAO {
 	 * @param confirmationText you must enter the correct confirmation text in order for the deletion to take place
 	 * @return true if the database was deleted, false if it was not deleted (possibly because it didn't exist in the first place)
 	 */
-	public static boolean deleteDatabase(String confirmationText) {
+	public boolean deleteDatabase(String confirmationText) {
 		final String REQUIRED_TEXT = "Yes, I know this will delete all of the data stored in the database. I'm not stupid.";
 		
-		if (confirmationText.equals(REQUIRED_TEXT) && DATABASE_FILE.exists()) {
-			return DATABASE_FILE.delete();
+		if (confirmationText.equals(REQUIRED_TEXT) && databaseFile.exists()) {
+			return databaseFile.delete();
 		}
 		return false;
 	}
 	
-	private static void createColumnNamesTableIfMissing() throws SQLiteException {
+	private void createColumnNamesTableIfMissing() throws SQLiteException {
 		List<String> columns = new ArrayList<String>();
 		columns.add("insert_time DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL");
 		columns.add("feature_ID TEXT NOT NULL UNIQUE");
@@ -239,7 +255,7 @@ public class SensorReadingsDAO {
 		SQLiteConnection db = null;
 		SQLiteStatement st = null;
 		try {
-			db = new SQLiteConnection(DATABASE_FILE);
+			db = new SQLiteConnection(databaseFile);
 			db.open(true);
 			st = db.prepare(createTableSql);
 			st.step();
@@ -256,11 +272,11 @@ public class SensorReadingsDAO {
 		}
 	}
 	
-	private static void populateColumnNamesTable(List<SensorConfig> sensorConfigs) throws SQLiteException {
+	private void populateColumnNamesTable(List<SensorConfig> sensorConfigs) throws SQLiteException {
 		SQLiteConnection db = null;
 		SQLiteStatement st = null;
     try {
-    	db = new SQLiteConnection(DATABASE_FILE);
+    	db = new SQLiteConnection(databaseFile);
 			db.open(true);
 		
 			// Figure out which features are currently in the DB table that maps feature IDs to column names
@@ -289,7 +305,7 @@ public class SensorReadingsDAO {
 		}
 	}
 	
-	private static void createSensorReadingsTableIfMissing(List<SensorConfig> sensorConfigs) throws SQLiteException {
+	private void createSensorReadingsTableIfMissing(List<SensorConfig> sensorConfigs) throws SQLiteException {
 		List<String> columns = new ArrayList<String>();
 		columns.add("id INTEGER PRIMARY KEY AUTOINCREMENT");
 		columns.add("insert_time DATETIME DEFAULT(STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW', 'UTC')) NOT NULL");
@@ -303,7 +319,7 @@ public class SensorReadingsDAO {
 		SQLiteConnection db = null;
 		SQLiteStatement st = null;
 		try {
-			db = new SQLiteConnection(DATABASE_FILE);
+			db = new SQLiteConnection(databaseFile);
 			db.open(true);
 			st = db.prepare(createTableSql);
 			st.step();
@@ -315,12 +331,12 @@ public class SensorReadingsDAO {
 		}
 	}
 	
-	private static Map<String,String> getFeatureIDtoColumnNameMap() throws SQLiteException {
+	private Map<String,String> getFeatureIDtoColumnNameMap() throws SQLiteException {
 		SQLiteConnection db = null;
 		SQLiteStatement st = null;
     Map<String,String> featureIDtoColumnNameMap = new HashMap<String,String>();
     try {
-    	db = new SQLiteConnection(DATABASE_FILE);
+    	db = new SQLiteConnection(databaseFile);
 			db.open(false);
 	    st = db.prepare("SELECT feature_ID, column_name FROM " + SENSOR_COLUMN_NAMES_TABLE);
 	    while (st.step()){
@@ -337,7 +353,7 @@ public class SensorReadingsDAO {
     return featureIDtoColumnNameMap;
 	}
 	
-	private static String buildQuestionMarkString(int numberOfQuestionMarks) {
+	private String buildQuestionMarkString(int numberOfQuestionMarks) {
 		String s = StringStuff.repeatString("?,", numberOfQuestionMarks);
 		return s.substring(0,s.length()-1);
 	}

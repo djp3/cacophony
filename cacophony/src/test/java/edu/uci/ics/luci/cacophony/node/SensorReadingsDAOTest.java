@@ -15,36 +15,35 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class SensorReadingsDAOTest {
-	public static boolean currentlyTesting = false;
-	
 	final String FEATURE_VALUE = "a man a plan a canal panama";
 	final String TARGET_VALUE = "foobar";
+	final SensorReadingsDAO sensorReadingsDAO = SensorReadingsDAO.getInstance("cacophony_test");
 	
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		currentlyTesting = true;
+
 	}
 
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
-		currentlyTesting = false;
+
 	}
 
 	@Before
 	public void setUp() throws Exception {
-		SensorReadingsDAO.deleteDatabase("Yes, I know this will delete all of the data stored in the database. I'm not stupid.");
+		sensorReadingsDAO.deleteDatabase("Yes, I know this will delete all of the data stored in the database. I'm not stupid.");
 	}
 
 	@After
 	public void tearDown() throws Exception {
-		SensorReadingsDAO.deleteDatabase("Yes, I know this will delete all of the data stored in the database. I'm not stupid.");
+		sensorReadingsDAO.deleteDatabase("Yes, I know this will delete all of the data stored in the database. I'm not stupid.");
 	}
 	
 	@Test
 	public void testInitializeDBIfNecessary() {
 		List<SensorConfig> sensorConfigs = makeSensorConfigs();
 		try {
-			SensorReadingsDAO.initializeDBIfNecessary(sensorConfigs);
+			sensorReadingsDAO.initializeDBIfNecessary(sensorConfigs);
 		} catch (StorageException e) {
 			fail("Encountered a StorageException: " + e.getMessage());
 		}
@@ -56,9 +55,9 @@ public class SensorReadingsDAOTest {
 		List<SensorReading> sensorReadings = makeSensorReadings(sensorConfigs);
 
 		try {
-			SensorReadingsDAO.initializeDBIfNecessary(sensorConfigs);
-			SensorReadingsDAO.store(sensorReadings);
-			List<Observation> observations = SensorReadingsDAO.retrieve(sensorConfigs);
+			sensorReadingsDAO.initializeDBIfNecessary(sensorConfigs);
+			sensorReadingsDAO.store(sensorReadings);
+			List<Observation> observations = sensorReadingsDAO.retrieve(sensorConfigs);
 			if (observations.size() != 1) {
 				fail("Retrieved the wrong number of observations. Expected 1, found " + observations.size());
 			}
@@ -91,21 +90,21 @@ public class SensorReadingsDAOTest {
 		List<SensorReading> sensorReadings3 = makeSensorReadings(sensorConfigs);
 		
 		try {
-			SensorReadingsDAO.initializeDBIfNecessary(sensorConfigs);
-			SensorReadingsDAO.store(sensorReadings1);
-			SensorReadingsDAO.store(sensorReadings2);
-			SensorReadingsDAO.store(sensorReadings3);
-			List<Date> timestamps = SensorReadingsDAO.retrieveStorageTimes(3);
+			sensorReadingsDAO.initializeDBIfNecessary(sensorConfigs);
+			sensorReadingsDAO.store(sensorReadings1);
+			sensorReadingsDAO.store(sensorReadings2);
+			sensorReadingsDAO.store(sensorReadings3);
+			List<Date> timestamps = sensorReadingsDAO.retrieveStorageTimes(3);
 			if (timestamps.size() != 3) {
 				fail("Retrieved the wrong number of storage times. Expected 3, found " + timestamps.size());
 			}
 			
-			timestamps = SensorReadingsDAO.retrieveStorageTimes(4);
+			timestamps = sensorReadingsDAO.retrieveStorageTimes(4);
 			if (timestamps.size() != 3) {
 				fail("Retrieved the wrong number of storage times. Expected 3, found " + timestamps.size());
 			}
 			
-			timestamps = SensorReadingsDAO.retrieveStorageTimes(2);
+			timestamps = sensorReadingsDAO.retrieveStorageTimes(2);
 			if (timestamps.size() != 2) {
 				fail("Retrieved the wrong number of storage times. Expected 2, found " + timestamps.size());
 			}

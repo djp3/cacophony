@@ -39,18 +39,18 @@ public class HandlerConfigCreator extends HandlerAbstract {
 		
 		Element clickTrackJS = doc.head().appendElement("script");
 		clickTrackJS.attr("type", "text/javascript");
-		clickTrackJS.attr("src", "//ics.uci.edu/~jhbrock/test.js");
+		clickTrackJS.attr("src", "//localhost/cacophony.js");
 		
 		Element css = doc.head().appendElement("link");
 		css.attr("rel", "stylesheet");
 		css.attr("type", "text/css");
-		css.attr("href", "//ics.uci.edu/~jhbrock/test.css");
+		css.attr("href", "//localhost/cacophony.css");
 		
 		Element div = doc.body().appendElement("div");
 		div.attr("id", "cacophony_config");
 		Element button = div.appendElement("button");
 		button.attr("id", "show_cacophony_config");
-		button.text("Click some features and then click the button.");
+		button.text("Click on a target and then click the button to launch a CNode.");
 		
 		Pair<byte[],byte[]> pair = new Pair<byte[],byte[]>(HandlerAbstract.getContentTypeHeader_HTML(), doc.toString().getBytes());
 		return pair;

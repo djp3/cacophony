@@ -10,6 +10,7 @@ import edu.uci.ics.luci.utility.webserver.AccessControl;
 import edu.uci.ics.luci.utility.webserver.HandlerAbstract;
 import edu.uci.ics.luci.utility.webserver.RequestDispatcher;
 import edu.uci.ics.luci.utility.webserver.WebServer;
+import edu.uci.ics.luci.utility.webserver.handlers.HandlerFileServer;
 
 public class ConfigurationWebServer {
 	private static HashMap<String,HandlerAbstract> requestHandlerRegistry;
@@ -22,6 +23,7 @@ public class ConfigurationWebServer {
 			requestHandlerRegistry = new HashMap<String,HandlerAbstract>();
 			requestHandlerRegistry.put("select", new HandlerConfigCreator());
 			requestHandlerRegistry.put("launch", new HandlerCNodeLauncher(cNodeServer));
+			requestHandlerRegistry.put(null, new HandlerFileServer(edu.uci.ics.luci.cacophony.web.ConfigurationWebServer.class, "/www/"));
 
 			RequestDispatcher requestDispatcher = new RequestDispatcher(requestHandlerRegistry);
 			ws = new WebServer(requestDispatcher, 80, false, new AccessControl());
