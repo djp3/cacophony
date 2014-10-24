@@ -87,12 +87,11 @@ public class SensorConfig{
 			throw new IllegalArgumentException("Unable to deserialize SensorConfig JSON because the sensor's translator options are null.");
 		}
 		
-	// TODO: leaving this commented out until we need to add support for it.
-	//	try{
-	//		translator.initialize(translatorOptions);
-	//	} catch (RuntimeException e) {
-	//		throw new IllegalArgumentException("Unable to load configuration for "+myPath+" because the target translator couldn't be initialized with :"+translatorOptions.toJSONString()+"\n"+e);
-	//	}
+		try{
+			translator.initialize(translatorOptions);
+		} catch (RuntimeException e) {
+			throw new IllegalArgumentException("Unable to initialize the translator from JSON :"+translatorOptions.toJSONString()+"\n"+e);
+		}
 	}
 	
 	public JSONObject serializeToJSON() {
@@ -112,38 +111,39 @@ public class SensorConfig{
 		return sensorJSON;
 	}
 	
+	
 	public String getID() {
 		return ID;
 	}
-	
+
 	public String getName() {
 		return name;
 	}
-	
+
 	public String getURL() {
 		return URL;
 	}
-	
+
 	public String getFormat() {
 		return format;
 	}
-	
+
 	public String getRegEx() {
 		return regEx;
 	}
-	
+
 	public String getPathExpression() {
 		return pathExpression;
 	}
-	
+
 	public Translator<?> getTranslator() {
 		return translator;
 	}
-	
+
 	public JSONObject getTranslatorOptions() {
 		return translatorOptions;
 	}
-	
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -173,6 +173,11 @@ public class SensorConfig{
 				return false;
 		} else if (!ID.equals(other.ID))
 			return false;
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
+			return false;
 		if (URL == null) {
 			if (other.URL != null)
 				return false;
@@ -183,25 +188,20 @@ public class SensorConfig{
 				return false;
 		} else if (!format.equals(other.format))
 			return false;
-		if (name == null) {
-			if (other.name != null)
+		if (regEx == null) {
+			if (other.regEx != null)
 				return false;
-		} else if (!name.equals(other.name))
+		} else if (!regEx.equals(other.regEx))
 			return false;
 		if (pathExpression == null) {
 			if (other.pathExpression != null)
 				return false;
 		} else if (!pathExpression.equals(other.pathExpression))
 			return false;
-		if (regEx == null) {
-			if (other.regEx != null)
-				return false;
-		} else if (!regEx.equals(other.regEx))
-			return false;
 		if (translator == null) {
 			if (other.translator != null)
 				return false;
-		} else if (!translator.getClass().equals(other.translator.getClass()))
+		} else if ((other.translator == null) || (!translator.getClass().equals(other.translator.getClass())))					//Customized equals -djp3
 			return false;
 		if (translatorOptions == null) {
 			if (other.translatorOptions != null)
@@ -210,7 +210,8 @@ public class SensorConfig{
 			return false;
 		return true;
 	}
-
+	
+	
 	
 
 

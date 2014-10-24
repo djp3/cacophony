@@ -27,6 +27,31 @@ public class TranslatorStringTest {
 	public void tearDown() throws Exception {
 	}
 	
+	
+
+
+	@Test
+	public void equalsTest(){
+		TranslatorString tb1 = new TranslatorString();
+		TranslatorString tb2 = new TranslatorString();
+		
+		assertTrue(!tb1.equals(null));
+		assertTrue(!tb1.equals("foo"));
+		
+		assertEquals(tb1,tb1);
+		assertEquals(tb1.hashCode(),tb1.hashCode());
+		
+		assertEquals(tb2,tb2);
+		assertEquals(tb2.hashCode(),tb2.hashCode());
+		
+		assertEquals(tb1,tb2);
+		assertEquals(tb2,tb1);
+		assertEquals(tb1.hashCode(),tb2.hashCode());
+		assertEquals(tb2.hashCode(),tb1.hashCode());
+		
+		
+	}
+	
 	@Test
 	public void testTranslation(){
 		
@@ -41,6 +66,12 @@ public class TranslatorStringTest {
 		String x3 = "antifalse";
 		
 		TranslatorString ts = new TranslatorString();
+		try{
+			ts.initialize(null);
+		}
+		catch(RuntimeException e){
+			fail("This shouldn't fail");
+		}
 		
 		assertEquals(t1, ts.translate(t1));
 		assertEquals(t2, ts.translate(t2));

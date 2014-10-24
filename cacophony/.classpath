@@ -2,7 +2,7 @@
 <classpath>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="lib" path="lib/jtidy-r938.jar"/>
-	<classpathentry kind="lib" path="lib/p2p4java.jar" sourcepath="/p2p4java"/>
+	<classpathentry kind="lib" path="lib/p2p4java.jar" sourcepath="/p2p4java/src/main/java"/>
 	<classpathentry kind="lib" path="lib/p2p4java/bcprov-ext-jdk15on-147.jar"/>
 	<classpathentry kind="lib" path="lib/p2p4java/httptunnel-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/p2p4java/netty-3.2.3.Final.jar"/>
@@ -24,6 +24,10 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.launching.macosx.MacOSXType/Java SE 6"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.launching.macosx.MacOSXType/Java SE 6">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="cacophony/lib/sqlite4java-282"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
