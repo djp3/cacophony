@@ -33,70 +33,86 @@ public class ResponderConfigurationLoader extends CNodeServerResponder {
 	
 	@Override
 	public void handle(JSONObject jo, Map<String, CNode> cNodes) {
-		
-		JSONArray incomingConfigurations = null;
+		JSONArray incomingCNodes = null;
 		try{
-			incomingConfigurations = (JSONArray) jo.get("configurations");
+			incomingCNodes = (JSONArray)jo.get("c_nodes");
 		} catch (ClassCastException e1) {
-			appendError("Unable to make the \"configurations\" in the incoming request into a JSONArray\n"+jo.toJSONString(JSONStyle.NO_COMPRESS)+"\n"+e1);
+			appendError("Unable to make the \"c_nodes\" in the incoming request into a JSONArray\n"+jo.toJSONString(JSONStyle.NO_COMPRESS)+"\n"+e1);
 			return;
 		}
 		catch(RuntimeException e1){
-			appendError("Unable to find the \"configurations\" parameter in the incoming JSONObject\n"+jo.toJSONString(JSONStyle.NO_COMPRESS)+"\n"+e1);
+			appendError("Unable to find the \"c_nodes\" parameter in the incoming JSONObject\n"+jo.toJSONString(JSONStyle.NO_COMPRESS)+"\n"+e1);
 			return;
 		}
 		
-		if(incomingConfigurations == null){
-			appendError("Unable to make the \"configurations\" in the incoming request into a JSONArray\n"+jo.toJSONString(JSONStyle.NO_COMPRESS)+"\n");
+		if(incomingCNodes == null){
+			appendError("Unable to make the \"c_nodes\" in the incoming request into a JSONArray\n"+jo.toJSONString(JSONStyle.NO_COMPRESS)+"\n");
 		}
 		else{
-			for(int i = 0; i< incomingConfigurations.size(); i++){
-				JSONObject incomingConfiguration = null;
+			for(int i = 0; i< incomingCNodes.size(); i++){
+				JSONObject incomingCNode = null;
 				try{
-					incomingConfiguration = (JSONObject) incomingConfigurations.get(i);
+					incomingCNode = (JSONObject)incomingCNodes.get(i);
 				} catch (ClassCastException e1) {
-					appendError("Unable to make the "+i+"th configuration in the incoming JSON into a JSONObject\n"+incomingConfigurations.get(i).toString()+"\n"+e1);
+					appendError("Unable to make the "+i+"th c_node in the incoming JSON into a JSONObject\n"+incomingCNodes.get(i).toString()+"\n"+e1);
 					return;
 				}
 				
-				String cNodeName = null;
+				String cnodeID_old = null;
 				try{
-					cNodeName = (String) incomingConfiguration.get("c_node_name");
+					cnodeID_old = (String)incomingCNode.get("ID");
 				} catch (ClassCastException e1) {
-					appendError("Unable to make the \"c_node_name\" in the incoming configuration into a String\n"+incomingConfiguration.toJSONString(JSONStyle.NO_COMPRESS)+"\n"+e1);
+					appendError("Unable to make the c_node \"ID\" in the incoming CNodes into a String\n"+incomingCNode.toJSONString(JSONStyle.NO_COMPRESS)+"\n"+e1);
 					return;
 				}
 				catch(RuntimeException e1){
-					appendError("Unable to find the \"c_node_name\" parameter in the incoming configuration\n"+incomingConfiguration.toJSONString(JSONStyle.NO_COMPRESS)+"\n"+e1);
+					appendError("Unable to find the c_node \"ID\" parameter in the incoming CNodes\n"+incomingCNode.toJSONString(JSONStyle.NO_COMPRESS)+"\n"+e1);
+					return;
+				}
+				
+				JSONObject incomingConfiguration = null;
+				try{
+					incomingConfiguration = (JSONObject)incomingCNode.get("configuration");
+				} catch (ClassCastException e1) {
+					appendError("Unable to make the "+i+"th c_node configuration in the incoming JSON into a JSONObject\n"+incomingCNode.toJSONString(JSONStyle.NO_COMPRESS)+"\n"+e1);
+					return;
+				}
+				catch(RuntimeException e1){
+					appendError("Unable to find the "+i+"th c_node \"configuration\" parameter in the incoming JSONObject\n"+incomingCNode.toJSONString(JSONStyle.NO_COMPRESS)+"\n"+e1);
 					return;
 				}
 		
-				if(cNodes.containsKey(cNodeName)){
-					appendError("c_node_name:\""+cNodeName+"\" is already present in this server");
-					return;
+				if(cNodes.size() < parentServer.getMaxCNodes()){
+					String cnodeID_new = UUID.randomUUID().toString();
+					try{
+						CNodeConfiguration config = new CNodeConfiguration(incomingConfiguration);
+						ConfigurationsDAO.initializeDBIfNecessary();
+						ConfigurationsDAO.store(cnodeID_new, config);
+						CNode cNode = new CNode(config, cnodeID_new);
+						cNodes.put(cnodeID_new, cNode);
+						parentServer.launch(cnodeID_new);
+						
+						JSONObject response = new JSONObject();
+						response.put("status", "OK");
+						response.put("source_ID", cnodeID_old);
+						response.put("clone_ID", cnodeID_new);
+						appendResponse(response);
+					}catch(RuntimeException e){
+						JSONObject response = new JSONObject();
+						response.put("status", "FAIL");
+						response.put("source_ID", cnodeID_old);
+						response.put("clone_ID", cnodeID_new);
+						appendResponse(response);
+					}catch (StorageException e) {
+						JSONObject response = new JSONObject();
+						response.put("status", "FAIL");
+						response.put("source_ID", cnodeID_old);
+						response.put("clone_ID", cnodeID_new);
+						appendResponse(response);
+					}
 				}
 				else{
-					if(cNodes.size() < parentServer.getMaxCNodes()){
-						try{
-							CNodeConfiguration config = new CNodeConfiguration(incomingConfiguration);
-							String cnodeID = UUID.randomUUID().toString();
-							
-							ConfigurationsDAO.initializeDBIfNecessary();
-							ConfigurationsDAO.store(cnodeID, config);
-							CNode cNode = new CNode(config, cnodeID);
-							cNodes.put(cNodeName, cNode);
-							parentServer.launch(cNodeName);
-							
-							appendResponse(cNodeName+":OK");
-						}catch(RuntimeException e){
-							appendResponse(cNodeName+":FAIL");
-						}catch (StorageException e) {
-							appendResponse(cNodeName+":FAIL");
-						}
-					}
-					else{
-						appendError("Maximum number of c_nodes already running:"+parentServer.getMaxCNodes());
-					}
+					appendError("Maximum number of CNodes already running:"+parentServer.getMaxCNodes());
 				}
 			}
 		}

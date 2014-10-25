@@ -17,6 +17,7 @@ public class P2PSinkTest implements P2PSink {
 	private CNodeServer cns;
 	private String fail = null;
 	private List<String> pass = new ArrayList<String>();
+	private String incomingMessage = null;
 		
 	public String getFail() {
 		return fail;
@@ -72,7 +73,7 @@ public class P2PSinkTest implements P2PSink {
 		String incomingMessage = incomingHelper(map);
 		boolean ok = false;
 		for(String s:pass){
-			if(s.equals(incomingMessage)){
+			if(incomingMessage.matches(s)){
 				deleteUs = s;
 				ok = true;
 			}
@@ -84,6 +85,11 @@ public class P2PSinkTest implements P2PSink {
 			fail = "Received an unexpected response:\n"+incomingMessage;
 			this.cns.stop();
 		}
+		this.incomingMessage = incomingMessage;
+	}
+	
+	public String getIncomingMessage() {
+		return incomingMessage;
 	}
 
 
@@ -91,15 +97,13 @@ public class P2PSinkTest implements P2PSink {
 	 * Wait 10 seconds for a response
 	 * @param p2pSinkTest
 	 */
-	public static void waitForResponse(P2PSinkTest p2pSinkTest) {
-		
+	public static String waitForResponse(P2PSinkTest p2pSinkTest) {
 		int count = 0;
 		while((p2pSinkTest.getNumberOfPassPhrases() > 0) && (p2pSinkTest.getFail() == null)){
 			try {
 				Thread.sleep(100);
 				count++;
-			} catch (InterruptedException e) {
-			}
+			} catch (InterruptedException e) {}
 			if(count > 100){
 				fail("Message did not arrive as expected:"+p2pSinkTest.getPassPhrases()+"\n"+p2pSinkTest.getFail());
 			}
@@ -107,5 +111,6 @@ public class P2PSinkTest implements P2PSink {
 		if(p2pSinkTest.getFail() != null){
 			fail(p2pSinkTest.getFail());
 		}
+		return p2pSinkTest.getIncomingMessage();
 	}
 }

@@ -50,10 +50,10 @@ public class CNodeTest {
 			CNodeConfiguration cnn = null;
 			try{
 				JSONObject js = ResponderConfigurationLoaderTest.makeLoadConfigurationRequest(CNodeServerTest.makeARandomP2PServerAddress(), "p2p://foo/bar");
-				JSONObject data = (JSONObject) js.get("data");
-				JSONArray configurations = (JSONArray) data.get("configurations");
-				JSONObject configuration = (JSONObject) configurations.get(0);
-				cnn = new CNodeConfiguration(configuration);
+				JSONObject data = (JSONObject)js.get("data");
+				JSONArray cnodes = (JSONArray)data.get("c_nodes");
+				JSONObject cnode = (JSONObject)cnodes.get(0);
+				cnn = new CNodeConfiguration((JSONObject)cnode.get("configuration"));
 				cn = new CNode(cnn, UUID.randomUUID().toString());
 				assertTrue(cn.getConfiguration() == cnn);
 			}

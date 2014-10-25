@@ -49,8 +49,9 @@ public class CNodeConfigurationTest {
 		String address = CNodeServerTest.makeARandomP2PServerAddress();
 		JSONObject configRequest = ResponderConfigurationLoaderTest.makeLoadConfigurationRequest(address, address);
 		JSONObject data = (JSONObject) configRequest.get("data");
-		JSONArray configurations = (JSONArray) data.get("configurations");
-		JSONObject configuration = (JSONObject) configurations.get(0);
+		JSONArray cnodes = (JSONArray)data.get("c_nodes");
+		JSONObject cnode = (JSONObject)cnodes.get(0);
+		JSONObject configuration = (JSONObject)cnode.get("configuration");
 		CNodeConfiguration cnc = new CNodeConfiguration(configuration);
 		
 		cnc.setMyPath(cnc.getMyPath());

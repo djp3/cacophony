@@ -8,6 +8,7 @@ import java.util.Random;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import net.minidev.json.JSONStyle;
+import net.minidev.json.JSONValue;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -30,10 +31,12 @@ public class CNodeServerTest {
 
 	@Before
 	public void setUp() throws Exception {
+		ConfigurationsDAO.enableTestingMode();
 	}
 
 	@After
 	public void tearDown() throws Exception {
+		ConfigurationsDAO.disableTestingMode();
 	}
 
 	@Test
@@ -77,38 +80,46 @@ public class CNodeServerTest {
 	public void testConfigurationLoad() {
 		try{
 			/* This is the object we are testing */
-			CNodeServer cNodeServer = new CNodeServer(makeARandomP2PServerAddress(),5);
+			CNodeServer cNodeServer = new CNodeServer(makeARandomP2PServerAddress());
 			cNodeServer.start();
 			
 			/* Make an interface to send messages to the server to test it */
 			String testName1 = cNodeServer.getServerName()+"01";
 			P2PSinkTest p2pSinkTest = new P2PSinkTest(cNodeServer);
-			p2pSinkTest.addPassPhrase("{\"responses\":[\"c_node_01:OK\",\"c_node_02:OK\",\"c_node_03:OK\"]}");
+			p2pSinkTest.addPassPhrase("\\Q{\"responses\":[{\"status\":\"OK\",\"clone_ID\":\"\\E[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}\\Q\",\"source_ID\":\"c_node_01\"},{\"status\":\"OK\",\"clone_ID\":\"\\E[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}\\Q\",\"source_ID\":\"c_node_02\"},{\"status\":\"OK\",\"clone_ID\":\"\\E[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}\\Q\",\"source_ID\":\"c_node_03\"}]}\\E");
 			P2PInterface p2p = new P2PInterface(testName1, p2pSinkTest);
 			p2p.start();
 			JSONObject request = ResponderConfigurationLoaderTest.makeLoadConfigurationRequest(testName1, testName1);
 			p2p.sendMessage(cNodeServer.getServerName(), request.toJSONString(JSONStyle.LT_COMPRESS));
 			
 			/* Wait for a response */
-			P2PSinkTest.waitForResponse(p2pSinkTest);
-			
+			String responsesString = P2PSinkTest.waitForResponse(p2pSinkTest);
+			JSONObject responsesJSON = (JSONObject)JSONValue.parse(responsesString);
+			JSONArray responses = (JSONArray)responsesJSON.get("responses");
+			JSONObject response0 = (JSONObject)responses.get(0);
+			JSONObject response1 = (JSONObject)responses.get(1);
+			JSONObject response2 = (JSONObject)responses.get(2);
+			String ID0 = response0.get("clone_ID").toString();
+			String ID1 = response1.get("clone_ID").toString();
+			String ID2 = response2.get("clone_ID").toString();
+
 			/* Constructed data */
-			JSONObject data = (JSONObject) request.get("data");
-			JSONArray configurations = (JSONArray) data.get("configurations");
-			JSONObject configuration0 = (JSONObject) configurations.get(0);
-			JSONObject configuration1 = (JSONObject) configurations.get(1);
-			JSONObject configuration2 = (JSONObject) configurations.get(2);
-			String cNode0 = (String) configuration0.get("c_node_name");
-			String cNode1 = (String) configuration1.get("c_node_name");
-			String cNode2 = (String) configuration2.get("c_node_name");
+			JSONObject data = (JSONObject)request.get("data");
+			JSONArray cnodes = (JSONArray)data.get("c_nodes");
+			JSONObject cnode0 = (JSONObject)cnodes.get(0);
+			JSONObject cnode1 = (JSONObject)cnodes.get(1);
+			JSONObject cnode2 = (JSONObject)cnodes.get(2);
+			JSONObject config0 = (JSONObject)cnode0.get("configuration");
+			JSONObject config1 = (JSONObject)cnode1.get("configuration");
+			JSONObject config2 = (JSONObject)cnode2.get("configuration");
 			
 			/* Received data */
-			JSONObject d1 = cNodeServer.getCNodes().get(cNode0).getConfiguration().toJSONObject();
-			JSONObject r1 = configuration0;
-			JSONObject d2 = cNodeServer.getCNodes().get(cNode1).getConfiguration().toJSONObject();
-			JSONObject r2 = configuration1;
-			JSONObject d3 = cNodeServer.getCNodes().get(cNode2).getConfiguration().toJSONObject();
-			JSONObject r3 = configuration2;
+			JSONObject d1 = cNodeServer.getCNodes().get(ID0).getConfiguration().toJSONObject();
+			JSONObject r1 = config0;
+			JSONObject d2 = cNodeServer.getCNodes().get(ID1).getConfiguration().toJSONObject();
+			JSONObject r2 = config1;
+			JSONObject d3 = cNodeServer.getCNodes().get(ID2).getConfiguration().toJSONObject();
+			JSONObject r3 = config2;
 			assertTrue(!d1.equals(d2));
 			assertTrue(!d2.equals(d3));
 			assertTrue(!d3.equals(d1));

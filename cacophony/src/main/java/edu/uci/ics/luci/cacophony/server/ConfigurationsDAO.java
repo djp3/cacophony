@@ -3,8 +3,10 @@ package edu.uci.ics.luci.cacophony.server;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import net.minidev.json.JSONObject;
+import net.minidev.json.JSONStyle;
 import net.minidev.json.JSONValue;
 
 import com.almworks.sqlite4java.SQLiteConnection;
@@ -16,7 +18,7 @@ import edu.uci.ics.luci.cacophony.node.StorageException;
 
 public class ConfigurationsDAO {
 	private final static String CONFIGURATION_TABLE = "configs";
-	private final static File DATABASE_FILE = new File("cnode_configs.sqlite3");
+	private static File DATABASE_FILE = new File("cnode_configs.sqlite3");
 	
 	/**
 	 * Initializes the database. This only needs to be called once during the lifetime of the database.
@@ -66,7 +68,7 @@ public class ConfigurationsDAO {
 	    								+ " (cnode_ID, configuration_JSON)"
 	    								+ " VALUES (?, ?)");
 			st.bind(1, ID);
-			st.bind(2, configuration.toJSONObject().toJSONString());
+			st.bind(2, configuration.toJSONObject().toJSONString(JSONStyle.LT_COMPRESS));
 			st.step();
 		} catch (SQLiteException e) {
 			throw new StorageException("Unable to store configuration info.", e);
@@ -107,5 +109,20 @@ public class ConfigurationsDAO {
 			db.dispose();
 		}
     	return map;
+	}
+	
+	/**
+	 * Turns on testing mode, causing a special test DB to be used.
+	 */
+	public static void enableTestingMode() {
+		long unixTime = System.currentTimeMillis() / 1000L;
+		DATABASE_FILE = new File("cnode_configs_test_" + unixTime + ".sqlite3.delete_me");
+	}
+	
+	/**
+	 * Turns off testing mode, causing the normal DB to be used.
+	 */
+	public static void disableTestingMode() {
+		DATABASE_FILE = new File("cnode_configs.sqlite3");
 	}
 }

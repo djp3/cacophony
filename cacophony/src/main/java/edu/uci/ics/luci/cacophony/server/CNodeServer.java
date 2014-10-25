@@ -8,6 +8,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import edu.uci.ics.luci.cacophony.node.CNode;
+import edu.uci.ics.luci.cacophony.node.CNodeConfiguration;
+import edu.uci.ics.luci.cacophony.node.StorageException;
 import edu.uci.ics.luci.cacophony.server.responder.CNodeServerResponder;
 import edu.uci.ics.luci.cacophony.server.responder.ResponderCapabilities;
 import edu.uci.ics.luci.cacophony.server.responder.ResponderConfiguration;
@@ -75,16 +77,16 @@ public class CNodeServer implements Quittable{
 	 * case the address is p2p://cNodeServer
 	 */
 	private Map<String,CNode> cNodes;
-	private int maxCNodes;
+	private int MAX_CNODES = 10;
 	private String p2pServerName;
 	
 	ExecutorService threadExecutor = null;
 
 	public CNodeServer(){
-		this(null,1);
+		this(null);
 	}
 
-	public CNodeServer(String cNodeServerName, int maxCNodes){
+	public CNodeServer(String cNodeServerName){
 		if(cNodeServerName == null){
 			Random r = new Random();
 			Long x;
@@ -95,7 +97,6 @@ public class CNodeServer implements Quittable{
 			p2pServerName = cNodeServerName;
 		}
 		
-		this.maxCNodes = maxCNodes;
 		cNodes = Collections.synchronizedMap(new HashMap<String, CNode>());
 		
 		threadExecutor = Executors.newCachedThreadPool();
@@ -103,9 +104,9 @@ public class CNodeServer implements Quittable{
 		/* Set up the responder on the p2p network*/
 		CustomerService cs;
 		{
-			Map<String,CNodeServerResponder> handlers = Collections.synchronizedMap( new HashMap<String,CNodeServerResponder>(maxCNodes));
+			Map<String,CNodeServerResponder> handlers = Collections.synchronizedMap( new HashMap<String,CNodeServerResponder>(MAX_CNODES));
 		
-			ResponderCapabilities responderCapabilities = new ResponderCapabilities(handlers,maxCNodes);
+			ResponderCapabilities responderCapabilities = new ResponderCapabilities(handlers,MAX_CNODES);
 			handlers.put("null", responderCapabilities);
 			handlers.put("capabilities", responderCapabilities);
 		
@@ -123,6 +124,25 @@ public class CNodeServer implements Quittable{
 			cs.setP2P(p2p);
 		}
 		
+		launchExistingCNodes();
+	}
+	
+	private void launchExistingCNodes() {
+		Map<String, CNodeConfiguration> existingCNodes;
+		try {
+			ConfigurationsDAO.initializeDBIfNecessary();
+			existingCNodes = ConfigurationsDAO.retrieve();
+			for (String cnodeID : existingCNodes.keySet()) {
+				CNodeConfiguration config = existingCNodes.get(cnodeID);
+				cNodes.put(cnodeID, new CNode(config, cnodeID));
+				launch(cnodeID);
+			}
+		} catch (StorageException e) {
+			// TODO: log error
+			e.printStackTrace();
+			stop();
+			return;
+		}
 	}
 	
 	public void start(){
@@ -143,12 +163,12 @@ public class CNodeServer implements Quittable{
 	}
 	
 	public int getMaxCNodes(){
-		return maxCNodes;
+		return MAX_CNODES;
 	}
 	
 	
-	public void launch(String cnodename){
-		CNode cNode = cNodes.get(cnodename);
+	public void launch(String cnodeID){
+		CNode cNode = cNodes.get(cnodeID);
 		if(cNode != null){
 			threadExecutor.execute(cNode);
 		}
