@@ -1,9 +1,8 @@
 package edu.uci.ics.luci.cacophony.node;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import net.minidev.json.JSONObject;
@@ -67,11 +66,11 @@ public class SensorReadingsDAOTest {
 					fail("Retrieved the wrong number of features. Expected 1, found " + observation.getFeatures().size());
 				}
 				else if (!observation.getFeatures().get(0).getRawValue().equals(FEATURE_VALUE)) {
-					fail(String.format("The retrieved feature had a wrong value of \"{0}\"", observation.getFeatures().get(0).getRawValue()));
+					fail(String.format("The retrieved feature had a wrong value of \"%s\"", observation.getFeatures().get(0).getRawValue()));
 				}
 				
 				if (!observation.getTarget().getRawValue().equals(TARGET_VALUE)) {
-					fail(String.format("The retrieved feature had a wrong value of \"{0}\"", observation.getFeatures().get(0).getRawValue()));
+					fail(String.format("The retrieved feature had a wrong value of \"%s\"", observation.getFeatures().get(0).getRawValue()));
 				}
 			}
 			
@@ -94,9 +93,15 @@ public class SensorReadingsDAOTest {
 			sensorReadingsDAO.store(sensorReadings1);
 			sensorReadingsDAO.store(sensorReadings2);
 			sensorReadingsDAO.store(sensorReadings3);
-			List<Date> timestamps = sensorReadingsDAO.retrieveStorageTimes(3);
+			List<Long> timestamps = sensorReadingsDAO.retrieveStorageTimes(3);
 			if (timestamps.size() != 3) {
 				fail("Retrieved the wrong number of storage times. Expected 3, found " + timestamps.size());
+			}
+			for(Long time:timestamps){
+				//System.out.println("time: "+time+", now: "+System.currentTimeMillis());
+				if(Math.abs(time - System.currentTimeMillis()) > 1000){
+					fail("Time between storage and retrieve is over a second suggesting something went wrong");
+				}
 			}
 			
 			timestamps = sensorReadingsDAO.retrieveStorageTimes(4);

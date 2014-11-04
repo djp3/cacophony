@@ -18,7 +18,7 @@ cacophony/lib/sqlite4java-282/*
 cacophony/target/*
 
 #test detritus
-cacophony/cacophony_db.sqlite3
+cacophony/*.sqlite3
 cacophony/*.delete_me
 cacophony/cnode_databases/*.sqlite3
 cacophony/databases/*.sqlite3

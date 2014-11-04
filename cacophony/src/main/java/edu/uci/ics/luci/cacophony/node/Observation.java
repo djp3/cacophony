@@ -1,38 +1,37 @@
 package edu.uci.ics.luci.cacophony.node;
 
-import java.util.Date;
 import java.util.List;
 
 public class Observation {
 	private final int ID;
-	private final Date storageTime;
+	private final long storageTime;
 	private final List<SensorReading> features;
 	private final SensorReading target;
 	
-	public Observation(int ID, Date storageTime, List<SensorReading> features, SensorReading target) {
+	public Observation(int ID, long storageTime, List<SensorReading> features, SensorReading target) {
 		this.ID = ID;
 		this.storageTime = storageTime;
 		this.features = features;
 		this.target = target;
 	}
 	
-	public Observation(Date storageTime, List<SensorReading> features, SensorReading target) {
+	public Observation(long storageTime, List<SensorReading> features, SensorReading target) {
 		this(-1, storageTime, features, target);
 	}
 	
 	public Observation(List<SensorReading> features, SensorReading target) {
-		this(-1, null, features, target);
+		this(-1, -1, features, target);
 	}
 	
 	public Observation(List<SensorReading> features) {
-		this(-1, null, features, null);
+		this(-1, -1, features, null);
 	}
 	
 	public int getID() {
 		return ID;
 	}
 	
-	public Date getStorageTime() {
+	public long getStorageTime() {
 		return storageTime;
 	}
 	
