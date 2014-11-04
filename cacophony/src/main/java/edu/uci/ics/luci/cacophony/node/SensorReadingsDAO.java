@@ -1,17 +1,12 @@
 package edu.uci.ics.luci.cacophony.node;
 
 import java.io.File;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.TimeZone;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -20,7 +15,6 @@ import com.almworks.sqlite4java.SQLiteConnection;
 import com.almworks.sqlite4java.SQLiteException;
 import com.almworks.sqlite4java.SQLiteStatement;
 
-import edu.uci.ics.luci.utility.Globals;
 import edu.uci.ics.luci.utility.StringStuff;
 
 
@@ -55,7 +49,8 @@ public class SensorReadingsDAO {
 	}
 
 	/**
-	 * Initializes the database for the given sensors. This only needs to be called once during the lifetime of the database, unless there are new sensors for which to store readings.
+	 * Initializes the database for the given sensors. This only needs to be called once during the lifetime of the database,
+	 *  unless there are new sensors for which to store readings.
 	 * Calling this method more than once will not harm anything, even if there aren't any new sensors. 
 	 * @param sensorConfigs Configuration info for the sensors for which we're storing sensor readings
 	 * @throws StorageException
@@ -106,7 +101,9 @@ public class SensorReadingsDAO {
 			if (st != null) {
 				st.dispose();
 			}
-			db.dispose();
+			if(db != null){
+				db.dispose();
+			}
 		}
 	}
 	
@@ -136,37 +133,34 @@ public class SensorReadingsDAO {
 			columnNames.add(columnName);
 		}
 		
-    List<Observation> allObservations = null;
-    try {
-    	db = new SQLiteConnection(databaseFile);
-		db.open(false);
-	    st = db.prepare("SELECT id, insert_time, " + StringStuff.join(", ", columnNames) + " FROM " + SENSOR_READINGS_TABLE + " ORDER BY insert_time DESC");
-	    SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ROOT);
-	    dateFormatter.setLenient(false);
-	    dateFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
-	    allObservations = new ArrayList<Observation>();
-	    while (st.step()){
-	    	int id = st.columnInt(0);
-	    	Date storageTime = dateFormatter.parse(st.columnString(1));
-	    	List<SensorReading> readings = new ArrayList<SensorReading>();
-	    	for (int i=0; i < sensors.size()-1; ++i) {
-	    		readings.add(new SensorReading(sensors.get(i), st.columnString(i+2)));
-	    	}
-	    	// target should be the last sensor in the list of sensors configurations 
-	    	SensorReading target = new SensorReading(sensors.get(sensors.size()-1), st.columnString(sensors.size()+1));
-	    	allObservations.add(new Observation(id, storageTime, readings, target));
-	    }
+		List<Observation> allObservations = null;
+		try {
+			db = new SQLiteConnection(databaseFile);
+			db.open(false);
+			st = db.prepare("SELECT id, insert_time, " + StringStuff.join(", ", columnNames) + " FROM " + SENSOR_READINGS_TABLE + " ORDER BY insert_time DESC");
+			allObservations = new ArrayList<Observation>();
+			while (st.step()){
+				int id = st.columnInt(0);
+				long storageTime = st.columnLong(1);
+				List<SensorReading> readings = new ArrayList<SensorReading>();
+				for (int i=0; i < sensors.size()-1; ++i) {
+					readings.add(new SensorReading(sensors.get(i), st.columnString(i+2)));
+				}
+				// target should be the last sensor in the list of sensors configurations 
+				SensorReading target = new SensorReading(sensors.get(sensors.size()-1), st.columnString(sensors.size()+1));
+				allObservations.add(new Observation(id, storageTime, readings, target));
+			}
 		} catch (SQLiteException e) {
-			throw new StorageException("Unable to retrieve sensor data.", e);
-		} catch (ParseException e) {
 			throw new StorageException("Unable to retrieve sensor data.", e);
 		} finally {
 			if (st != null) {
 				st.dispose();
 			}
-			db.dispose();
+			if(db != null){
+				db.dispose();
+			}
 		}
-    return allObservations;
+		return allObservations;
 	}
 	
 	/**
@@ -192,7 +186,9 @@ public class SensorReadingsDAO {
 			if (st != null) {
 				st.dispose();
 			}
-			db.dispose();
+			if(db != null){
+				db.dispose();
+			}
 		}
 	}
 	
@@ -202,33 +198,30 @@ public class SensorReadingsDAO {
 	 * @return storage times for the previous n observations
 	 * @throws StorageException 
 	 */
-	public List<Date> retrieveStorageTimes(int n) throws StorageException {
+	public List<Long> retrieveStorageTimes(int n) throws StorageException {
 		SQLiteConnection db = null;
 		SQLiteStatement st = null;
 
-    List<Date> storageTimes = new ArrayList<Date>();
-    try {
-    	db = new SQLiteConnection(databaseFile);
+		List<Long> storageTimes = new ArrayList<Long>();
+		try {
+			db = new SQLiteConnection(databaseFile);
 			db.open(false);
-	    st = db.prepare("SELECT insert_time FROM " + SENSOR_READINGS_TABLE + " ORDER BY insert_time DESC LIMIT " + n);
-	    SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.ROOT);
-	    dateFormatter.setLenient(false);
-	    dateFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
-	    while (st.step()){
-	    	Date storageTime = dateFormatter.parse(st.columnString(0));
-	    	storageTimes.add(storageTime);
-	    }
+			st = db.prepare("SELECT insert_time FROM " + SENSOR_READINGS_TABLE + " ORDER BY insert_time DESC LIMIT " + n);
+			while (st.step()){
+				long storageTime = st.columnLong(0);
+				storageTimes.add(storageTime);
+			}
 		} catch (SQLiteException e) {
-			throw new StorageException("Unable to retrieve storage times.", e);
-		} catch (ParseException e) {
 			throw new StorageException("Unable to retrieve storage times.", e);
 		} finally {
 			if (st != null) {
 				st.dispose();
 			}
-			db.dispose();
+			if(db != null){
+				db.dispose();
+			}
 		}
-    return storageTimes;
+		return storageTimes;
 	}
 	
 	/**
@@ -247,7 +240,7 @@ public class SensorReadingsDAO {
 	
 	private void createColumnNamesTableIfMissing() throws SQLiteException {
 		List<String> columns = new ArrayList<String>();
-		columns.add("insert_time DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL");
+		columns.add("insert_time INTEGER DEFAULT (strftime('%s', 'now')*1000) NOT NULL");
 		columns.add("feature_ID TEXT NOT NULL UNIQUE");
 		columns.add("column_name TEXT NOT NULL");
 		String createTableSql = String.format("CREATE TABLE IF NOT EXISTS %s (%s)", SENSOR_COLUMN_NAMES_TABLE, StringStuff.join(",\n", columns));
@@ -301,14 +294,16 @@ public class SensorReadingsDAO {
 			if (st != null) {
 				st.dispose();
 			}
-			db.dispose();
+			if(db != null){
+				db.dispose();
+			}
 		}
 	}
 	
 	private void createSensorReadingsTableIfMissing(List<SensorConfig> sensorConfigs) throws SQLiteException {
 		List<String> columns = new ArrayList<String>();
 		columns.add("id INTEGER PRIMARY KEY AUTOINCREMENT");
-		columns.add("insert_time DATETIME DEFAULT(STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW', 'UTC')) NOT NULL");
+		columns.add("insert_time INTEGER DEFAULT (strftime('%s', 'now')*1000) NOT NULL");
 		for (int i=0; i < sensorConfigs.size(); ++i){
 			columns.add("column" + i + " TEXT");
 		}
@@ -327,30 +322,35 @@ public class SensorReadingsDAO {
 			if (st != null) {
 				st.dispose();
 			}
-			db.dispose();
+			if(db != null){
+				db.dispose();
+			}
 		}
 	}
 	
 	private Map<String,String> getFeatureIDtoColumnNameMap() throws SQLiteException {
 		SQLiteConnection db = null;
 		SQLiteStatement st = null;
-    Map<String,String> featureIDtoColumnNameMap = new HashMap<String,String>();
-    try {
-    	db = new SQLiteConnection(databaseFile);
+		
+		Map<String,String> featureIDtoColumnNameMap = new HashMap<String,String>();
+		try {
+			db = new SQLiteConnection(databaseFile);
 			db.open(false);
-	    st = db.prepare("SELECT feature_ID, column_name FROM " + SENSOR_COLUMN_NAMES_TABLE);
-	    while (st.step()){
-	    	String featureID = st.columnString(0);
-	    	String columnName = st.columnString(1);
-	    	featureIDtoColumnNameMap.put(featureID, columnName);
-	    }
+			st = db.prepare("SELECT feature_ID, column_name FROM " + SENSOR_COLUMN_NAMES_TABLE);
+			while (st.step()){
+				String featureID = st.columnString(0);
+				String columnName = st.columnString(1);
+				featureIDtoColumnNameMap.put(featureID, columnName);
+			}
 		} finally {
 			if (st != null) {
 				st.dispose();
 			}
-			db.dispose();
+			if(db != null){
+				db.dispose();
+			}
 		}
-    return featureIDtoColumnNameMap;
+		return featureIDtoColumnNameMap;
 	}
 	
 	private String buildQuestionMarkString(int numberOfQuestionMarks) {
